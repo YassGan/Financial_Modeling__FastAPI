@@ -16,70 +16,6 @@ import pandas as pd
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 BASE_URL ='https://financialmodelingprep.com/api'	
 
 API_KEY	='96051dba5181978c2f0ce23c1ef4014b'
@@ -106,13 +42,6 @@ def download_json():
     response = Response(content=JSON, media_type="application/json")
     response.headers["Content-Disposition"] = "attachment; filename=data.json"
     return response
-
-
-
-
-
-
-
 
 
 
@@ -148,46 +77,6 @@ def get_data(Symbol: str):
     return data
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Function to fetch data from the API and return it as a pandas DataFrame
-def get_data_from_api(api_url):
-    response = requests.get(api_url)
-    if response.status_code == 200:
-        data = response.json()
-        df = pd.DataFrame(data)  # Convert the data to a pandas DataFrame
-        return df
-    else:
-        print("Failed to fetch data from the API.")
-        return None
-
-
-print(APIRequest(BASE_URL, Symbol, API_KEY))
-print(get_data_from_api(APIRequest(BASE_URL, Symbol, API_KEY)))
-
-# get_data_from_api('https://financialmodelingprep.com/api/v3/profile/VDADX?apikey=96051dba5181978c2f0ce23c1ef4014b')
 
 
 
