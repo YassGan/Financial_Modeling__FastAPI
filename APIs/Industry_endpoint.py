@@ -30,21 +30,9 @@ async def create_industry(industry: Industry):
 
 
 
-@industry.get("/fetch_data")
-def fetch_data():
-    url = "https://financialmodelingprep.com/api/v4/profile/all?apikey=96051dba5181978c2f0ce23c1ef4014b"
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"error": "Failed to fetch data from the API."}
 
 
-
-
-
-df = pd.read_csv("profile_bulkyyyy.csv", encoding='utf-8')
+df = pd.read_csv("data.csv", encoding='utf-8')
 
 
 print("-----------------------------")
@@ -52,7 +40,26 @@ print("-----------------------------")
 
 print(df.size)
 
-num_rows, num_cols = df.shape
+
+filtered_df = df[df['sector'].notna()]
+
+
+
+
+
+num_rows, num_cols = filtered_df.shape
+
+
+
+selected_columns = ['companyName', 'sector','address']
+selected_df = filtered_df[selected_columns]
+
+
+
+
+
+print("The dataframe filtered")
+print(selected_df)
 
 print("Number of rows in the DataFrame:", num_rows)
 print("Number of columns in the DataFrame:", num_cols)
