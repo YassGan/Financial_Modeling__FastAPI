@@ -1,0 +1,6 @@
+id;Article;Designation;Lot;DateFabrication;Date_Premption;Emplacements;Nom_Emplacement;";"
+1;StyloBleu         ;Stylo a bille bleu;A7    ;22/08/2022;22/08/2023;2;D15             ;";"
+2;CahierA4;Cahier format A4;B4;10/11/2021;10/11/2023;2;D15             ;";"
+3;CrayonHB          ;Crayon a papier HB ;C3    ;02/08/2022;02/02/2023;2;D15             ;";"
+4;CarnetNotes       ;Carnet de notes ligne ;D2    ;12/09/2022;12/09/2024;1;S23;";"
+5;GommeBlanche      ;Gomme blanche rectangulaire;J4  ;18/07/2022;18/01/2023;3;C12;";"
