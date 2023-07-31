@@ -179,6 +179,11 @@ def run_job():
     result = create_industries_from_dataframe(DataF)
     print(result)
 
+# Define the scheduler function
+def run_job():
+    DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
+    result = create_industries_from_dataframe(DataF)
+    print(result)
 
 # Create the scheduler
 scheduler = BackgroundScheduler()
@@ -188,10 +193,3 @@ scheduler.add_job(run_job, trigger='interval', seconds=10, max_instances=1)
 
 # Start the scheduler
 scheduler.start()
-
-# Keep the script running to allow the scheduler to execute the job
-try:
-    while True:
-        pass
-except KeyboardInterrupt:
-    scheduler.shutdown()
