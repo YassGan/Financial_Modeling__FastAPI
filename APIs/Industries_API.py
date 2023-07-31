@@ -57,13 +57,9 @@ def get_industry_collection():
 
 
 
-
-
-
-
 # Function to fetch data from the API
-def fetch_data_from_api(BASE_URL, Symbol, API_KEY):
-    api_url = f"{BASE_URL}/v3/profile/{Symbol}?apikey={API_KEY}"
+def fetch_data_from_api(Symbol):
+    api_url = f"https://financialmodelingprep.com/api/v3/profile/{Symbol}?apikey=96051dba5181978c2f0ce23c1ef4014b"
     response = requests.get(api_url)
     return response.json()
 
@@ -71,9 +67,7 @@ def fetch_data_from_api(BASE_URL, Symbol, API_KEY):
 # Define the API route to fetch data from the API
 @industry.get("/get_data/{Symbol}")
 def get_data(Symbol: str):
-    BASE_URL = "https://financialmodelingprep.com/api"
-    API_KEY = '96051dba5181978c2f0ce23c1ef4014b'  # Replace with your actual API key
-    data = fetch_data_from_api(BASE_URL, Symbol, API_KEY)
+    data = fetch_data_from_api(Symbol)
     return data
 
 
