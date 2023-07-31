@@ -2,7 +2,6 @@
 from fastapi import APIRouter,Response
 from models.Industry import Industry 
 from config.db import get_database 
-from schemas.Industry import serializeDict, serializeList
 
 import pandas as pd
 import requests
@@ -95,18 +94,34 @@ def getCompanyBySymbol(Symbol: str):
 
 
 
-# API to create new industries from the DataFrame efficiently
-@Main.post('/CreateIndustriesFromDataFrame')
-async def create_industries_from_dataframe():
-    DataF = pd.read_csv("output_csv_file.csv", encoding='utf-8')
+# Function to create new industries from the DataFrame efficiently
+def create_industries_from_dataframe(DataF):
+    Industries_variables = DataF[['Symbol','sector', 'companyName']]  # Accessing multiple columns
 
     if not DataF.empty:
-        new_industries_dict = DataF.loc[:, ['Symbol', 'Price', 'companyName']].to_dict(orient='records')
-        get_industry_collection().insert_many(new_industries_dict)
-        return Response(status_code=201, content=f"{len(DataF)} new industries created successfully.")
-    else:
-        return Response(status_code=200, content="No new industries to create.")
+        new_industries = Industries_variables.to_dict(orient='records')
+        
+        existing_symbols = set(get_industry_collection().distinct("Symbol"))
+        new_industries_to_create = [industry for industry in new_industries if industry["Symbol"] not in existing_symbols]
 
+        if new_industries_to_create:
+            get_industry_collection().insert_many(new_industries_to_create)
+            return f"{len(new_industries_to_create)} new industries created successfully."
+        else:
+            return "No new industries to create."
+    else:
+        return "No new industries to create."
+
+
+# API to create new industries from the DataFrame efficiently
+@Main.post('/CreateIndustriesFromDataFrame')
+async def create_industries_api():
+    DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
+    result = create_industries_from_dataframe(DataF)
+    if "new industries created successfully" in result:
+        return Response(status_code=201, content=result)
+    else:
+        return Response(status_code=200, content=result)
 
 
 
@@ -119,7 +134,7 @@ def create_csv_with_first_elements(Number,input_file_path, output_file_path):
 
         first_5_elements.to_csv(output_file_path, index=False)
 
-        print("File with first 5 elements created successfully.")
+        print("File with first  elements created successfully.")
         return True
     except pd.errors.EmptyDataError:
         print("Error: Input CSV file is empty.")
@@ -131,4 +146,30 @@ def create_csv_with_first_elements(Number,input_file_path, output_file_path):
         print("Error:", e)
         return False
 
+create_csv_with_first_elements(9,'data.csv','data_with_17.csv')
 
+
+
+from apscheduler.schedulers.background import BackgroundScheduler
+
+def run_job():
+    DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
+    result = create_industries_from_dataframe(DataF)
+    print(result)
+
+
+# Create the scheduler
+scheduler = BackgroundScheduler()
+
+# Add the job to the scheduler with max_instances set to 1
+scheduler.add_job(run_job, trigger='interval', seconds=10, max_instances=1)
+
+# Start the scheduler
+scheduler.start()
+
+# Keep the script running to allow the scheduler to execute the job
+try:
+    while True:
+        pass
+except KeyboardInterrupt:
+    scheduler.shutdown()
