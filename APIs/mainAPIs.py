@@ -2,6 +2,8 @@
 from fastapi import APIRouter,Response
 from models.Industry import Industry 
 from config.db import get_database 
+from schemas.Industry import serializeDict, serializeList
+
 
 import pandas as pd
 import requests
@@ -17,7 +19,12 @@ def get_industry_collection():
     db = get_database()
     return db["industries"]
 
-@Main.get('/Hello_MainPage')
+def get_exchange_collection():
+    db = get_database()
+    return db["exchange"]
+
+
+@Main.get('/Hello_MainAPIs')
 async def Hello_MainPage():
     return 'Hello Main Page'
 
@@ -152,7 +159,7 @@ def create_csv_with_first_elements(Number,input_file_path, output_file_path):
 
 
 
-
+# API that launches the create_csv_with_first_elements function
 @Main.post('/create_csv_with_first_elements/{Number}')
 async def create_csv_endpoint(Number: int):
     input_file_path = "data.csv"
@@ -167,7 +174,51 @@ async def create_csv_endpoint(Number: int):
 
 
 
+# API that creates a json file from a dataframe, but the csv file should be read first
+@Main.get('/DownloadFirstElemAsJson/{Number}')
+async def download_first_10_as_json(Number: int):
+    first_10_df = DataFrame.head(Number)  # Assuming you already have selected_df as a filtered DataFrame
+    json_data = first_10_df.to_json(orient='records', lines=True)  # Convert DataFrame to JSON
 
+    # Set the filename for the downloaded JSON file
+    filename = "firstlements.json"
+
+    # Save the JSON data to a file
+    with open(filename, 'w', encoding='utf-8') as file:
+        file.write(json_data)
+
+    # Create a Response object to stream the file as a downloadable response
+    response = Response(content=json_data, media_type='application/json')
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+
+
+# API that creates an Industry manually
+@Main.post('/AdddIndustry')
+async def create_industry(industry: Industry):
+    print("Received industry object:", industry)
+    
+    industry_dict = dict(industry)
+    print("Converted industry to dictionary:", industry_dict)
+    
+    # Insert the industry dictionary into the database
+    get_industry_collection().insert_one(industry_dict)
+    
+    # Fetch all industries from the database
+    all_industries = list(get_industry_collection().find())
+    print("All industries in the database:", all_industries)
+    
+    return serializeList(all_industries)
+
+
+
+
+#API to get all the industries from the database
+@Main.get('/AllIndustries')
+async def find_all_industries():
+    return serializeList(get_industry_collection().find())
 
 
 

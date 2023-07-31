@@ -5,7 +5,6 @@ from typing import Optional
 
 
 class Industry(BaseModel):
-    sectorId: Optional[str] = Field(None)
-    name: Optional[str] = Field(None)
+    sectorId: str
     name: str
     image: str
