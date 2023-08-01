@@ -101,9 +101,9 @@ def getCompanyBySymbol(Symbol: str):
 
 
 
-# Function to create new industries from the DataFrame efficiently
+# Function to create new industries from the DataFrame 
 def create_industries_from_dataframe(DataF):
-    Industries_variables = DataF[['Symbol','sector', 'companyName']]  # Accessing multiple columns
+    Industries_variables = DataF[['Symbol','sector', 'companyName']]  
 
     if not DataF.empty:
         new_industries = Industries_variables.to_dict(orient='records')
@@ -113,14 +113,14 @@ def create_industries_from_dataframe(DataF):
 
         if new_industries_to_create:
             get_industry_collection().insert_many(new_industries_to_create)
-            return f"{len(new_industries_to_create)} new industries created successfully."
+            return f"- {len(new_industries_to_create)} new industries created successfully."
         else:
-            return "No new industries to create."
+            return "- No new industries to create."
     else:
-        return "No new industries to create."
+        return "- No new industries to create."
 
 
-# API to create new industries from the DataFrame efficiently
+# API to create new industries from the DataFrame 
 @Main.post('/CreateIndustriesFromDataFrame')
 async def create_industries_api():
     DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
@@ -141,7 +141,7 @@ def create_csv_with_first_elements(Number,input_file_path, output_file_path):
 
         first_5_elements.to_csv(output_file_path, index=False)
 
-        print("File with first  elements created successfully.")
+        print("- File with new elements created successfully.")
         return True
     except pd.errors.EmptyDataError:
         print("Error: Input CSV file is empty.")
@@ -168,7 +168,7 @@ async def create_csv_endpoint(Number: int):
     result = create_csv_with_first_elements(Number, input_file_path, output_file_path)
 
     if result:
-        return Response(status_code=200, content="File created successfully.")
+        return Response(status_code=200, content="File with new elements created successfully.")
     else:
         return Response(status_code=400, content="Failed to create the file.")
 
@@ -177,17 +177,15 @@ async def create_csv_endpoint(Number: int):
 # API that creates a json file from a dataframe, but the csv file should be read first
 @Main.get('/DownloadFirstElemAsJson/{Number}')
 async def download_first_10_as_json(Number: int):
-    first_10_df = DataFrame.head(Number)  # Assuming you already have selected_df as a filtered DataFrame
-    json_data = first_10_df.to_json(orient='records', lines=True)  # Convert DataFrame to JSON
+    first_10_df = DataFrame.head(Number)  
+    json_data = first_10_df.to_json(orient='records', lines=True) 
 
-    # Set the filename for the downloaded JSON file
+   
     filename = "firstlements.json"
 
-    # Save the JSON data to a file
     with open(filename, 'w', encoding='utf-8') as file:
         file.write(json_data)
 
-    # Create a Response object to stream the file as a downloadable response
     response = Response(content=json_data, media_type='application/json')
     response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
@@ -203,14 +201,8 @@ async def create_industry(industry: Industry):
     industry_dict = dict(industry)
     print("Converted industry to dictionary:", industry_dict)
     
-    # Insert the industry dictionary into the database
     get_industry_collection().insert_one(industry_dict)
-    
-    # Fetch all industries from the database
-    all_industries = list(get_industry_collection().find())
-    print("All industries in the database:", all_industries)
-    
-    return serializeList(all_industries)
+    return serializeList(industry_dict)
 
 
 
@@ -230,17 +222,10 @@ def run_job():
     result = create_industries_from_dataframe(DataF)
     print(result)
 
-# Define the scheduler function
-def run_job():
-    DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
-    result = create_industries_from_dataframe(DataF)
-    print(result)
 
-# Create the scheduler
+
 scheduler = BackgroundScheduler()
 
-# Add the job to the scheduler with max_instances set to 1
 scheduler.add_job(run_job, trigger='interval', seconds=10, max_instances=1)
 
-# Start the scheduler
-scheduler.start()
+scheduler.start() 
