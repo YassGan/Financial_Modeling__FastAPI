@@ -323,7 +323,10 @@ async def create_dataframe_with_sector_info():
     # Fetch all sectors from the database
     sectors = serializeList(get_sector_collection().find())
     # # Read the DataFrame from your data
-    DataFrame = pd.read_csv("data_with_17.csv", encoding='utf-8')
+    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+    print('The unique industries')
+    print(DataFrame["industry"].unique())
+    
 
     # # Create a new DataFrame with sector info
     sector_dataframe = create_new_dataframe_with_sector_industry_info(DataFrame, sectors)
@@ -331,8 +334,29 @@ async def create_dataframe_with_sector_info():
     print(sector_dataframe)
 
 
+# this could should be processed in order to work with only unique industries, the code above works but with redundant industry elements
+# #API that calls the function that creates the new elements industry in the database
+# @Main.get('/CreateDataFrameWithSectorInfo')
+# async def create_dataframe_with_sector_info():
+#     # Fetch all sectors from the database
+#     sectors = serializeList(get_sector_collection().find())
+#     # # Read the DataFrame from your data
+#     DataFrame = pd.read_csv("data.csv", encoding='utf-8')
 
-   
+
+
+#     # unique_industries_numpy_array = DataFrame["industry"].unique()
+#     # print('the dataframe after the unique industry')
+#     # print(unique_industries_numpy_array)
+#     # unique_industries_dataFrame= pd.DataFrame(unique_industries_numpy_array)
+
+
+#     # # Create a new DataFrame with sector info
+#     sector_dataframe = create_new_dataframe_with_sector_industry_info(unique_industries_dataFrame, sectors)
+#     print('The dataframe that contains the match between the csv file and the database sectors')
+#     print(sector_dataframe)
+
+
 
 
 
@@ -370,13 +394,29 @@ async def create_dataframe_with_sector_info():
 @Main.get('/PrintingDataFrame')
 async def find_all_industries():
     DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+    # Si vous souhaitez compter le nombre de duplications
+    count_duplicates = DataFrame.duplicated().sum()
+    unique_combinations = DataFrame[['industry', 'sector']]
+    print('unique_combinations ',unique_combinations)
+
+
 
     unique_sectors = DataFrame["sector"].unique()
-
     print('Unique sectors ')
     print(unique_sectors)
+    np.savetxt('Unique_sectors.csv', unique_sectors, delimiter=';', fmt='%s')
 
-    # np.savetxt('Unique_sectors.csv', unique_sectors, delimiter=';', fmt='%s')
+
+
+    unique_industries = DataFrame["industry"].unique()
+    print('unique_industries  ')
+    print(unique_industries)
+    np.savetxt('unique_industries.csv', unique_industries, delimiter=';', fmt='%s')
+
+
+
+
+
 
     return 'PrintingDataFrame'
 
