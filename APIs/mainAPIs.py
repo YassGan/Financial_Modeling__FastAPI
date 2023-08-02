@@ -233,16 +233,20 @@ async def find_all_industries():
 
 
 
+import time
 
 
 
+# Function that creates new sectors in the database from the dataFrame
 def create_sectors_from_dataframe(DataF):
+    start_time = time.time()
 
     # Get the unique values of the "Sector" column
     Sector_variables = DataF["sector"].unique()
+    print("Time taken for creating DataFrame:", time.time() - start_time, "seconds")
 
     # Convert the NumPy array to a DataFrame
-    sector_df = pd.DataFrame(Sector_variables, columns=["Sector"])
+    sector_df = pd.DataFrame(Sector_variables, columns=["name"])
     print('The type of the sector_df variable is', type(sector_df))
     print(sector_df)
 
@@ -250,8 +254,8 @@ def create_sectors_from_dataframe(DataF):
         # Convert the DataFrame to a dictionary with "records" orientation
         sectors_to_dict = sector_df.to_dict(orient='records')
 
-        existing_sectors = set(get_sector_collection().distinct("sector"))
-        new_sectors_to_create = [sector for sector in sectors_to_dict if sector["Sector"] not in existing_sectors]
+        existing_sectors = set(get_sector_collection().distinct("name"))
+        new_sectors_to_create = [sector for sector in sectors_to_dict if sector["name"] not in existing_sectors]
 
         if new_sectors_to_create:
             get_sector_collection().insert_many(new_sectors_to_create)
@@ -270,6 +274,65 @@ async def create_sectors_api():
         return Response(status_code=201, content=result)
     else:
         return Response(status_code=200, content=result)
+
+
+
+
+
+#API to get all the sectors from the database
+@Main.get('/AllSectors')
+async def find_all_sectors():
+    return serializeList(get_sector_collection().find())
+
+
+
+
+
+def create_new_dataframe_with_sector_industry_info(dataframe, sectors):
+    sector_data = []
+    print('the data frame ')
+    print(dataframe)
+    print('the sectors from the database  ')
+    print(sectors)
+
+    for index, row in dataframe.iterrows():
+        print('Inedx ',index)
+        matching_sector = sectors[index]['name'] == row['sector']
+        if matching_sector==True:
+            sector_data.append({
+                    "sector_name": row["sector"],
+                    "sector_id": sectors[index-1]['_id'],
+                    "industry_name": row["industry"]
+                })
+    print('the matching dataframe between the database and the sectors is ')
+    print(sector_data)
+    # sector_dataframe = pd.DataFrame(sector_data)
+    # return sector_dataframe
+
+@Main.get('/CreateDataFrameWithSectorInfo')
+async def create_dataframe_with_sector_info():
+    # Fetch all sectors from the database
+    sectors = serializeList(get_sector_collection().find())
+    print('--------------------------------> type of the data returned from the database')
+    print(type(sectors))
+    print('------------------------- The type of the first element from data from the database')
+    print(sectors[0]['_id'])
+
+    
+
+    # # Read the DataFrame from your data
+    DataFrame = pd.read_csv("data_with_17.csv", encoding='utf-8')
+
+    # # Create a new DataFrame with sector info
+    sector_dataframe = create_new_dataframe_with_sector_industry_info(DataFrame, sectors)
+    print(sector_dataframe)
+    # print('The data frame containing the new information of the sector and the industry is ')
+    # print(sector_dataframe)
+
+   
+
+
+
 
 
 
@@ -302,6 +365,6 @@ def run_job():
 
 scheduler = BackgroundScheduler()
 
-scheduler.add_job(run_job, trigger='interval', seconds=10, max_instances=1)
+scheduler.add_job(run_job, trigger='interval', seconds=3600, max_instances=1)
 
 scheduler.start() 
