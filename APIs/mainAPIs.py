@@ -8,6 +8,9 @@ from schemas.Industry import serializeDict, serializeList
 import pandas as pd
 import requests
 
+import numpy as np
+
+
 
 Main=APIRouter()
 
@@ -18,6 +21,13 @@ DataFrame=pd.DataFrame()
 def get_industry_collection():
     db = get_database()
     return db["industries"]
+
+
+def get_sector_collection():
+    db = get_database()
+    return db["sectors"]
+
+
 
 def get_exchange_collection():
     db = get_database()
@@ -177,6 +187,8 @@ async def create_csv_endpoint(Number: int):
 # API that creates a json file from a dataframe, but the csv file should be read first
 @Main.get('/DownloadFirstElemAsJson/{Number}')
 async def download_first_10_as_json(Number: int):
+    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+
     first_10_df = DataFrame.head(Number)  
     json_data = first_10_df.to_json(orient='records', lines=True) 
 
@@ -213,6 +225,70 @@ async def find_all_industries():
     return serializeList(get_industry_collection().find())
 
 
+
+
+
+
+
+
+
+
+
+
+
+def create_sectors_from_dataframe(DataF):
+
+    # Get the unique values of the "Sector" column
+    Sector_variables = DataF["sector"].unique()
+
+    # Convert the NumPy array to a DataFrame
+    sector_df = pd.DataFrame(Sector_variables, columns=["Sector"])
+    print('The type of the sector_df variable is', type(sector_df))
+    print(sector_df)
+
+    if not DataF.empty:
+        # Convert the DataFrame to a dictionary with "records" orientation
+        sectors_to_dict = sector_df.to_dict(orient='records')
+
+        existing_sectors = set(get_sector_collection().distinct("sector"))
+        new_sectors_to_create = [sector for sector in sectors_to_dict if sector["Sector"] not in existing_sectors]
+
+        if new_sectors_to_create:
+            get_sector_collection().insert_many(new_sectors_to_create)
+            return f"- {len(new_sectors_to_create)} new sectors created successfully."
+        else:
+            return "- No new sectors to create."
+    else:
+        return "- No new sectors to create."
+
+# API to create new industries from the DataFrame 
+@Main.post('/CreateSectorsFromDataFrame')
+async def create_sectors_api():
+    DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
+    result = create_sectors_from_dataframe(DataF)
+    if "new sectors created successfully" in result:
+        return Response(status_code=201, content=result)
+    else:
+        return Response(status_code=200, content=result)
+
+
+
+
+
+
+
+@Main.get('/PrintingDataFrame')
+async def find_all_industries():
+    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+
+    unique_sectors = DataFrame["sector"].unique()
+
+    print('Unique sectors ')
+    print(unique_sectors)
+
+    # np.savetxt('Unique_sectors.csv', unique_sectors, delimiter=';', fmt='%s')
+
+    return 'PrintingDataFrame'
 
 
 from apscheduler.schedulers.background import BackgroundScheduler
