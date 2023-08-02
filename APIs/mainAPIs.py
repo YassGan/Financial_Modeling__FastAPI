@@ -325,36 +325,16 @@ async def create_dataframe_with_sector_info():
     # # Read the DataFrame from your data
     DataFrame = pd.read_csv("data.csv", encoding='utf-8')
     print('The unique industries')
-    print(DataFrame["industry"].unique())
-    
+ 
+
+    unique_industries_dataframe = DataFrame.drop_duplicates(subset=['industry'])
+
 
     # # Create a new DataFrame with sector info
-    sector_dataframe = create_new_dataframe_with_sector_industry_info(DataFrame, sectors)
+    sector_dataframe = create_new_dataframe_with_sector_industry_info(unique_industries_dataframe, sectors)
     print('The dataframe that contains the match between the csv file and the database sectors')
     print(sector_dataframe)
 
-
-# this could should be processed in order to work with only unique industries, the code above works but with redundant industry elements
-# #API that calls the function that creates the new elements industry in the database
-# @Main.get('/CreateDataFrameWithSectorInfo')
-# async def create_dataframe_with_sector_info():
-#     # Fetch all sectors from the database
-#     sectors = serializeList(get_sector_collection().find())
-#     # # Read the DataFrame from your data
-#     DataFrame = pd.read_csv("data.csv", encoding='utf-8')
-
-
-
-#     # unique_industries_numpy_array = DataFrame["industry"].unique()
-#     # print('the dataframe after the unique industry')
-#     # print(unique_industries_numpy_array)
-#     # unique_industries_dataFrame= pd.DataFrame(unique_industries_numpy_array)
-
-
-#     # # Create a new DataFrame with sector info
-#     sector_dataframe = create_new_dataframe_with_sector_industry_info(unique_industries_dataFrame, sectors)
-#     print('The dataframe that contains the match between the csv file and the database sectors')
-#     print(sector_dataframe)
 
 
 
