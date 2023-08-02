@@ -289,47 +289,74 @@ async def find_all_sectors():
 
 
 def create_new_dataframe_with_sector_industry_info(dataframe, sectors):
-    sector_data = []
+    sector_industry_data = []
     print('the data frame ')
     print(dataframe)
     print('the sectors from the database  ')
     print(sectors)
+    # print('Type of the data from the database ')
+    # print(type(sectors))
+    # print('Type of the data of the datafram ')
+    # print(type(dataframe))
 
     for index, row in dataframe.iterrows():
-        print('Inedx ',index)
-        matching_sector = sectors[index]['name'] == row['sector']
-        if matching_sector==True:
-            sector_data.append({
-                    "sector_name": row["sector"],
-                    "sector_id": sectors[index-1]['_id'],
-                    "industry_name": row["industry"]
+        sector_name = row['sector']
+        for sector_obj in sectors:
+            if sector_obj['name'] == sector_name:
+                sector_industry_data.append({
+                    "Industry": row['industry'],
+                    "sector": sector_obj['name'],
+                    "sectorId": sector_obj['_id']
                 })
-    print('the matching dataframe between the database and the sectors is ')
-    print(sector_data)
-    # sector_dataframe = pd.DataFrame(sector_data)
-    # return sector_dataframe
+    # print('the match between the two sets of data is ')            
+    # print(sector_industry_data)
+    # print('The type of the set that contains the match between the two elements of data is ')
+    # print(type(sector_industry_data))
+    #converting from a list to a panda dataframe 
+    df_sector_industry_data = pd.DataFrame(sector_industry_data)
+    return(df_sector_industry_data)
 
+ 
+#API that calls the function that creates the new elements industry in the database
 @Main.get('/CreateDataFrameWithSectorInfo')
 async def create_dataframe_with_sector_info():
     # Fetch all sectors from the database
     sectors = serializeList(get_sector_collection().find())
-    print('--------------------------------> type of the data returned from the database')
-    print(type(sectors))
-    print('------------------------- The type of the first element from data from the database')
-    print(sectors[0]['_id'])
-
-    
-
     # # Read the DataFrame from your data
     DataFrame = pd.read_csv("data_with_17.csv", encoding='utf-8')
 
     # # Create a new DataFrame with sector info
     sector_dataframe = create_new_dataframe_with_sector_industry_info(DataFrame, sectors)
+    print('The dataframe that contains the match between the csv file and the database sectors')
     print(sector_dataframe)
-    # print('The data frame containing the new information of the sector and the industry is ')
-    # print(sector_dataframe)
+
+
 
    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
