@@ -288,6 +288,13 @@ async def find_all_sectors():
 
 
 
+
+
+
+
+
+
+
 def create_new_dataframe_with_sector_industry_info(dataframe, sectors):
     sector_industry_data = []
     print('the data frame ')
@@ -329,11 +336,24 @@ async def create_dataframe_with_sector_info():
 
     unique_industries_dataframe = DataFrame.drop_duplicates(subset=['industry'])
 
-
     # # Create a new DataFrame with sector info
     sector_dataframe = create_new_dataframe_with_sector_industry_info(unique_industries_dataframe, sectors)
     print('The dataframe that contains the match between the csv file and the database sectors')
     print(sector_dataframe)
+    if not sector_dataframe.empty:
+            new_industries = sector_dataframe.to_dict(orient='records')
+            
+            existing_industries = set(get_industry_collection().distinct("sectorId"))
+            new_industries_to_create = [industry for industry in new_industries if industry.get("sectorId") not in existing_industries]
+
+            if new_industries_to_create:
+                get_industry_collection().insert_many(new_industries_to_create)
+                return f"- {len(new_industries_to_create)} new industries created successfully."
+            else:
+                return "- No new industries to create."
+    else:
+            return "- No new industries to create."
+
 
 
 
@@ -379,24 +399,17 @@ async def find_all_industries():
     unique_combinations = DataFrame[['industry', 'sector']]
     print('unique_combinations ',unique_combinations)
 
+    unique_sectors = DataFrame.drop_duplicates(subset=['industry'])
 
-
-    unique_sectors = DataFrame["sector"].unique()
     print('Unique sectors ')
     print(unique_sectors)
     np.savetxt('Unique_sectors.csv', unique_sectors, delimiter=';', fmt='%s')
-
 
 
     unique_industries = DataFrame["industry"].unique()
     print('unique_industries  ')
     print(unique_industries)
     np.savetxt('unique_industries.csv', unique_industries, delimiter=';', fmt='%s')
-
-
-
-
-
 
     return 'PrintingDataFrame'
 
