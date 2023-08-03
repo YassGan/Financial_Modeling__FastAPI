@@ -429,7 +429,7 @@ def get_country_name(iso_code):
     
     if response.status_code == 200:
         country_data = response.json()
-        return country_data[0]['name']['official']
+        return country_data[0]['name']['common']
     else:
         return "Country not found"
 
@@ -441,8 +441,8 @@ def get_CountryOfficialName(isoCode: str):
 
 
 
-#Function that gets all the countries of the dataframe
-def allCountries_from_DataFrame():
+#Function that gets all the countries of the dataframe and insert them in the database with a url of thier flag and their official name
+def CreatingCountries():
     start_time = time.time()
     print("starting time")
 
@@ -477,24 +477,155 @@ def allCountries_from_DataFrame():
 
         if new_countries_to_create:
             get_countries_collection().insert_many(new_countries_to_create)
-            return f"- {len(new_countries_to_create)} new countries created successfully."
+            print( f"- {len(new_countries_to_create)} new countries created successfully.")
         else:
-            return "- No new countries to create."
+            print( "- No new countries to create.")
     else:
-        return "- No new countries to create."
+        print( "- No new countries to create.")
     
 
 
 
-
-
-
-
-#API that prints the countries of the dataframe
-@Main.get('/AllCountriesfromDataFrame')
+#API that launches the function CreatingCountries 
+@Main.get('/CreatingCountries')
 async def CountriesListAPI():    
-    allCountries_from_DataFrame()
+    CreatingCountries()
     return("CountriesListAPI")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Function that creates new exchanges in the collection of exchange 
+def creatingExchanges():
+    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+
+
+    DataFrame_Exchange = DataFrame[['exchange','exchangeShortName']]  
+
+    print(DataFrame_Exchange)
+
+    # Cleaning the dataframe of exchanges, removing redundant elements and removing also null and empty values
+    UniqueExchanges = DataFrame_Exchange.drop_duplicates()
+    UniqueExchanges.dropna(inplace=True)
+
+
+    print('The exchange elements')
+    print(UniqueExchanges)
+
+    if not UniqueExchanges.empty:
+        new_exchanges = UniqueExchanges.to_dict(orient='records')
+        
+        existing_exhanges = set(get_exchange_collection().distinct("exchange"))
+        new_exchanges_to_create = [exchange for exchange in new_exchanges if exchange["exchange"] not in existing_exhanges]
+
+        if new_exchanges_to_create:
+            get_exchange_collection().insert_many(new_exchanges_to_create)
+            print( f"- {len(new_exchanges_to_create)} new exchanges created successfully.")
+        else:
+            print( "- No new exchanges to create.")
+    else:
+        print( "- No new exchanges to create.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Function to see more the dataframe of the csv file 
+def csv_file():
+    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+
+
+    # cleaning the dataframe
+    DataFrameCompanies=DataFrame
+    print("Longueur de la dataframe avant de lui associer la drop duplicates ")
+    print(len(DataFrameCompanies))
+
+    #removing duplicate elements of the dataframe
+    print("Longueur de la dataframe après la drop duplicates ")
+    DataFrameCleaned=DataFrameCompanies.drop_duplicates(subset='companyName')
+    print(len(DataFrameCleaned))
+
+    # removing nan elements
+    print("Longueur de la dataframe après le remove des nan et des empty elements ")
+    DataFrameCleaned=DataFrameCleaned.dropna(subset='companyName')
+    print(len(DataFrameCleaned))
+
+    #removing elements that have false isEtf
+    DataFrameCleaned = DataFrameCleaned[DataFrameCleaned['isEtf'] == True]
+    print("Longueur de la dataframe après le remove de isEtf ")
+    print(len(DataFrameCleaned))
+
+
+
+
+    print(DataFrameCleaned.columns.tolist())
+
+
+
+    return len(DataFrame)
+
+
+
+# API that launches the function creatingExchanges
+@Main.get('/csv_file_len')
+async def CountriesListAPI():    
+    csv_file()
+    return("csv_file Len API ")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# API that launches the function creatingExchanges
+@Main.get('/creatingExchanges')
+async def CountriesListAPI():    
+    creatingExchanges()
+    return("creatingExchangesAPI")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -552,17 +683,17 @@ async def find_all_industries():
     return 'PrintingDataFrame'
 
 
-from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.schedulers.background import BackgroundScheduler
 
-def run_job():
-    DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
-    result = create_industries_from_dataframe(DataF)
-    print(result)
+# def run_job():
+
+#     creatingExchanges()
+#     CreatingCountries()
 
 
 
-scheduler = BackgroundScheduler()
+# scheduler = BackgroundScheduler()
 
-scheduler.add_job(run_job, trigger='interval', seconds=3600, max_instances=1)
+# scheduler.add_job(run_job, trigger='interval', seconds=180, max_instances=1)
 
-scheduler.start() 
+# scheduler.start() 
