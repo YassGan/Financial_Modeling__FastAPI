@@ -399,17 +399,20 @@ async def find_all_industries():
 
 # Function that takes the ISO code of the country and returns the flag URL
 def CountryFlag(isoCode):
-    return f'https://flagcdn.com/w320/{isoCode}.png'
+    lowerIsoCode=isoCode.lower()
+    return f'https://flagcdn.com/w320/{lowerIsoCode}.png'
 
 # Endpoint to get the flag URL of a country by its ISO code
 @Main.get("/flag/{isoCode}")
 def get_flag(isoCode: str):
     flag_url = CountryFlag(isoCode)
-    return {"flag_url": flag_url}
+    return flag_url
 
 
 
 
+
+#function that returns the official name of a country by its isoCode
 def get_country_name(iso_code):
     base_url = "https://restcountries.com/v3/alpha/"
     url = f"{base_url}{iso_code}"
@@ -417,32 +420,49 @@ def get_country_name(iso_code):
     
     if response.status_code == 200:
         country_data = response.json()
-        return {
-            "name": country_data[0]['name']['official'],
-  
-        }
+        return country_data[0]['name']['official']
     else:
-        return {"error": "Country not found"}
+        return "Country not found"
 
 # Endpoint to get the name of a country by its ISO code
-@Main.get("/info/{isoCode}")
-def get_flag(isoCode: str):
-    print( get_country_name(isoCode)['name'])
-    return(get_country_name(isoCode)['name'])
+@Main.get("/countryName/{isoCode}")
+def get_CountryOfficialName(isoCode: str):
+    print( get_country_name(isoCode))
+    return(get_country_name(isoCode))
 
 
 
 #Function that gets all the countries of the dataframe
 def allCountries_from_DataFrame():
-    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
-    countries = DataFrame['country']
-    #cleaning the countries dataframe, dropping the duplicants and removing nan values
-    countriesCleaned = countries.drop_duplicates()
+    start_time = time.time()
+    print("starting time")
 
-    print('Countries')
-    print ("type of the countries dataframe", type(countriesCleaned))
-    countriesCleaned.to_csv('countries.csv', index=False)
-    print(countriesCleaned)
+    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+
+
+
+    #cleaning the information of the countries (dropping duplicants, removing empty values) 
+    Uniquecountries = DataFrame['country'].drop_duplicates()
+    UniquecountriesDF=Uniquecountries.to_frame()
+    UniquecountriesDF.dropna(inplace=True)
+    print("CleanedCountriesInformation")
+    print(UniquecountriesDF)
+
+
+
+
+    # Adding the columns of the official name of the country as well as its flag
+    UniquecountriesDF['official_name'] = UniquecountriesDF['country'].apply(get_country_name)
+    UniquecountriesDF['flag']=UniquecountriesDF['country'].apply(get_flag)
+
+    print(UniquecountriesDF)
+    print(type(UniquecountriesDF))
+    
+
+
+
+
+
 
 
 #API that prints the countries of the dataframe
@@ -450,7 +470,6 @@ def allCountries_from_DataFrame():
 async def CountriesListAPI():    
     allCountries_from_DataFrame()
     return("CountriesListAPI")
-
 
 
 
