@@ -37,6 +37,15 @@ def get_exchange_collection():
     return db["exchange"]
 
 
+def get_countries_collection():
+    db = get_database()
+    return db["countries"]
+
+
+
+
+
+
 @Main.get('/Hello_MainAPIs')
 async def Hello_MainPage():
     return 'Hello Main Page'
@@ -457,6 +466,22 @@ def allCountries_from_DataFrame():
 
     print(UniquecountriesDF)
     print(type(UniquecountriesDF))
+
+
+
+    if not UniquecountriesDF.empty:
+        new_countries = UniquecountriesDF.to_dict(orient='records')
+        
+        existing_countries = set(get_countries_collection().distinct("country"))
+        new_countries_to_create = [country for country in new_countries if country["country"] not in existing_countries]
+
+        if new_countries_to_create:
+            get_countries_collection().insert_many(new_countries_to_create)
+            return f"- {len(new_countries_to_create)} new countries created successfully."
+        else:
+            return "- No new countries to create."
+    else:
+        return "- No new countries to create."
     
 
 
