@@ -1,8 +1,11 @@
 
 from fastapi import APIRouter,Response
 from models.Industry import Industry 
+from models.Sector import Sector 
+
 from config.db import get_database 
 from schemas.Industry import serializeDict, serializeList
+from schemas.Sector import serializeDict2, serializeList2
 
 
 import pandas as pd
@@ -205,24 +208,21 @@ async def download_first_10_as_json(Number: int):
 
 
 
-# API that creates an Industry manually
-@Main.post('/AdddIndustry')
-async def create_industry(industry: Industry):
-    print("Received industry object:", industry)
-    
-    industry_dict = dict(industry)
-    print("Converted industry to dictionary:", industry_dict)
-    
-    get_industry_collection().insert_one(industry_dict)
-    return serializeList(industry_dict)
 
 
 
 
-#API to get all the industries from the database
-@Main.get('/AllIndustries')
-async def find_all_industries():
-    return serializeList(get_industry_collection().find())
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -237,9 +237,10 @@ import time
 
 
 
-# Function that creates new sectors in the database from the dataFrame
+# Function that creates new sectors in the database from a dataFrame
 def create_sectors_from_dataframe(DataF):
     start_time = time.time()
+    DataF.dropna(subset=['sector'], inplace=True)
 
     # Get the unique values of the "Sector" column
     Sector_variables = DataF["sector"].unique()
@@ -265,17 +266,16 @@ def create_sectors_from_dataframe(DataF):
     else:
         return "- No new sectors to create."
 
-# API to create new industries from the DataFrame 
-@Main.post('/CreateSectorsFromDataFrame')
+
+# API that creates new sectors from the DataFrame 
+@Main.get('/CreateSectorsFromDataFrame')
 async def create_sectors_api():
-    DataF = pd.read_csv("data_with_17.csv", encoding='utf-8')
+    DataF = pd.read_csv("data.csv", encoding='utf-8')
     result = create_sectors_from_dataframe(DataF)
     if "new sectors created successfully" in result:
         return Response(status_code=201, content=result)
     else:
         return Response(status_code=200, content=result)
-
-
 
 
 
@@ -286,6 +286,14 @@ async def find_all_sectors():
 
 
 
+# API that creates a sector manually in the database
+@Main.post('/AddSector')
+async def create_sector(sector: Sector):
+    
+    sector_dict = dict(sector)
+    
+    get_sector_collection().insert_one(sector_dict)
+    return 'New Sector added successfully'
 
 
 
@@ -295,6 +303,10 @@ async def find_all_sectors():
 
 
 
+
+
+
+# Function that creates new industries from the dataframe that matches the sectors elements from the databse 
 def create_new_dataframe_with_sector_industry_info(dataframe, sectors):
     sector_industry_data = []
     print('the data frame ')
@@ -355,8 +367,89 @@ async def create_dataframe_with_sector_info():
             return "- No new industries to create."
 
 
+# API that creates an Industry manually in the database
+@Main.post('/AdddIndustry')
+async def create_industry(industry: Industry):
+    print("Received industry object:", industry)
+    
+    industry_dict = dict(industry)
+    print("Converted industry to dictionary:", industry_dict)
+    
+    get_industry_collection().insert_one(industry_dict)
+    return 'New industry added successfully'
 
 
+
+
+#API to get all the industries from the database
+@Main.get('/AllIndustries')
+async def find_all_industries():
+    return serializeList(get_industry_collection().find())
+
+
+
+
+
+
+
+
+
+
+
+
+# Function that takes the ISO code of the country and returns the flag URL
+def CountryFlag(isoCode):
+    return f'https://flagcdn.com/w320/{isoCode}.png'
+
+# Endpoint to get the flag URL of a country by its ISO code
+@Main.get("/flag/{isoCode}")
+def get_flag(isoCode: str):
+    flag_url = CountryFlag(isoCode)
+    return {"flag_url": flag_url}
+
+
+
+
+def get_country_name(iso_code):
+    base_url = "https://restcountries.com/v3/alpha/"
+    url = f"{base_url}{iso_code}"
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        country_data = response.json()
+        return {
+            "name": country_data[0]['name']['official'],
+  
+        }
+    else:
+        return {"error": "Country not found"}
+
+# Endpoint to get the name of a country by its ISO code
+@Main.get("/info/{isoCode}")
+def get_flag(isoCode: str):
+    print( get_country_name(isoCode)['name'])
+    return(get_country_name(isoCode)['name'])
+
+
+
+#Function that gets all the countries of the dataframe
+def allCountries_from_DataFrame():
+    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+    countries = DataFrame['country']
+    #cleaning the countries dataframe, dropping the duplicants and removing nan values
+    countriesCleaned = countries.drop_duplicates()
+
+    print('Countries')
+    print ("type of the countries dataframe", type(countriesCleaned))
+    countriesCleaned.to_csv('countries.csv', index=False)
+    print(countriesCleaned)
+
+
+#API that prints the countries of the dataframe
+@Main.get('/AllCountriesfromDataFrame')
+async def CountriesListAPI():    
+    allCountries_from_DataFrame()
+    return("CountriesListAPI")
 
 
 
@@ -403,7 +496,8 @@ async def find_all_industries():
 
     print('Unique sectors ')
     print(unique_sectors)
-    np.savetxt('Unique_sectors.csv', unique_sectors, delimiter=';', fmt='%s')
+    np.savetxt('Unique_sectors.csv', unique_sectors, delimiter=';', fmt='%s', encoding='utf-8')
+
 
 
     unique_industries = DataFrame["industry"].unique()

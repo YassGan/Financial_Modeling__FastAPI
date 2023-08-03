@@ -6,5 +6,5 @@ from typing import Optional
 
 class Industry(BaseModel):
     sectorId: str
-    name: str
-    image: str
+    sector: str
+    Industry:str
