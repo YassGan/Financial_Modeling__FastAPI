@@ -16,6 +16,32 @@ def get_exchange_collection():
 
 
 
+
+
+#find_Country_id_by_name
+def find_Exchange_id_by_name(CPHCode):
+    exchangeCollection=get_exchange_collection()
+    result = exchangeCollection.find_one({
+        'exchangeShortName': CPHCode
+    })
+    
+    if result:
+        return str(result['_id'])
+    else:
+        return "Exchange not found "
+    
+# API that calls the find_Country_id_by_name
+@Exchange.get("/exchangeMongoId/{CPHCode}")
+def get_exchange(CPHCode: str):
+    exchangeid = find_Exchange_id_by_name(CPHCode)
+    return exchangeid
+
+
+
+
+
+
+
 # Function that creates new exchanges in the collection of exchange 
 def creatingExchanges():
     DataFrame = pd.read_csv("data.csv", encoding='utf-8')

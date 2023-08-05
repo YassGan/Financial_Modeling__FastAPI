@@ -71,9 +71,10 @@ def creatingCompanies():
     print(len(DataFrameCleaned))
 
 
+    
 
 
-    print(DataFrameCleaned.columns.tolist())
+
 
 
 

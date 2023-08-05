@@ -26,6 +26,29 @@ def get_subregion_collection():
     return db["subregions"]    
 
 
+#find_Country_id_by_name
+def find_Country_id_by_name(isoCode):
+    countriesCollection=get_countries_collection()
+    result = countriesCollection.find_one({
+        'country': isoCode
+    })
+    
+    if result:
+        return str(result['_id'])
+    else:
+        return "not found "
+    
+# API that calls the find_Country_id_by_name
+@Country.get("/countryMongoId/{isoCode}")
+def get_country(isoCode: str):
+    countryid = find_Country_id_by_name(isoCode)
+    return countryid
+
+
+
+
+
+
 
 # Function that creates subregions
 def CreatingSubregion():
@@ -78,6 +101,36 @@ async def AllSubregions_API():
 
 
    
+
+
+
+
+#find_Country_id_by_name
+def find_subregion_id_by_name(subregionName):
+
+    subregionCollection=get_subregion_collection()
+    result = subregionCollection.find_one({
+        'subregion': subregionName
+    })
+    
+    if result:
+        return str(result['_id'])
+    else:
+        return "subregion not found "
+    
+# API that calls the find_Country_id_by_name
+@Country.get("/subregionMongoId/{subregion}")
+def get_subregion(subregion: str):
+    subregionid = find_subregion_id_by_name(subregion)
+    return subregionid
+
+
+
+
+
+
+
+
 
 
 

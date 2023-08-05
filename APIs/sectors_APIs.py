@@ -29,6 +29,39 @@ def get_sector_collection():
 
 
 
+#find_Country_id_by_name
+def find_sector_id_by_name(sectorName):
+
+    sectorsCollection=get_sector_collection()
+    result = sectorsCollection.find_one({
+        'name': sectorName
+    })
+    
+    if result:
+        return str(result['_id'])
+    else:
+        return "sector not found "
+    
+# API that calls the find_Country_id_by_name
+@Sector.get("/sectorMongoId/{sectorName}")
+def get_sector(sectorName: str):
+    sectorid = find_sector_id_by_name(sectorName)
+    return sectorid
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Function that creates new sectors in the database from a dataFrame
 def create_sectors_from_dataframe(DataF):
     start_time = time.time()
