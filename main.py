@@ -4,16 +4,29 @@ from fastapi import FastAPI
 
 
 
-# from APIs.Industry_endpoint import End 
-# from APIs.endpoint1 import router 
-# from APIs.Industries_API import industry 
-from APIs.mainAPIs import Main 
 
+from APIs.mainAPIs import Main 
+from APIs.countries_APIs import Country 
+from APIs.exchange_APIs import Exchange 
+from APIs.utilsFunctionalitites_APIs import UtilsFunc 
+from APIs.sectors_APIs import Sector 
+from APIs.companies_APIs import Company 
+
+from APIs.Industries_APIs import Industry 
+
+import APIs.TasksScheduler 
 
 
 app = FastAPI()
-# app.include_router(industry)
-# app.include_router(router)
-# app.include_router(End)
+
 
 app.include_router(Main)
+app.include_router(Country)
+app.include_router(Exchange)
+app.include_router(UtilsFunc)
+app.include_router(Sector)
+app.include_router(Industry)
+
+app.include_router(Company)
+
+
