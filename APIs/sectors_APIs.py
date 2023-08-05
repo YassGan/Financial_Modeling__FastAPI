@@ -1,7 +1,7 @@
 
 from fastapi import APIRouter,Response
 from models.Sector import Sector 
-
+from schemas.Sector import serializeList2
 from config.db import get_database 
 
 

@@ -14,6 +14,14 @@ import requests
 
 import time
 
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
+
+api_key = os.getenv("API_KEY")
+
+
 
 Company=APIRouter()
 
@@ -23,7 +31,7 @@ Company=APIRouter()
 
 # Function to fetch comany's data from the API by its symbol
 def fetch_data_from_api_bySymbol(Symbol):
-    api_url = f"https://financialmodelingprep.com/api/v3/profile/{Symbol}?apikey=96051dba5181978c2f0ce23c1ef4014b"
+    api_url = f"https://financialmodelingprep.com/api/v3/profile/{Symbol}?apikey={api_key}"
     response = requests.get(api_url)
     return response.json()
 

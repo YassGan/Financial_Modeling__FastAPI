@@ -3,7 +3,12 @@ from config.db import get_database
 import pandas as pd
 import numpy as np
 import requests
+from dotenv import load_dotenv
+load_dotenv()
 
+import os
+
+api_key = os.getenv("API_KEY")
 UtilsFunc=APIRouter()
 
 
@@ -56,8 +61,11 @@ def download_csv_from_url(url, file_path):
 #API that once is launched it downloads the csv file from the online api of the modeling website    
 @UtilsFunc.get('/download_csv')
 async def download_csv():
-    url = "https://financialmodelingprep.com/api/v4/profile/all?apikey=96051dba5181978c2f0ce23c1ef4014b"
-    file_path = "data.csv"  
+            # url = f"https://financialmodelingprep.com/api/v3/profile/{Symbol}?apikey={api_key}"
+
+    url = f"https://financialmodelingprep.com/api/v4/profile/all?apikey={api_key}"
+    print(url)
+    file_path = "dataBulkuuu.csv"  
 
     success = download_csv_from_url(url, file_path)
     if success:
@@ -94,7 +102,7 @@ def create_csv_with_first_elements(Number,input_file_path, output_file_path):
 
 
 # API that launches the create_csv_with_first_elements function
-@UtilsFunc.post('/create_csv_with_first_elements/{Number}')
+@UtilsFunc.get('/create_csv_with_first_elements/{Number}')
 async def create_csv_endpoint(Number: int):
     input_file_path = "data.csv"
     output_file_path = "data_with_17.csv"
