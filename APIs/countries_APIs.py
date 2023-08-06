@@ -126,7 +126,27 @@ def get_subregion(subregion: str):
 
 
 
+#find_Country_id_by_name
+def find_subregion_id_by_Countryname(countryName):
+    countryNameMajus=countryName.upper()
 
+    subregionCollection=get_countries_collection()
+    result = subregionCollection.find_one({
+        'country': countryNameMajus
+    })
+    
+    if result:
+        return str(result['_id'])
+    else:
+        return "subregion not found "
+    
+# API that calls the find_Country_id_by_name
+@Country.get("/subregionMongoIdbyCountry/{countryName}")
+def get_subregion(countryName: str):
+    countryNameMajus=countryName.upper()
+
+    subregionid = find_subregion_id_by_Countryname(countryNameMajus)
+    return subregionid
 
 
 
@@ -162,7 +182,6 @@ def get_country_name(iso_code):
 # Endpoint to get the name of a country by its ISO code
 @Country.get("/countryName/{isoCode}")
 def get_CountryOfficialName(isoCode: str):
-    print( get_country_name(isoCode))
     return(get_country_name(isoCode))
 
 
@@ -183,7 +202,6 @@ def get_country_currency(iso_code):
 # Endpoint to get the name of a country by its ISO code
 @Country.get("/countryCurrency/{isoCode}")
 def get_CountryCurrency(isoCode: str):
-    print( get_country_currency(isoCode))
     return(get_country_currency(isoCode))
 
 
