@@ -3,6 +3,7 @@ from fastapi import APIRouter,Response
 from schemas.Industry import serializeList
 import pandas as pd
 import requests
+import os
 
 Country=APIRouter()
 
@@ -52,7 +53,8 @@ def get_country(isoCode: str):
 
 # Function that creates subregions
 def CreatingSubregion():
-    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
     DataFrame_Countries = DataFrame[['country']]  
 
     DataFrame_Countries=DataFrame_Countries.drop_duplicates()
@@ -71,11 +73,19 @@ def CreatingSubregion():
 
             if new_subregions_to_create:
                 get_subregion_collection().insert_many(new_subregions_to_create)
-                print (f"- {len(new_subregions_to_create)} new subregions created successfully.")
+                print (f"---------->  {len(new_subregions_to_create)} new subregions created successfully.")
             else:
-                print( "- No new subregions to create.")
+                print( "---------> No new subregions to create.")
+                print( "---------> No new subregions to create.")
+
+
     else:
-            print( "- No new subregions to create.")
+            print( "---------> No new subregions to create.")
+            print( "---------> No new subregions to create.")
+            print( "---------> No new subregions to create.")
+
+    
+
 
 
 
@@ -156,8 +166,17 @@ def get_subregion(countryName: str):
 
 # Function that takes the ISO code of the country and returns the flag URL
 def CountryFlag(isoCode):
-    lowerIsoCode=isoCode.lower()
-    return f'https://flagcdn.com/w320/{lowerIsoCode}.png'
+
+    if isinstance(isoCode, str):
+        lowerIsoCode=isoCode.lower()
+        return f'https://flagcdn.com/w320/{lowerIsoCode}.png'
+    else:
+        # Handle cases when isoCode is not a string (e.g., it's a float or NaN)
+        return "No"  # Or return a default flag or handle the case accordingly
+
+
+
+
 
 # Endpoint to get the flag URL of a country by its ISO code
 @Country.get("/flag/{isoCode}")
@@ -253,14 +272,15 @@ def get_CountrySubRegion(isoCode: str):
 
 #Function that gets all the countries of the dataframe and insert them in the database with a url of thier flag and their official name
 def CreatingCountries():
-    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
     #cleaning the information of the countries (dropping duplicants, removing empty values) 
     Uniquecountries = DataFrame['country'].drop_duplicates()
     UniquecountriesDF=Uniquecountries.to_frame()
     UniquecountriesDF.dropna(inplace=True)
-    print("CleanedCountriesInformation")
-    print(UniquecountriesDF)
+    # print("CleanedCountriesInformation")
+    # print(UniquecountriesDF)
 
     # Adding the columns of the official name of the country as well as its flag
     UniquecountriesDF['official_name'] = UniquecountriesDF['country'].apply(get_country_name)
@@ -286,12 +306,12 @@ def CreatingCountries():
                     "subregion": row['subregion'],
                     "subregionId":sector_obj['_id']
                 })
-    print("->->->->->->->->")
-    print(UniquecountriesList)
+    # print("->->->->->->->->")
+    # print(UniquecountriesList)
 
     UniquecountriesDF=pd.DataFrame(UniquecountriesList)
-    print("->->->->->->->->")
-    print(UniquecountriesDF)
+    # print("->->->->->->->->")
+    # print(UniquecountriesDF)
 
 
     if not UniquecountriesDF.empty:
@@ -302,11 +322,20 @@ def CreatingCountries():
 
         if new_countries_to_create:
             get_countries_collection().insert_many(new_countries_to_create)
-            print( f"- {len(new_countries_to_create)} new countries created successfully.")
+            print( f"------------> {len(new_countries_to_create)} new countries created successfully.")
         else:
             print( "- No new countries to create.")
+            print( "-----------------> No new countries to create.")
+            print( "-----------------> No new countries to create.")
+
     else:
-        print( "- No new countries to create.")
+        print( "-----------------> No new countries to create.")
+        print( "-----------------> No new countries to create.")
+        print( "-----------------> No new countries to create.")
+    
+
+
+
     
 
 

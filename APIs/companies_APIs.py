@@ -79,28 +79,28 @@ def getCompanyPeersBySymbol(Symbol: str):
 
 #Function to see more the dataframe of the csv file 
 def creatingCompanies():
-    DataFrame = pd.read_csv("data_with_17.csv", encoding='utf-8')
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
 
     # cleaning the dataframe
     DataFrameCompanies=DataFrame
-    print("Longueur de la dataframe avant de lui associer la drop duplicates ")
-    print(len(DataFrameCompanies))
+    # print("Longueur de la dataframe avant de lui associer la drop duplicates ")
+    # print(len(DataFrameCompanies))
 
     #removing duplicate elements of the dataframe
-    print("Longueur de la dataframe après la drop duplicates ")
+    # print("Longueur de la dataframe après la drop duplicates ")
     DataFrameCleaned=DataFrameCompanies.drop_duplicates(subset='companyName')
-    print(len(DataFrameCleaned))
+    # print(len(DataFrameCleaned))
 
     # removing nan elements
-    print("Longueur de la dataframe après le remove des nan et des empty elements ")
+    # print("Longueur de la dataframe après le remove des nan et des empty elements ")
     DataFrameCleaned=DataFrameCleaned.dropna(subset='companyName')
-    print(len(DataFrameCleaned))
+    # print(len(DataFrameCleaned))
 
     #removing elements that have false isEtf
     DataFrameCleaned = DataFrameCleaned[(DataFrameCleaned['isEtf']==False) & (DataFrameCleaned['isAdr']==False) & (DataFrameCleaned['isFund']==False) ]
-    print("Longueur de la dataframe après lui accorder les valeurs nécessaires ")
-    print(len(DataFrameCleaned))
+    # print("Longueur de la dataframe après lui accorder les valeurs nécessaires ")
+    # print(len(DataFrameCleaned))
     CompaniesSymbols=DataFrameCleaned['Symbol']
 
     CompaniesSymbols = CompaniesSymbols.to_frame()
@@ -121,11 +121,11 @@ def creatingCompanies():
         existing_company = get_companies_collection().find_one({"symbol": symbol})
         
         if existing_company:
-            print("------- >  Company with symbol", symbol, "already exists ")
+            print(i,"/",len(companiesSymbolsList)-1,"-x-x-x-x-x-- >  Company with symbol <<", symbol, " >> already exists ")
         else:
             CompanyInfo_fromAPI = fetch_data_from_api_bySymbol(symbol)[0]
 
-            print("Treating the company ", symbol)
+            print(i,"/",len(companiesSymbolsList)-1,"->->->->->-> >Treating the company << ", symbol,' >>')
             get_companies_collection().insert_one({
                 "sectorId": find_sector_id_by_name(CompanyInfo_fromAPI['sector']),
                 "subregionId": find_subregion_id_by_Countryname(CompanyInfo_fromAPI['country']),

@@ -4,6 +4,7 @@ from models.Sector import Sector
 from schemas.Sector import serializeList2
 from config.db import get_database 
 
+import os
 
 
 import pandas as pd
@@ -63,18 +64,21 @@ def get_sector(sectorName: str):
 
 
 # Function that creates new sectors in the database from a dataFrame
-def create_sectors_from_dataframe(DataF):
+def create_sectors_from_dataframe():
+
+    DataF = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+
     start_time = time.time()
     DataF.dropna(subset=['sector'], inplace=True)
 
     # Get the unique values of the "Sector" column
     Sector_variables = DataF["sector"].unique()
-    print("Time taken for creating DataFrame:", time.time() - start_time, "seconds")
+    # print("Time taken for creating DataFrame:", time.time() - start_time, "seconds")
 
     # Convert the NumPy array to a DataFrame
     sector_df = pd.DataFrame(Sector_variables, columns=["name"])
-    print('The type of the sector_df variable is', type(sector_df))
-    print(sector_df)
+    # print('The type of the sector_df variable is', type(sector_df))
+    # print(sector_df)
 
     if not DataF.empty:
         # Convert the DataFrame to a dictionary with "records" orientation
@@ -85,17 +89,25 @@ def create_sectors_from_dataframe(DataF):
 
         if new_sectors_to_create:
             get_sector_collection().insert_many(new_sectors_to_create)
-            return f"- {len(new_sectors_to_create)} new sectors created successfully."
+            print (f"--------------------- > {len(new_sectors_to_create)} new sectors created successfully.")
         else:
-            return "- No new sectors to create."
+            print ("- No new sectors to create.")
+            print( "----------------------> No new sectors to create.")
+            print( "----------------------> No new sectors to create.")
     else:
-        return "- No new sectors to create."
+        print( "----------------------> No new sectors to create.")
+        print( "----------------------> No new sectors to create.")
+        print( "----------------------> No new sectors to create.")
+
+
+
+
 
 
 # API that creates new sectors from the DataFrame 
 @Sector.get('/CreateSectorsFromDataFrame')
 async def create_sectors_api():
-    DataF = pd.read_csv("data.csv", encoding='utf-8')
+    DataF = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
     result = create_sectors_from_dataframe(DataF)
     if "new sectors created successfully" in result:
         return Response(status_code=201, content=result)

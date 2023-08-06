@@ -22,7 +22,7 @@ UtilsFunc=APIRouter()
 async def Read_CSV():
     #Reading the csv file 
     global DataFrame
-    DataFrame = pd.read_csv("output_csv_file.csv", encoding='utf-8')
+    DataFrame = pd.read_csv(os.getenv("OUTPUT_CSV_FILE"), encoding='utf-8')
     print('Printing Data Frame ------------')
     print(DataFrame)
     print('Printing Data Frame ------------')
@@ -65,7 +65,7 @@ async def download_csv():
 
     url = f"https://financialmodelingprep.com/api/v4/profile/all?apikey={api_key}"
     print(url)
-    file_path = "dataBulkuuu.csv"  
+    file_path = os.getenv("CSV_FILE") 
 
     success = download_csv_from_url(url, file_path)
     if success:
@@ -104,8 +104,8 @@ def create_csv_with_first_elements(Number,input_file_path, output_file_path):
 # API that launches the create_csv_with_first_elements function
 @UtilsFunc.get('/create_csv_with_first_elements/{Number}')
 async def create_csv_endpoint(Number: int):
-    input_file_path = "data.csv"
-    output_file_path = "data_with_17.csv"
+    input_file_path = 'data.csv' 
+    output_file_path = os.getenv("SMALL_OUTPUT_CSV_FILE") 
 
     result = create_csv_with_first_elements(Number, input_file_path, output_file_path)
 
@@ -119,7 +119,7 @@ async def create_csv_endpoint(Number: int):
 # API that creates a json file from a dataframe, but the csv file should be read first
 @UtilsFunc.get('/DownloadFirstElemAsJson/{Number}')
 async def download_first_10_as_json(Number: int):
-    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
     first_10_df = DataFrame.head(Number)  
     json_data = first_10_df.to_json(orient='records', lines=True) 
@@ -140,7 +140,7 @@ async def download_first_10_as_json(Number: int):
 
 @UtilsFunc.get('/PrintingDataFrame')
 async def find_all_industries():
-    DataFrame = pd.read_csv("data.csv", encoding='utf-8')
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
     # Si vous souhaitez compter le nombre de duplications
     count_duplicates = DataFrame.duplicated().sum()
     unique_combinations = DataFrame[['industry', 'sector']]
