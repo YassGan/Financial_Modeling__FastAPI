@@ -13,6 +13,7 @@ from APIs.countries_APIs import find_subregion_id_by_Countryname
 
 from typing import List, Optional
 
+from APIs.countries_APIs import find_subregion_id_by_name 
 
 
 import pandas as pd
@@ -163,11 +164,19 @@ async def CompaniesCreation():
 
 
 
+
+
+
+
 from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
 @Company.get("/filterCompanies")
 async def filter_companies(name: str = Query(None, title="Company Name"),
-                           sector: str = Query(None, title="Sector")):
+                           sector: str = Query(None, title="Sector"),
+                           industry: str = Query(None, title="Industry"),
+                           subregion: str = Query(None, title="Subregion"),
+                           country: str = Query(None, title="Country"),                          
+                           keywords: str = Query(None, title="Keywords")):
     filters = {}
     
     if name:
@@ -176,6 +185,23 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
     if sector:
         filters["sector"] = sector
     
+    if industry:
+        filters["industry"] = industry
+    
+    if subregion:
+        filters["subregion"] = subregion
+    
+    if country:
+        filters["country"] = country
+
+    if keywords:
+        description_keyword_regex = f".*{keywords}.*"
+        filters["description"] = {"$regex": description_keyword_regex, "$options": "i"}
+
+        
+
+
+
     companies_collection = get_companies_collection()
 
     filtered_companies = list(companies_collection.find(filters))
@@ -187,6 +213,4 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
             del company["_cls"]  # Remove non-serializable field
     
     return filtered_companies
-
-
 
