@@ -163,7 +163,7 @@ async def CompaniesCreation():
 
 
 
-
+from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
 @Company.get("/filterCompanies")
 async def filter_companies(name: str = Query(None, title="Company Name"),
@@ -177,10 +177,16 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
         filters["sector"] = sector
     
     companies_collection = get_companies_collection()
+
     filtered_companies = list(companies_collection.find(filters))
-    print(filtered_companies)
     
-    return "filtered_companies"
+    # Convert ObjectId to string and remove non-serializable fields
+    for company in filtered_companies:
+        company["_id"] = str(company["_id"])  # Convert ObjectId to string
+        if "_cls" in company:
+            del company["_cls"]  # Remove non-serializable field
+    
+    return filtered_companies
 
 
 
