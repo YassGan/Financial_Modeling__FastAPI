@@ -214,3 +214,23 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
     
     return filtered_companies
 
+
+
+
+
+
+@Company.get("/autocompleteCompanyName")
+async def autocomplete_company_name(query: str):
+    if not query:
+        return []
+
+    regex_pattern = f".*{query}.*"
+    filters = {"companyName": {"$regex": regex_pattern, "$options": "i"}}
+
+    companies_collection = get_companies_collection()
+    matching_companies = list(companies_collection.find(filters, {"companyName": 1}))
+
+    autocomplete_results = [company["companyName"] for company in matching_companies]
+
+    return autocomplete_results
+
