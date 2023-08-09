@@ -1,6 +1,6 @@
 
 
-from fastapi import APIRouter,Response
+from fastapi import APIRouter,Response,Query
 from models.Sector import Sector 
 
 from config.db import get_database 
@@ -10,6 +10,8 @@ from APIs.exchange_APIs import find_Exchange_id_by_name
 
 from APIs.countries_APIs import find_Country_id_by_name  
 from APIs.countries_APIs import find_subregion_id_by_Countryname  
+
+from typing import List, Optional
 
 
 
@@ -152,15 +154,33 @@ def creatingCompanies():
 
 
 
-       
-
-
-
-
 
 # API that launches the function creatingExchanges
 @Company.get('/creatingCompanies')
 async def CompaniesCreation():    
     creatingCompanies()
     return("csv_file Len API ")
+
+
+
+
+# API endpoint to filter companies based on name and sector
+@Company.get("/filterCompanies")
+async def filter_companies(name: str = Query(None, title="Company Name"),
+                           sector: str = Query(None, title="Sector")):
+    filters = {}
+    
+    if name:
+        filters["companyName"] = name
+    
+    if sector:
+        filters["sector"] = sector
+    
+    companies_collection = get_companies_collection()
+    filtered_companies = list(companies_collection.find(filters))
+    print(filtered_companies)
+    
+    return "filtered_companies"
+
+
 
