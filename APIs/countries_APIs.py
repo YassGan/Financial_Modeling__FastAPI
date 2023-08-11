@@ -5,6 +5,13 @@ import pandas as pd
 import requests
 import os
 
+
+import asyncio
+import aiohttp
+
+
+
+
 Country=APIRouter()
 
 
@@ -18,13 +25,26 @@ async def Hello_countryPage():
 
 def get_countries_collection():
     db = get_database()
-    return db["countries"]
+
+    countries=db["countries"]  
+    countries.create_index([("country", 1)], unique=True)
+    return countries
+
+
+
+
 
 
 
 def get_subregion_collection():
     db = get_database()
-    return db["subregions"]    
+    subregions=db["subregions"]  
+    subregions.create_index([("subregion", 1)], unique=True)
+    return subregions
+
+
+
+
 
 
 #find_Country_id_by_name
@@ -55,9 +75,15 @@ def get_country(isoCode: str):
 def CreatingSubregion():
 
     DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+    # Replace 'UK' with 'GB' in the 'country' column
+    DataFrame['country'] = DataFrame['country'].replace('UK', 'GB')
     DataFrame_Countries = DataFrame[['country']]  
 
     DataFrame_Countries=DataFrame_Countries.drop_duplicates()
+    DataFrame_Countries.dropna(inplace=True)
+
+    print(len(DataFrame_Countries))
+
 
     DataFrame_Countries['subregion']=DataFrame_Countries['country'].apply(get_country_Subregion)
     DataFrame_Subregion=pd.DataFrame()
@@ -110,7 +136,15 @@ async def AllSubregions_API():
     return gettingAllSubregions()
 
 
-   
+# Function that returns all the subregions from the database
+def gettingAllCountries():
+    return serializeList(get_countries_collection().find())
+
+
+#API to get all the AllSubregions from the database
+@Country.get('/AllCountries')
+async def AllCountries_API():
+    return gettingAllCountries()
 
 
 
@@ -149,6 +183,8 @@ def find_subregion_id_by_Countryname(countryName):
         return str(result['_id'])
     else:
         return "subregion not found "
+    
+
     
 # API that calls the find_Country_id_by_name
 @Country.get("/subregionMongoIdbyCountry/{countryName}")
@@ -250,6 +286,7 @@ def get_CountryRegion(isoCode: str):
 
 #function that returns the region name of a country by its isoCode
 def get_country_Subregion(iso_code):
+
     url = f"https://restcountries.com/v2/alpha/{iso_code}"
     response = requests.get(url)
     
@@ -258,6 +295,10 @@ def get_country_Subregion(iso_code):
         return country_data['subregion']
     else:
         return "Country not found"
+    
+
+
+
 
 # Endpoint to get the region of a country by its ISO code
 @Country.get("/countrySubRegion/{isoCode}")
@@ -267,28 +308,38 @@ def get_CountrySubRegion(isoCode: str):
 
 
 
-
+from multiprocessing import Pool
 
 
 #Function that gets all the countries of the dataframe and insert them in the database with a url of thier flag and their official name
 def CreatingCountries():
 
     DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+    DataFrame['country'] = DataFrame['country'].replace('UK', 'GB')
 
     #cleaning the information of the countries (dropping duplicants, removing empty values) 
     Uniquecountries = DataFrame['country'].drop_duplicates()
+
     UniquecountriesDF=Uniquecountries.to_frame()
+    
     UniquecountriesDF.dropna(inplace=True)
+    # Replace 'UK' with 'GB' in the 'country' column
+
     # print("CleanedCountriesInformation")
     # print(UniquecountriesDF)
 
-    # Adding the columns of the official name of the country as well as its flag
-    UniquecountriesDF['official_name'] = UniquecountriesDF['country'].apply(get_country_name)
-    UniquecountriesDF['flag']=UniquecountriesDF['country'].apply(get_flag)
-    UniquecountriesDF['currency']=UniquecountriesDF['country'].apply(get_country_currency)
-    UniquecountriesDF['region']=UniquecountriesDF['country'].apply(get_country_region)
-    UniquecountriesDF['subregion']=UniquecountriesDF['country'].apply(get_country_Subregion)
 
+
+# Working with Pool for parallelism to make things turn faster
+    with Pool(processes=4) as pool:
+        UniquecountriesDF['official_name'] = pool.map(get_country_name, UniquecountriesDF['country'])
+        UniquecountriesDF['flag'] = pool.map(get_flag, UniquecountriesDF['country'])
+        UniquecountriesDF['currency'] = pool.map(get_country_currency, UniquecountriesDF['country'])
+        UniquecountriesDF['region'] = pool.map(get_country_region, UniquecountriesDF['country'])
+        UniquecountriesDF['subregion'] = pool.map(get_country_Subregion, UniquecountriesDF['country'])
+
+
+ 
 
     sectors=gettingAllSubregions()
     UniquecountriesList=[]

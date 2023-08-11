@@ -8,18 +8,26 @@ from APIs.Industries_APIs import create_new_industries
 
 from APIs.companies_APIs import creatingCompanies
 
-
+import time
 
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
 def run_job():
 
+
+
+    start_time_create_sectors_from_dataframe = time.time()
+
     print("")
     print("->->->->->->->->-> Beggining of the create_sectors_from_dataframe Function -<-<-<-<-<-<-<-<-<")
     create_sectors_from_dataframe()
-    print("->->->->->->->->-> Finishing of the create_sectors_from_dataframe Function -<-<-<-<-<-<-<-<-<")
+    # print("->->->->->->->->-> Finishing of the create_sectors_from_dataframe Function -<-<-<-<-<-<-<-<-<")
     print("")
+    end_time_create_sectors_from_dataframe = time.time()
+
+    elapsed_time_create_sectors_from_dataframe = end_time_create_sectors_from_dataframe - start_time_create_sectors_from_dataframe
+    print("->->->->->->->->->Finishing of the create_sectors_from_dataframe Function Elapsed time: %.2f seconds" % elapsed_time_create_sectors_from_dataframe)
 
 
 

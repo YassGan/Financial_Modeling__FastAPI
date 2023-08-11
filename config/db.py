@@ -11,15 +11,20 @@ DATABASE_NAME = "Financial_Meta_ModelingDB"
 # mongodb+srv://financialmetamodeling:financialmetamodeling@cluster0.h6y69zd.mongodb.net/Financial_Meta_ModelingDB?retryWrites=true&w=majority
 
 MONGO_CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER_NAME}.h6y69zd.mongodb.net/{DATABASE_NAME}?retryWrites=true&w=majority"
-
-
-
+client = MongoClient(MONGO_CONNECTION_STRING, maxPoolSize=10)
+#Using connection Pooling to reuse established connections instead of creating a new connection every time. This can significantly reduce connection overhead.
 def get_database() -> Database:
     try:
-        client = MongoClient(MONGO_CONNECTION_STRING)
+        import time
+        start_time = time.time()
         db = client.get_database()
-        print("Successfully connected to the database.")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print("Successfully connected to the database. Elapsed time: %.2f seconds" % elapsed_time)
         return db
     except Exception as e:
         print(f"Error connecting to the database: {e}")
         raise
+
+
+

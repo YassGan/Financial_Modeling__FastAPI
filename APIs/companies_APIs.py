@@ -5,6 +5,9 @@ from models.Sector import Sector
 
 from config.db import get_database 
 
+from schemas.Industry import serializeList
+
+
 from APIs.sectors_APIs import find_sector_id_by_name
 from APIs.exchange_APIs import find_Exchange_id_by_name
 
@@ -38,6 +41,24 @@ Company=APIRouter()
 def get_companies_collection():
     db = get_database()
     return db["companies"]
+
+
+
+
+
+def gettingAllCompanies():
+    companies = serializeList(get_companies_collection().find())
+    num_companies = len(companies)
+    print(f"Number of companies: {num_companies}")
+    return companies
+
+# API to get all the AllSubregions from the database
+@Company.get('/AllCompanies')
+async def AllCompanies_API():
+    companies = gettingAllCompanies()
+    return companies
+
+
 
 
 
@@ -115,42 +136,37 @@ def creatingCompanies():
 
     for index, row in CompaniesSymbols.iterrows():
         companiesSymbolsList.append(row)
-
-
-    
-
-    for i in range(len(companiesSymbolsList)-1):
-        symbol = companiesSymbolsList[i]['Symbol']
-        existing_company = get_companies_collection().find_one({"symbol": symbol})
         
-        if existing_company:
-            print(i,"/",len(companiesSymbolsList)-1,"-x-x-x-x-x-- >  Company with symbol <<", symbol, " >> already exists ")
-        else:
-            CompanyInfo_fromAPI = fetch_data_from_api_bySymbol(symbol)[0]
+    for i in range(len(companiesSymbolsList) - 1):
+            symbol = companiesSymbolsList[i]['Symbol']
+            existing_company = get_companies_collection().find_one({"symbol": symbol})
+            
+            if existing_company:
+                print(i, "/", len(companiesSymbolsList) - 1, "-> Company with symbol <<", symbol, ">> already exists")
+            else:
+                CompanyInfo_fromAPI = fetch_data_from_api_bySymbol(symbol)[0]
 
-            print(i,"/",len(companiesSymbolsList)-1,"->->->->->-> >Treating the company << ", symbol,' >>')
-            get_companies_collection().insert_one({
-                "sectorId": find_sector_id_by_name(CompanyInfo_fromAPI['sector']),
-                "subregionId": find_subregion_id_by_Countryname(CompanyInfo_fromAPI['country']),
-                "countryId": find_Country_id_by_name(CompanyInfo_fromAPI['country']),
-                "exchangeId": find_Exchange_id_by_name(CompanyInfo_fromAPI['exchangeShortName']),
+                print(i, "/", len(companiesSymbolsList) - 1, "-> Treating the company <<", symbol, ">>")
+                get_companies_collection().insert_one({
+                    "sectorId": find_sector_id_by_name(CompanyInfo_fromAPI['sector']),
+                    "subregionId": find_subregion_id_by_Countryname(CompanyInfo_fromAPI['country']),
+                    "countryId": find_Country_id_by_name(CompanyInfo_fromAPI['country']),
+                    "exchangeId": find_Exchange_id_by_name(CompanyInfo_fromAPI['exchangeShortName']),
 
-                "companyName": CompanyInfo_fromAPI['companyName'],
-                "symbol": symbol,
-                "ipoDate": CompanyInfo_fromAPI['ipoDate'],
-                "isin": CompanyInfo_fromAPI['isin'],
-                "exchange": CompanyInfo_fromAPI['exchange'],
-                "exchangeShortName": CompanyInfo_fromAPI['exchangeShortName'],
-                "industry": CompanyInfo_fromAPI['industry'],
-                "sector": CompanyInfo_fromAPI['sector'],
-                "website": CompanyInfo_fromAPI['website'],
-                "description": CompanyInfo_fromAPI['description'],
-                "country": CompanyInfo_fromAPI['country'],
-                "image": CompanyInfo_fromAPI['image'],
-                "peers": CompanyPeers(CompanyInfo_fromAPI['symbol'])
-            })
-
-
+                    "companyName": CompanyInfo_fromAPI['companyName'],
+                    "symbol": symbol,
+                    "ipoDate": CompanyInfo_fromAPI['ipoDate'],
+                    "isin": CompanyInfo_fromAPI['isin'],
+                    "exchange": CompanyInfo_fromAPI['exchange'],
+                    "exchangeShortName": CompanyInfo_fromAPI['exchangeShortName'],
+                    "industry": CompanyInfo_fromAPI['industry'],
+                    "sector": CompanyInfo_fromAPI['sector'],
+                    "website": CompanyInfo_fromAPI['website'],
+                    "description": CompanyInfo_fromAPI['description'],
+                    "country": CompanyInfo_fromAPI['country'],
+                    "image": CompanyInfo_fromAPI['image'],
+                    "peers": CompanyPeers(CompanyInfo_fromAPI['symbol'])
+                })
 
 
 
@@ -170,6 +186,7 @@ async def CompaniesCreation():
 
 from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
+# Example how to use this api http://localhost:8000/filterCompanies?country=SE&sector=Healthcare
 @Company.get("/filterCompanies")
 async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
@@ -218,7 +235,7 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
 
 
 
-
+# example how to use this api  http://localhost:8000/autocompleteCompanyName?query=Ge
 @Company.get("/autocompleteCompanyName")
 async def autocomplete_company_name(query: str):
     if not query:
