@@ -23,17 +23,19 @@ Sector=APIRouter()
 
 def get_sector_collection():
     db = get_database()
-    return db["sectors"]
+    sectors=db["sectors"]  
+    sectors.create_index([("name", 1)], unique=True)
+    return sectors
 
 
 
 
+sectorsCollection=get_sector_collection()
 
 
 #find_Country_id_by_name
 def find_sector_id_by_name(sectorName):
 
-    sectorsCollection=get_sector_collection()
     result = sectorsCollection.find_one({
         'name': sectorName
     })

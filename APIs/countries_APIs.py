@@ -30,6 +30,7 @@ def get_countries_collection():
     countries.create_index([("country", 1)], unique=True)
     return countries
 
+countriesCollection=get_countries_collection()
 
 
 
@@ -49,7 +50,6 @@ def get_subregion_collection():
 
 #find_Country_id_by_name
 def find_Country_id_by_name(isoCode):
-    countriesCollection=get_countries_collection()
     result = countriesCollection.find_one({
         'country': isoCode
     })
@@ -174,8 +174,7 @@ def get_subregion(subregion: str):
 def find_subregion_id_by_Countryname(countryName):
     countryNameMajus=countryName.upper()
 
-    subregionCollection=get_countries_collection()
-    result = subregionCollection.find_one({
+    result = countriesCollection.find_one({
         'country': countryNameMajus
     })
     
@@ -310,81 +309,84 @@ def get_CountrySubRegion(isoCode: str):
 
 from multiprocessing import Pool
 
+import time
 
-#Function that gets all the countries of the dataframe and insert them in the database with a url of thier flag and their official name
 def CreatingCountries():
+    start_time_total = time.time()
 
     DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
     DataFrame['country'] = DataFrame['country'].replace('UK', 'GB')
 
-    #cleaning the information of the countries (dropping duplicants, removing empty values) 
+    # Cleaning the information of the countries (dropping duplicates, removing empty values) 
     Uniquecountries = DataFrame['country'].drop_duplicates()
 
-    UniquecountriesDF=Uniquecountries.to_frame()
-    
+    UniquecountriesDF = Uniquecountries.to_frame()
     UniquecountriesDF.dropna(inplace=True)
+
     # Replace 'UK' with 'GB' in the 'country' column
 
-    # print("CleanedCountriesInformation")
-    # print(UniquecountriesDF)
-
-
-
-# Working with Pool for parallelism to make things turn faster
+    # Working with Pool for parallelism to make things turn faster
     with Pool(processes=4) as pool:
+        start_time_pool = time.time()
+
         UniquecountriesDF['official_name'] = pool.map(get_country_name, UniquecountriesDF['country'])
         UniquecountriesDF['flag'] = pool.map(get_flag, UniquecountriesDF['country'])
         UniquecountriesDF['currency'] = pool.map(get_country_currency, UniquecountriesDF['country'])
         UniquecountriesDF['region'] = pool.map(get_country_region, UniquecountriesDF['country'])
         UniquecountriesDF['subregion'] = pool.map(get_country_Subregion, UniquecountriesDF['country'])
 
+        end_time_pool = time.time()
+        elapsed_time_pool = end_time_pool - start_time_pool
+        print(f"Time spent in Pool: {elapsed_time_pool:.2f} seconds")
 
- 
-
-    sectors=gettingAllSubregions()
-    UniquecountriesList=[]
+    sectors = gettingAllSubregions()
+    UniquecountriesList = []
 
     for index, row in UniquecountriesDF.iterrows():
+        start_time_row = time.time()
+
         subregion_name = row['subregion']
         for sector_obj in sectors:
             if sector_obj['subregion'] == subregion_name:
                 UniquecountriesList.append({
                     "official_name": row['official_name'],
                     "flag": row['flag'],
-                    "country":row['country'],
+                    "country": row['country'],
                     "currency": row['currency'],
                     "region": row['region'],
                     "subregion": row['subregion'],
-                    "subregionId":sector_obj['_id']
+                    "subregionId": sector_obj['_id']
                 })
-    # print("->->->->->->->->")
-    # print(UniquecountriesList)
 
-    UniquecountriesDF=pd.DataFrame(UniquecountriesList)
-    # print("->->->->->->->->")
-    # print(UniquecountriesDF)
+        end_time_row = time.time()
+        elapsed_time_row = end_time_row - start_time_row
+        print(f"Time spent in processing rows: {elapsed_time_row:.2f} seconds")
 
+    UniquecountriesDF = pd.DataFrame(UniquecountriesList)
 
     if not UniquecountriesDF.empty:
+        start_time_insert = time.time()
+
         new_countries = UniquecountriesDF.to_dict(orient='records')
-        
         existing_countries = set(get_countries_collection().distinct("country"))
         new_countries_to_create = [country for country in new_countries if country["country"] not in existing_countries]
 
         if new_countries_to_create:
             get_countries_collection().insert_many(new_countries_to_create)
-            print( f"------------> {len(new_countries_to_create)} new countries created successfully.")
+            print(f"------------> {len(new_countries_to_create)} new countries created successfully.")
         else:
-            print( "- No new countries to create.")
-            print( "-----------------> No new countries to create.")
-            print( "-----------------> No new countries to create.")
+            print("- No new countries to create.")
+
+        end_time_insert = time.time()
+        elapsed_time_insert = end_time_insert - start_time_insert
+        print(f"Time spent in inserting into MongoDB: {elapsed_time_insert:.2f} seconds")
 
     else:
-        print( "-----------------> No new countries to create.")
-        print( "-----------------> No new countries to create.")
-        print( "-----------------> No new countries to create.")
-    
+        print("- No new countries to create.")
 
+    end_time_total = time.time()
+    elapsed_time_total = end_time_total - start_time_total
+    print(f"Total time: {elapsed_time_total:.2f} seconds")
 
 
     
@@ -396,4 +398,3 @@ def CreatingCountries():
 async def CountriesListAPI():    
     CreatingCountries()
     return("CountriesListAPI")
-

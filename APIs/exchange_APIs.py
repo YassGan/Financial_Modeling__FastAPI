@@ -18,9 +18,16 @@ def get_exchange_collection():
 
 
 
+
+exchangeCollection=get_exchange_collection()
+
+
+
+
+
+
 #find_Country_id_by_name
 def find_Exchange_id_by_name(CPHCode):
-    exchangeCollection=get_exchange_collection()
     result = exchangeCollection.find_one({
         'exchangeShortName': CPHCode
     })
@@ -64,11 +71,11 @@ def creatingExchanges():
     if not UniqueExchanges.empty:
         new_exchanges = UniqueExchanges.to_dict(orient='records')
         
-        existing_exhanges = set(get_exchange_collection().distinct("exchange"))
+        existing_exhanges = set(exchangeCollection.distinct("exchange"))
         new_exchanges_to_create = [exchange for exchange in new_exchanges if exchange["exchange"] not in existing_exhanges]
 
         if new_exchanges_to_create:
-            get_exchange_collection().insert_many(new_exchanges_to_create)
+            exchangeCollection.insert_many(new_exchanges_to_create)
             print( f"----------------> {len(new_exchanges_to_create)} new exchanges created successfully.")
         else:
             print( "- No new exchanges to create.")
