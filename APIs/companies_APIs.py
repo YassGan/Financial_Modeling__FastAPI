@@ -86,9 +86,77 @@ def getCompanyPeersBySymbol(Symbol: str):
 
 
 
-#Function to see more the dataframe of the csv file 
-
+#Function that creates new companies and gets information from the dataframe itself
 def creatingCompanies():
+    start_time = time.time()
+
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+
+    # cleaning the dataframe
+    print("Reading CSV and initializing data took: %.2f seconds" % (time.time() - start_time))
+    start_time = time.time()
+
+    DataFrameCompanies = DataFrame
+    DataFrameCleaned = DataFrameCompanies.drop_duplicates(subset='companyName')
+    DataFrameCleaned = DataFrameCleaned.dropna(subset='companyName')
+    DataFrameCleaned = DataFrameCleaned[(DataFrameCleaned['isEtf'] == False) & (DataFrameCleaned['isAdr'] == False) & (DataFrameCleaned['isFund'] == False)]
+    CompaniesSymbols = DataFrameCleaned['Symbol']
+    CompaniesSymbols = CompaniesSymbols.to_frame()
+    companiesSymbolsList = []
+
+    companiesDb = get_companies_collection()
+
+    for index, row in CompaniesSymbols.iterrows():
+        companiesSymbolsList.append(row)
+
+    print("DataFrame cleaning and symbol extraction took: %.2f seconds" % (time.time() - start_time))
+    start_time = time.time()
+
+    for i in range(len(companiesSymbolsList) - 1):
+        symbol = companiesSymbolsList[i]['Symbol']
+        existing_company = companiesDb.find_one({"symbol": symbol})
+
+        if existing_company:
+            print(i, "/", len(companiesSymbolsList) - 1, "-x-x-x-x-x-- >  Company with symbol <<", symbol, " >> already exists ")
+        else:
+            treating_start_time = time.time()
+
+            # Get the company information from the DataFrame itself
+            company_info = DataFrameCleaned[DataFrameCleaned['Symbol'] == symbol].iloc[0]
+
+            print(i + 1, "/", len(companiesSymbolsList) - 1, "->->->->->-> >Treating the company << ", symbol, ' >>')
+            get_companies_collection().insert_one({
+                "sectorId": find_sector_id_by_name(company_info['sector']),
+                "subregionId": find_subregion_id_by_Countryname(company_info['country']),
+                "countryId": find_Country_id_by_name(company_info['country']),
+                "exchangeId": find_Exchange_id_by_name(company_info['exchangeShortName']),
+
+                "companyName": company_info['companyName'],
+                "symbol": symbol,
+                "ipoDate": company_info['ipoDate'],
+                "isin": company_info['isin'],
+                "exchange": company_info['exchange'],
+                "exchangeShortName": company_info['exchangeShortName'],
+                "industry": company_info['industry'],
+                "sector": company_info['sector'],
+                "website": company_info['website'],
+                "description": company_info['description'],
+                "country": company_info['country'],
+                "image": company_info['image'],
+                "peers": CompanyPeers(symbol)
+            })
+
+            print("Treating the company took: %.2f seconds" % (time.time() - treating_start_time))
+
+    print("Processing each symbol and inserting into MongoDB took: %.2f seconds" % (time.time() - start_time))
+
+
+
+
+
+
+#Function that creates companies and uses the information from the online API
+def creatingCompaniesfromAPI():
     start_time = time.time()
 
     DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
@@ -153,10 +221,34 @@ def creatingCompanies():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # API that launches the function creatingExchanges
 @Company.get('/creatingCompanies')
 async def CompaniesCreation():    
     creatingCompanies()
+    return("csv_file Len API ")
+
+
+
+
+
+# API that launches the function creatingExchanges
+@Company.get('/creatingCompaniesfromAPI')
+async def CompaniesCreation():    
+    creatingCompaniesfromAPI()
     return("csv_file Len API ")
 
 
