@@ -107,27 +107,35 @@ def getCompanyPeersBySymbol(Symbol: str):
 
 
 
+from itertools import repeat
+
+
 
 
 
 DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
-All_Symbols = gettingAllSymbols(DataFrame)
-
-
-perrsListDatafromOneAPICall = CompanyPeers(All_Symbols)
 
 # Create a dictionary that maps symbols to their peers lists
-symbol_to_peers = {entry['symbol']: entry['peersList'] for entry in perrsListDatafromOneAPICall}
 
-def find_peers_list_by_symbol_in_list(symbol_to_find):
-    return symbol_to_peers.get(symbol_to_find, "No Peers List")
+def find_peers_list_by_symbol_in_list(symbol, symbol_list):
+    for entry in symbol_list:
+        if entry['symbol'] == symbol:
+            return entry['peersList']
+    return "No Peers List"
+
+
 
 
 
 def creatingCompaniesInsertMany(DataFrame):
 
     start_time = time.time()
+
+    All_Symbols = gettingAllSymbols(DataFrame)
+
+
+    perrsListDatafromOneAPICall = CompanyPeers(All_Symbols)
 
 
 
@@ -139,26 +147,9 @@ def creatingCompaniesInsertMany(DataFrame):
 
 
 
-    # perrsListDatafromOneAPICall=CompanyPeers(All_Symbols)
-    # print('----------- perrsListDatafromOneAPICall ')
-    # print("-<<-<-<-<-<-<-<-<-<-<-<-<--<-<-<-<--< type of perrsListDatafromOneAPICall ",type(perrsListDatafromOneAPICall))
-    # print(perrsListDatafromOneAPICall)
-
-
-    # DFperrsListDatafromOneAPICall = pd.DataFrame(perrsListDatafromOneAPICall)
-    # print("-<<-<-<-<-<-<-<-<-<-<-<-<--<-<-<-<--< type of DFperrsListDatafromOneAPICall ",type(DFperrsListDatafromOneAPICall))
-    # print(DFperrsListDatafromOneAPICall)
-
-
-    # print("testing the function that returs the peers list from the symbol ")
-
-    # print(find_peers_list_by_symbol_in_list("TRYG.CO"))
-
-
     companiesDb = get_companies_collection()
 
 
-    # check_for_null_symbols(DataFrameCleaned)
 
 
     selected_columns_Companies = DataFrameCleaned[['companyName', 'Symbol', 'ipoDate','isin','exchange','exchangeShortName','industry','sector','website','description','country','image']]
@@ -177,7 +168,7 @@ def creatingCompaniesInsertMany(DataFrame):
         selected_columns_Companies['sectorId'] = pool.map(find_sector_id_by_name, selected_columns_Companies['sector'])
         selected_columns_Companies['countryId'] = pool.map(find_Country_id_by_name, selected_columns_Companies['country'])
         selected_columns_Companies['exchangeId'] = pool.map(find_Exchange_id_by_name, selected_columns_Companies['exchangeShortName'])
-        selected_columns_Companies['companyPeers'] = pool.map(find_peers_list_by_symbol_in_list, selected_columns_Companies['Symbol'])
+        selected_columns_Companies['companyPeers'] = pool.starmap(find_peers_list_by_symbol_in_list, zip(selected_columns_Companies['Symbol'], repeat(perrsListDatafromOneAPICall)))
 
 
         end_time_pool = time.time()
@@ -197,6 +188,7 @@ def creatingCompaniesInsertMany(DataFrame):
 
 
     # # Create a list to store the documents to be inserted
+  
     # documents_to_insert = []
 
     # for i, row in DataFrameCleaned.iterrows():

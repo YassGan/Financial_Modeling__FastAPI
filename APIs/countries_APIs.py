@@ -152,6 +152,7 @@ async def AllCountries_API():
 #find_Country_id_by_name
 def find_subregion_id_by_name(subregionName):
 
+
     subregionCollection=get_subregion_collection()
     result = subregionCollection.find_one({
         'subregion': subregionName
@@ -172,17 +173,18 @@ def get_subregion(subregion: str):
 
 #find_Country_id_by_name
 def find_subregion_id_by_Countryname(countryName):
-    countryNameMajus=countryName.upper()
-
-    result = countriesCollection.find_one({
-        'country': countryNameMajus
-    })
-    
-    if result:
-        return str(result['_id'])
+    if isinstance(countryName, str):  # Check if it's a valid string
+        countryNameMajus = countryName.upper()
+        result = countriesCollection.find_one({
+            'country': countryNameMajus
+        })
+        
+        if result:
+            return str(result['_id'])
+        else:
+            return "subregion not found"
     else:
-        return "subregion not found "
-    
+        return "invalid country name"
 
     
 # API that calls the find_Country_id_by_name
