@@ -368,11 +368,11 @@ def CreatingCountries():
         start_time_insert = time.time()
 
         new_countries = UniquecountriesDF.to_dict(orient='records')
-        existing_countries = set(get_countries_collection().distinct("country"))
+        existing_countries = set(countriesCollection.distinct("country"))
         new_countries_to_create = [country for country in new_countries if country["country"] not in existing_countries]
 
         if new_countries_to_create:
-            get_countries_collection().insert_many(new_countries_to_create)
+            countriesCollection.insert_many(new_countries_to_create)
             print(f"------------> {len(new_countries_to_create)} new countries created successfully.")
         else:
             print("- No new countries to create.")
