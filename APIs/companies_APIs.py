@@ -11,9 +11,11 @@ from APIs.exchange_APIs import find_Exchange_id_by_name
 from APIs.countries_APIs import find_Country_id_by_name  
 from APIs.countries_APIs import find_subregion_id_by_Countryname  
 
-from typing import List, Optional
+from APIs.utilsFunctionalitites_APIs import download_csv_from_url
 
-from APIs.countries_APIs import find_subregion_id_by_name 
+from typing import List, Optional
+import os
+
 
 from multiprocessing import Pool
 
@@ -113,7 +115,6 @@ from itertools import repeat
 
 
 
-DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
 
 # Create a dictionary that maps symbols to their peers lists
@@ -138,27 +139,17 @@ def creatingCompaniesInsertMany(DataFrame):
     perrsListDatafromOneAPICall = CompanyPeers(All_Symbols)
 
 
-
     DataFrameCleaned = DataFrame.drop_duplicates(subset='companyName').dropna(subset='companyName')
     DataFrameCleaned = DataFrameCleaned[
         (~DataFrameCleaned['isEtf']) & (~DataFrameCleaned['isAdr']) & (~DataFrameCleaned['isFund'])
     ]
 
-
-
-
     companiesDb = get_companies_collection()
-
-
 
 
     selected_columns_Companies = DataFrameCleaned[['companyName', 'Symbol', 'ipoDate','isin','exchange','exchangeShortName','industry','sector','website','description','country','image']]
 
     print(len(selected_columns_Companies))
-
-
-
-
 
 
     with Pool(processes=5) as pool:
@@ -176,67 +167,107 @@ def creatingCompaniesInsertMany(DataFrame):
         print(f"Time spent in Pool: {elapsed_time_pool:.2f} seconds")
 
 
-
-
-
-
-
     if not selected_columns_Companies.empty:
         companiesDb.insert_many(selected_columns_Companies.to_dict('records'))
+
+        # The old school way to verify if there are already elements in the database to not insert it a second time
+        # new_compnaies = selected_columns_Companies.to_dict(orient='records')
+        # existing_companies = set(companiesDb.distinct("Symbol"))
+        # new_companies_to_create = [company for company in new_compnaies if company["Symbol"] not in existing_companies]
+
+        # if new_companies_to_create:
+        #     companiesDb.insert_many(new_companies_to_create)
+        #     print(f"------------> {len(new_companies_to_create)} new companies created successfully.")
+        # else:
+        #     print("- No new companies to create.")
 
     print("DataFrame cleaning and inserting took: %.2f seconds" % (time.time() - start_time))
 
 
-    # # Create a list to store the documents to be inserted
-  
-    # documents_to_insert = []
-
-    # for i, row in DataFrameCleaned.iterrows():
-    #     symbol = row['Symbol']
-    #     existing_company = companiesDb.find_one({"symbol": symbol})
-
-    #     if existing_company:
-    #         print(i, "/", len(DataFrameCleaned) - 1, "-x-x-x-x-x-- > Company with symbol <<", symbol, ">> already exists")
-    #     else:
-    #         treating_start_time = time.time()
-
-    #         print(i + 1, "/", len(DataFrameCleaned) - 1, "->->->->->-> >Treating the company <<", symbol, '>>')
-
-    #         documents_to_insert.append({
-    #             "sectorId": find_sector_id_by_name(row['sector']),
-    #             "subregionId": find_subregion_id_by_Countryname(row['country']),
-    #             "countryId": find_Country_id_by_name(row['country']),
-    #             "exchangeId": find_Exchange_id_by_name(row['exchangeShortName']),
-
-    #             "companyName": row['companyName'],
-    #             "symbol": symbol,
-    #             "ipoDate": row['ipoDate'],
-    #             "isin": row['isin'],
-    #             "exchange": row['exchange'],
-    #             "exchangeShortName": row['exchangeShortName'],
-    #             "industry": row['industry'],
-    #             "sector": row['sector'],
-    #             "website": row['website'],
-    #             "description": row['description'],
-    #             "country": row['country'],
-    #             "image": row['image'],
-    #             # "peers": CompanyPeers(symbol)
-    #         })
-
-    #         print("Treating the company took: %.2f seconds" % (time.time() - treating_start_time))
-
-    # # Convert the list of dictionaries to a DataFrame
-    # df_to_insert = pd.DataFrame(documents_to_insert)
-
-    # # print("Type of documents_to_insert ",type(documents_to_insert))
-    # # print("Type of df_to_insert",type(df_to_insert))
 
 
-    # # Insert the DataFrame into the database
-    # if not df_to_insert.empty:
-    #     companiesDb.insert_many(df_to_insert.to_dict('records'))
 
-    # print("Processing each symbol and inserting into MongoDB took: %.2f seconds" % (time.time() - start_time))
+def CompaniesCreationProcess():
+    
+    # Download the new file
+    url = f"https://financialmodelingprep.com/api/v4/profile/all?apikey={api_key}"
+    print(url)
+    file_path = "NewCSV.csv"
+
+    success = download_csv_from_url(url, file_path)
+    if success:
+        print( Response(content="File downloaded successfully.", media_type="text/plain"))
+    else:
+        print( Response(content="Failed to download the file.", media_type="text/plain"))
+
+    if success:
+        NewDataFrame = pd.read_csv("NewCSV.csv", encoding='utf-8')
+        OldDataFrame=pd.read_csv("OldCSV.csv", encoding='utf-8')
+
+        start_Verification_New_Old_CSV_time = time.time()
+
+
+        new_elements = NewDataFrame[~NewDataFrame['Symbol'].isin(OldDataFrame['Symbol'])]
+
+        # Create the third dataframe containing only the new elements
+        NewDataFrameValues = pd.DataFrame(new_elements)
+
+        print(f"Time spent in verifying between the old csv and the new csv files is : {time.time()-start_Verification_New_Old_CSV_time:.2f} seconds")
+
+
+
+
+        NewDataFrameValues = NewDataFrameValues.drop_duplicates(subset='companyName').dropna(subset='companyName')
+        NewDataFrameValues = NewDataFrameValues[
+            (~NewDataFrameValues['isEtf']) & (~NewDataFrameValues['isAdr']) & (~NewDataFrameValues['isFund'])
+        ]
+
+
+
+        # Reset the index of the third dataframe
+        NewDataFrameValues.reset_index(drop=True, inplace=True)
+        print("The new data frame with new elements")
+        print(len(NewDataFrameValues))
+        # Now we delete the old file and rename the new file to old file to make comparisons in the future with new other files 
+
+        file_path_to_delete = "OldCSV.csv" 
+        if os.path.exists(file_path_to_delete):
+            os.remove(file_path_to_delete)
+            print(f"File '{file_path_to_delete}' deleted successfully.")
+            old_name = "NewCSV.CSV"  # Replace with the current filename
+            new_name = "OldCSV.CSV"  # Replace with the new filename
+
+            if os.path.exists(old_name):
+                os.rename(old_name, new_name)
+                print(f"File '{old_name}' renamed to '{new_name}' successfully.")
+            else:
+                print(f"File '{old_name}' does not exist.")
+        else:
+            print(f"File '{file_path_to_delete}' does not exist.")
+
+
+        print("-<-<-<-<-<-<-<-<-<-<-<-<-<- The length of companies ")
+        print(NewDataFrameValues)
+
+        chunk_size = 100
+        Process = 0
+        for i in range(0, len(NewDataFrameValues), chunk_size):
+            Process=Process+1
+            chunk = NewDataFrameValues.iloc[i:i+chunk_size]
+
+            print("Processing chunk:",Process)
+            print(chunk)
+            creatingCompaniesInsertMany(chunk)
+
+            print("\n")   
+        return("csv_file Len API ")
+
+
+
+
+
+
+
 
 
 
@@ -244,27 +275,7 @@ def creatingCompaniesInsertMany(DataFrame):
 # API that launches the function creatingExchanges
 @Company.get('/creatingCompaniesWithInsertMany')
 async def CompaniesCreationApiInsertMany(): 
-    #creatingCompaniesInsertMany(DataFrame)
-
-    chunk_size = 100
-    Process = 0
-    for i in range(0, len(DataFrame), chunk_size):
-        Process=Process+1
-        chunk = DataFrame.iloc[i:i+chunk_size]
-
-        # Perform your treatments on the current chunk
-        print("Processing chunk:",Process)
-        print(chunk)
-        creatingCompaniesInsertMany(chunk)
-
-        # Add your treatment code here for the current chunk
-        # For example, you can use 'chunk' to apply functions or calculations
-
-        # Add a line break for clarity in the console output
-        print("\n")   
-    return("csv_file Len API ")
-
-
+    CompaniesCreationProcess()
 
 
 
@@ -366,166 +377,6 @@ def check_for_null_symbols(data_frame):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Function that creates new companies and gets information from the dataframe itself
-def creatingCompanies():
-    start_time = time.time()
-
-    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
-    
-
-    # cleaning the dataframe
-    print("Reading CSV and initializing data took: %.2f seconds" % (time.time() - start_time))
-    start_time = time.time()
-
-    DataFrameCompanies = DataFrame
-    DataFrameCleaned = DataFrameCompanies.drop_duplicates(subset='companyName')
-    DataFrameCleaned = DataFrameCleaned.dropna(subset='companyName')
-    DataFrameCleaned = DataFrameCleaned[(DataFrameCleaned['isEtf'] == False) & (DataFrameCleaned['isAdr'] == False) & (DataFrameCleaned['isFund'] == False)]
-    CompaniesSymbols = DataFrameCleaned['Symbol']
-    CompaniesSymbols = CompaniesSymbols.to_frame()
-    companiesSymbolsList = []
-
-    companiesDb = get_companies_collection()
-
-    for index, row in CompaniesSymbols.iterrows():
-        companiesSymbolsList.append(row)
-
-    print("DataFrame cleaning and symbol extraction took: %.2f seconds" % (time.time() - start_time))
-    start_time = time.time()
-
-    for i in range(len(companiesSymbolsList) - 1):
-        symbol = companiesSymbolsList[i]['Symbol']
-        existing_company = companiesDb.find_one({"symbol": symbol})
-
-        if existing_company:
-            print(i, "/", len(companiesSymbolsList) - 1, "-x-x-x-x-x-- >  Company with symbol <<", symbol, " >> already exists ")
-        else:
-            treating_start_time = time.time()
-
-            # Get the company information from the DataFrame itself
-            company_info = DataFrameCleaned[DataFrameCleaned['Symbol'] == symbol].iloc[0]
-
-            print(i + 1, "/", len(companiesSymbolsList) - 1, "->->->->->-> >Treating the company << ", symbol, ' >>')
-            companiesDb.insert_one({
-                # "sectorId": find_sector_id_by_name(company_info['sector']),
-                # "subregionId": find_subregion_id_by_Countryname(company_info['country']),
-                # "countryId": find_Country_id_by_name(company_info['country']),
-                # "exchangeId": find_Exchange_id_by_name(company_info['exchangeShortName']),
-
-                "companyName": company_info['companyName'],
-                "symbol": symbol,
-                "ipoDate": company_info['ipoDate'],
-                "isin": company_info['isin'],
-                "exchange": company_info['exchange'],
-                "exchangeShortName": company_info['exchangeShortName'],
-                "industry": company_info['industry'],
-                "sector": company_info['sector'],
-                "website": company_info['website'],
-                "description": company_info['description'],
-                "country": company_info['country'],
-                "image": company_info['image'],
-                # "peers": CompanyPeers(symbol)
-            })
-
-            print("Treating the company took: %.2f seconds" % (time.time() - treating_start_time))
-
-    print("Processing each symbol and inserting into MongoDB took: %.2f seconds" % (time.time() - start_time))
-
-
-
-# API that launches the function creatingExchanges
-@Company.get('/creatingCompanies')
-async def CompaniesCreation():    
-    creatingCompanies()
-    return("csv_file Len API ")
-
-
-
-#Function that creates companies and uses the information from the online API
-def creatingCompaniesfromAPI():
-    start_time = time.time()
-
-    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
-
-    # cleaning the dataframe
-    print("Reading CSV and initializing data took: %.2f seconds" % (time.time() - start_time))
-    start_time = time.time()
-
-    DataFrameCompanies = DataFrame
-    DataFrameCleaned = DataFrameCompanies.drop_duplicates(subset='companyName')
-    DataFrameCleaned = DataFrameCleaned.dropna(subset='companyName')
-    DataFrameCleaned = DataFrameCleaned[(DataFrameCleaned['isEtf'] == False) & (DataFrameCleaned['isAdr'] == False) & (DataFrameCleaned['isFund'] == False)]
-    CompaniesSymbols = DataFrameCleaned['Symbol']
-    CompaniesSymbols = CompaniesSymbols.to_frame()
-    companiesSymbolsList = []
-
-    companiesDb=get_companies_collection()
-
-    for index, row in CompaniesSymbols.iterrows():
-        companiesSymbolsList.append(row)
-
-    print("DataFrame cleaning and symbol extraction took: %.2f seconds" % (time.time() - start_time))
-    start_time = time.time()
-
-    for i in range(len(companiesSymbolsList) - 1):
-        symbol = companiesSymbolsList[i]['Symbol']
-        existing_company = companiesDb.find_one({"symbol": symbol})
-
-        if existing_company:
-            print(i, "/", len(companiesSymbolsList) - 1, "-x-x-x-x-x-- >  Company with symbol <<", symbol, " >> already exists ")
-        else:
-            treating_start_time = time.time()
-
-            CompanyInfo_fromAPI = fetch_data_from_api_bySymbol(symbol)[0]
-
-            print(i+1, "/", len(companiesSymbolsList) - 1, "->->->->->-> >Treating the company << ", symbol, ' >>')
-            companiesDb.insert_one({
-                # "sectorId": find_sector_id_by_name(CompanyInfo_fromAPI['sector']),
-                # "subregionId": find_subregion_id_by_Countryname(CompanyInfo_fromAPI['country']),
-                # "countryId": find_Country_id_by_name(CompanyInfo_fromAPI['country']),
-                # "exchangeId": find_Exchange_id_by_name(CompanyInfo_fromAPI['exchangeShortName']),
-
-                "companyName": CompanyInfo_fromAPI['companyName'],
-                "symbol": symbol,
-                "ipoDate": CompanyInfo_fromAPI['ipoDate'],
-                "isin": CompanyInfo_fromAPI['isin'],
-                "exchange": CompanyInfo_fromAPI['exchange'],
-                "exchangeShortName": CompanyInfo_fromAPI['exchangeShortName'],
-                "industry": CompanyInfo_fromAPI['industry'],
-                "sector": CompanyInfo_fromAPI['sector'],
-                "website": CompanyInfo_fromAPI['website'],
-                "description": CompanyInfo_fromAPI['description'],
-                "country": CompanyInfo_fromAPI['country'],
-                "image": CompanyInfo_fromAPI['image'],
-                "peers": CompanyPeers(CompanyInfo_fromAPI['symbol'])
-            })
-
-            print("Treating the company took: %.2f seconds" % (time.time() - treating_start_time))
-
-    print("Processing each symbol and inserting into MongoDB took: %.2f seconds" % (time.time() - start_time))
-
-
-
-
-# API that launches the function creatingExchanges
-@Company.get('/creatingCompaniesfromAPI')
-async def CompaniesCreationApi():    
-    creatingCompaniesfromAPI()
-    return("csv_file Len API ")
 
 
 

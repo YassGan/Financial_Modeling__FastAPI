@@ -6,7 +6,7 @@ from APIs.exchange_APIs import creatingExchanges
 from APIs.sectors_APIs import create_sectors_from_dataframe
 from APIs.Industries_APIs import create_new_industries
 
-from APIs.companies_APIs import creatingCompanies
+from APIs.companies_APIs import CompaniesCreationProcess
 
 import time
 
@@ -65,7 +65,7 @@ def run_job():
 
     print("")
     print("->->->->->->->->-> Beggining of the creatingCompanies Function -<-<-<-<-<-<-<-<-<")
-    creatingCompanies()
+    CompaniesCreationProcess()
     print("->->->->->->->->-> Finishing of the creatingCompanies Function -<-<-<-<-<-<-<-<-<")
     print("")
 

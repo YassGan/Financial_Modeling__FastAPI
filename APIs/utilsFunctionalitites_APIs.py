@@ -105,7 +105,7 @@ def create_csv_with_first_elements(Number,input_file_path, output_file_path):
 @UtilsFunc.get('/create_csv_with_first_elements/{Number}')
 async def create_csv_endpoint(Number: int):
     input_file_path = 'data.csv' 
-    output_file_path = os.getenv("SMALL_OUTPUT_CSV_FILE") 
+    output_file_path = "NewCSV.csv" 
 
     result = create_csv_with_first_elements(Number, input_file_path, output_file_path)
 
