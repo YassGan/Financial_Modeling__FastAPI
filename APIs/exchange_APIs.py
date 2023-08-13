@@ -50,10 +50,9 @@ def get_exchange(CPHCode: str):
 
 
 # Function that creates new exchanges in the collection of exchange 
-def creatingExchanges():
+def creatingExchanges(DataFrame):
 
 
-    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
 
     DataFrame_Exchange = DataFrame[['exchange','exchangeShortName']]  
@@ -91,6 +90,8 @@ def creatingExchanges():
 
 # API that launches the function creatingExchanges
 @Exchange.get('/creatingExchanges')
-async def CountriesListAPI():    
-    creatingExchanges()
+async def CountriesListAPI(): 
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+   
+    creatingExchanges(DataFrame)
     return("creatingExchangesAPI")

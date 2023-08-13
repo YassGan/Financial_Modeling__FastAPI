@@ -11,16 +11,12 @@ from APIs.exchange_APIs import Exchange
 from APIs.utilsFunctionalitites_APIs import UtilsFunc 
 from APIs.sectors_APIs import Sector 
 from APIs.companies_APIs import Company 
-
-
-
-
 from APIs.Industries_APIs import Industry 
 
 
 
 # le déclencheur du scheduler se fait quand on importe le fichier qui contient le code du scheduler
-# import APIs.TasksScheduler 
+import APIs.TasksScheduler 
 
 
 app = FastAPI()

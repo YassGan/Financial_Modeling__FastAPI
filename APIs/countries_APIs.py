@@ -72,9 +72,8 @@ def get_country(isoCode: str):
 
 
 # Function that creates subregions
-def CreatingSubregion():
+def CreatingSubregion(DataFrame):
 
-    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
     # Replace 'UK' with 'GB' in the 'country' column
     DataFrame['country'] = DataFrame['country'].replace('UK', 'GB')
     DataFrame_Countries = DataFrame[['country']]  
@@ -119,7 +118,9 @@ def CreatingSubregion():
 
 @Country.get("/CreatingSubregions")
 def CreatingSubregion_API():
-    CreatingSubregion()
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+
+    CreatingSubregion(DataFrame)
     return 'CreatingSubregion_API'
     
 
@@ -313,10 +314,9 @@ from multiprocessing import Pool
 
 import time
 
-def CreatingCountries():
+def CreatingCountries(DataFrame):
     start_time_total = time.time()
 
-    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
     DataFrame['country'] = DataFrame['country'].replace('UK', 'GB')
 
     # Cleaning the information of the countries (dropping duplicates, removing empty values) 
@@ -397,6 +397,8 @@ def CreatingCountries():
 
 #API that launches the function CreatingCountries 
 @Country.get('/CreatingCountries')
-async def CountriesListAPI():    
-    CreatingCountries()
+async def CountriesListAPI():   
+    DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+ 
+    CreatingCountries(DataFrame)
     return("CountriesListAPI")

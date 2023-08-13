@@ -187,8 +187,16 @@ def creatingCompaniesInsertMany(DataFrame):
 
 
 
-def CompaniesCreationProcess():
-    
+
+
+
+
+
+
+
+#This funciton returns the intersection between the old and the new csv file
+def Function_Intersection_Old_New_CSV():
+
     # Download the new file
     url = f"https://financialmodelingprep.com/api/v4/profile/all?apikey={api_key}"
     print(url)
@@ -234,8 +242,8 @@ def CompaniesCreationProcess():
         if os.path.exists(file_path_to_delete):
             os.remove(file_path_to_delete)
             print(f"File '{file_path_to_delete}' deleted successfully.")
-            old_name = "NewCSV.CSV"  # Replace with the current filename
-            new_name = "OldCSV.CSV"  # Replace with the new filename
+            old_name = "NewCSV.csv"  # Replace with the current filename
+            new_name = "OldCSV.csv"  # Replace with the new filename
 
             if os.path.exists(old_name):
                 os.rename(old_name, new_name)
@@ -247,7 +255,31 @@ def CompaniesCreationProcess():
 
 
         print("-<-<-<-<-<-<-<-<-<-<-<-<-<- The length of companies ")
-        print(NewDataFrameValues)
+        return(NewDataFrameValues)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def CompaniesCreationProcess(NewDataFrameValues):
 
         chunk_size = 100
         Process = 0
@@ -275,7 +307,8 @@ def CompaniesCreationProcess():
 # API that launches the function creatingExchanges
 @Company.get('/creatingCompaniesWithInsertMany')
 async def CompaniesCreationApiInsertMany(): 
-    CompaniesCreationProcess()
+    Df=Function_Intersection_Old_New_CSV()
+    CompaniesCreationProcess(Df)
 
 
 

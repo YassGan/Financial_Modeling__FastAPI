@@ -66,9 +66,8 @@ def get_sector(sectorName: str):
 
 
 # Function that creates new sectors in the database from a dataFrame
-def create_sectors_from_dataframe():
+def create_sectors_from_dataframe(DataF):
 
-    DataF = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
     start_time = time.time()
     DataF.dropna(subset=['sector'], inplace=True)
@@ -106,17 +105,23 @@ def create_sectors_from_dataframe():
 
 
 
+
+
+
+
+
+
+
+
+
+
 # API that creates new sectors from the DataFrame 
 @Sector.get('/CreateSectorsFromDataFrame')
 async def create_sectors_api():
     DataF = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+
     result = create_sectors_from_dataframe(DataF)
-    if "new sectors created successfully" in result:
-        return Response(status_code=201, content=result)
-    else:
-        return Response(status_code=200, content=result)
-
-
+    return Response(status_code=201, content=result)
 
 #API to get all the sectors from the database
 @Sector.get('/AllSectors')

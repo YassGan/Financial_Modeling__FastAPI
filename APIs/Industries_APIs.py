@@ -43,12 +43,14 @@ def get_industry_collection():
 import pandas as pd
 
 # Function that creates new industries from the dataframe that match the sectors' elements from the database
-def create_new_industries():
+def create_new_industries(dataframe):
     # Fetch all sectors from the database
     sectors = serializeList(get_sector_collection().find())
+    dataframe = dataframe.drop_duplicates(subset='industry').dropna(subset='industry')
+    print("Nombre d'industries ",len(dataframe))
+
 
     # Read the DataFrame from your data CSV file
-    dataframe = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
     sector_industry_data = []
     for index, row in dataframe.iterrows():
@@ -78,7 +80,9 @@ def create_new_industries():
 # API that calls the function to create new industries
 @Industry.get('/CreateIndustries')
 async def create_industries_api():
-    result = create_new_industries()
+    dataframe = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
+
+    result = create_new_industries(dataframe)
     return result
 
 

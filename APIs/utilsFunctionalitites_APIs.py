@@ -45,9 +45,9 @@ def download_csv_from_url(url, file_path):
                     file.write(chunk)
                     downloaded_size += len(chunk)
                     progress = (downloaded_size / total_size) * 100
-                    print(f"Download progress: {progress:.2f}%")
+                    print(f"Download progress: {progress:.2f}%", end="\r")  # Use end="\r" to overwrite the line
 
-        print("File downloaded successfully.")
+        print("\nFile downloaded successfully.")  # Print a newline to separate the progress from other messages
         return True
     except requests.exceptions.RequestException as e:
         print("Request Error:", e)
@@ -55,7 +55,6 @@ def download_csv_from_url(url, file_path):
     except IOError as e:
         print("File Error:", e)
         return False
-    
 
 
 #API that once is launched it downloads the csv file from the online api of the modeling website    
