@@ -330,22 +330,22 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
                            industry: str = Query(None, title="Industry"),
                            subregion: str = Query(None, title="Subregion"),
-                           country: str = Query(None, title="Country"),                          
+                           country: str = Query(None, title="Country"),
                            keywords: str = Query(None, title="Keywords")):
     filters = {}
-    
+
     if name:
         filters["companyName"] = name
-    
+
     if sector:
         filters["sector"] = sector
-    
+
     if industry:
         filters["industry"] = industry
-    
+
     if subregion:
         filters["subregion"] = subregion
-    
+
     if country:
         filters["country"] = country
 
@@ -353,25 +353,23 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
         description_keyword_regex = f".*{keywords}.*"
         filters["description"] = {"$regex": description_keyword_regex, "$options": "i"}
 
-        
 
+    try:
+        filtered_companies = list(CompaniesCollection.find(filters))
 
+        # Sanitize data and remove non-serializable fields
+        sanitized_companies = []
+        for company in filtered_companies:
+            sanitized_company = {}
+            for key, value in company.items():
+                if isinstance(value, (int, str, bool, dict, list)):
+                    sanitized_company[key] = value
+            sanitized_companies.append(sanitized_company)
 
-    companies_collection = get_companies_collection()
+        return sanitized_companies
 
-    filtered_companies = list(companies_collection.find(filters))
-    
-    # Convert ObjectId to string and remove non-serializable fields
-    for company in filtered_companies:
-        company["_id"] = str(company["_id"])  # Convert ObjectId to string
-        if "_cls" in company:
-            del company["_cls"]  # Remove non-serializable field
-    
-    return filtered_companies
-
-
-
-
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @Company.get("/autocompleteCompanyName")

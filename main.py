@@ -13,6 +13,8 @@ from APIs.sectors_APIs import Sector
 from APIs.companies_APIs import Company 
 from APIs.Industries_APIs import Industry 
 
+#import APIs.dataManipulation
+
 
 
 # le déclencheur du scheduler se fait quand on importe le fichier qui contient le code du scheduler
