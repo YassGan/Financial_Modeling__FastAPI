@@ -323,7 +323,7 @@ async def CompaniesCreationApiInsertMany():
 
 from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
-@Company.get("/filterCompanies_Companies")
+@Company.get("/filterCompanies")
 async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
                            industry: str = Query(None, title="Industry"),
@@ -351,18 +351,22 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
         description_keyword_regex = f".*{keywords}.*"
         filters["description"] = {"$regex": description_keyword_regex, "$options": "i"}
 
-
     try:
-        filtered_companies = list(CompaniesCollection.find(filters))
-
-        # Sanitize data and remove non-serializable fields
+        # Projection to fetch only necessary fields
+        projection = {"companyName": 1, "sector": 1, "industry": 1, "subregion": 1, "country": 1}
+        
+        # Fetching data in batches using cursor
+        filtered_companies_cursor = CompaniesCollection.find(filters, projection=projection)
         sanitized_companies = []
-        for company in filtered_companies:
-            sanitized_company = {}
-            for key, value in company.items():
-                if isinstance(value, (int, str, bool, dict, list)):
-                    sanitized_company[key] = value
-            sanitized_companies.append(sanitized_company)
+
+        for company in filtered_companies_cursor:
+            sanitized_companies.append({
+                "companyName": company["companyName"],
+                "sector": company.get("sector", None),
+                "industry": company.get("industry", None),
+                "subregion": company.get("subregion", None),
+                "country": company.get("country", None)
+            })
 
         return sanitized_companies
 

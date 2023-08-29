@@ -26,7 +26,7 @@ from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
 # Example on how to use this api 
 # http://localhost:8000/filterCompanies?name=CompanyName&sector=Technology&industry=Software&subregion=North&country=USA&keywords=AI"
-@CompanyFiltering.get("/filterCompanies")
+@CompanyFiltering.get("/filterCompanies_Filtering")
 async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
                            industry: str = Query(None, title="Industry"),
