@@ -7,6 +7,7 @@ from config.db import get_database
 CompanyFiltering=APIRouter()
 
 
+from typing import List
 
 
 
@@ -26,12 +27,15 @@ from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
 # Example on how to use this api 
 # http://localhost:8000/filterCompanies?name=CompanyName&sector=Technology&industry=Software&subregion=North&country=USA&keywords=AI"
+
+#Curl of many countries http://localhost:1001/filterCompanies_Filtering?country=FR&country=DK&country=SE
+
 @CompanyFiltering.get("/filterCompanies_Filtering")
 async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
                            industry: str = Query(None, title="Industry"),
                            subregion: str = Query(None, title="Subregion"),
-                           country: str = Query(None, title="Country"),
+                            country: List[str] = Query(None, title="Country"),
                            keywords: str = Query(None, title="Keywords")):
     filters = {}
 
@@ -48,26 +52,21 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
         filters["subregion"] = subregion
 
     if country:
-        filters["country"] = country
+        filters["country"] = {"$in": country}
 
     if keywords:
-        description_keyword_regex = f".*{keywords}.*"
-        filters["description"] = {"$regex": description_keyword_regex, "$options": "i"}
+        filters["description"] = {"$regex": f".*{keywords}.*", "$options": "i"}
 
+    projection = {"_id": 0, "companyName": 1, "sector": 1, "industry": 1}  # Add other fields you need
 
     try:
-        filtered_companies = list(CompaniesCollection.find(filters))
+        companies_collection = get_companies_collection()
+        filtered_companies = companies_collection.find(filters, projection)
 
-        # Sanitize data and remove non-serializable fields
-        sanitized_companies = []
-        for company in filtered_companies:
-            sanitized_company = {}
-            for key, value in company.items():
-                if isinstance(value, (int, str, bool, dict, list)):
-                    sanitized_company[key] = value
-            sanitized_companies.append(sanitized_company)
+        # Limit the number of returned results using .limit() if needed
+        # filtered_companies = filtered_companies.limit(10)
 
-        return sanitized_companies
+        return list(filtered_companies)
 
     except Exception as e:
         return {"error": str(e)}
