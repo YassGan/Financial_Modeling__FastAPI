@@ -51,10 +51,6 @@ def get_exchange(CPHCode: str):
 
 # Function that creates new exchanges in the collection of exchange 
 def creatingExchanges(DataFrame):
-
-
-
-
     DataFrame_Exchange = DataFrame[['exchange','exchangeShortName']]  
 
     #print(DataFrame_Exchange)

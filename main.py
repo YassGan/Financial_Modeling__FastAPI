@@ -15,12 +15,15 @@ from APIs.Endpoints1.Industries_APIs import Industry
 from APIs.Endpoints1.companiesFiltering import CompanyFiltering 
 
 
+from APIs.Endpoints2.balanceSheetAnnual import BS_Annual 
+
+
 #import APIs.dataManipulation
 
 
 
 # le déclencheur du scheduler se fait quand on importe le fichier qui contient le code du scheduler
-import APIs.Endpoints1.TasksScheduler 
+#import APIs.Endpoints1.TasksScheduler 
 
 
 app = FastAPI()
@@ -33,11 +36,9 @@ app.include_router(UtilsFunc)
 app.include_router(Sector)
 app.include_router(Industry)
 
-
-
-
-
 app.include_router(Company)
-
 app.include_router(CompanyFiltering)
+
+
+app.include_router(BS_Annual)
 

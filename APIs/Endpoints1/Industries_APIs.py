@@ -93,6 +93,14 @@ async def create_industries_api():
 
 
 
+#API to get all the industries from the database
+@Industry.get('/AllIndustries')
+async def find_all_industries():
+    return serializeList(get_industry_collection().find())
+
+
+
+
 
 
 
@@ -161,8 +169,4 @@ async def create_industries_api():
 
 
 
-#API to get all the industries from the database
-@Industry.get('/AllIndustries')
-async def find_all_industries():
-    return serializeList(get_industry_collection().find())
 
