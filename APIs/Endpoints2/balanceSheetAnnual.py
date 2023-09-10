@@ -28,7 +28,6 @@ api_key = os.getenv("API_KEY")
 def get_companies_Annual_BalanceSheet():
     db = get_database()
     AnnualBalanceSheet=db["Annual_Balance_Sheet"]
-    AnnualBalanceSheet.create_index([("symbol", 1)], unique=True)
 
     return AnnualBalanceSheet
 
@@ -85,8 +84,7 @@ async def create_BS_Annual_api(Symbol: str):
 # the data in the database and the date data also if it exists and the date is older that the new one
 # it updates the information of the database otherwise it does nothing, if there is no data it creates a new
 # element
-
-async def CompanyBalanceSheetInfoComparisonInsertion(symbol):
+async def CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol):
     print("Company with symbol", symbol, "made balance sheet API call and is comparing the API data with the data in the database")
     
     api_url = f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{symbol}?apikey={api_key}"
@@ -105,6 +103,16 @@ async def CompanyBalanceSheetInfoComparisonInsertion(symbol):
                 if api_date > db_date:
                     data[0]['symbol'] = data[0]['symbol']
                     companies_Annual_BalanceSheetCollection.replace_one({"symbol": data[0]['symbol']}, data[0])
+                    
+                    data[0]['symbol'] = data[0]['symbol']+"_"+db_date.strftime("%Y-%m-%d")
+                    data[0]['date'] = db_date.strftime("%Y-%m-%d")
+
+
+                    companies_Annual_BalanceSheetCollection.insert_one(data[0])
+
+                    
+                    
+                    
                     print(f"Updated {symbol} balance sheet data in the database.")
                 else:
                     print(f"{symbol} balance sheet data in the database is up to date.")
@@ -120,23 +128,20 @@ async def CompanyBalanceSheetInfoComparisonInsertion(symbol):
     return JSONResponse(content=data[0])  
 
 
-
-
-
 # API that launches the function CompanyBalanceSheetInfoComparisonInsertion
 @BS_Annual.get('/getBalanceSheet_company_comparison_insertion/{Symbol}')
 async def create_BS_Annual_api(Symbol: str):
-    result = await CompanyBalanceSheetInfoComparisonInsertion(Symbol)
+    result = await CompanyAnnualBalanceSheetInfoComparisonInsertion(Symbol)
     return result
 
 
 # API that launches the function CompanyBalanceSheetInfoComparisonInsertion and use it with many symbols
-@BS_Annual.get('/Insert_BalanceSheet_information_Comparison')
+@BS_Annual.get('/Insert_Annual_BalanceSheet_information_Comparison')
 async def Insert_BS_Annual_information():
 
-    dataframe = ['AAPL', 'LMNR', 'SU', 'LRCX', 'PBTS','AMAT','PLUG','AX','MET','HIBB','BLCO','F','BUSE']
+    dataframe = ['AAPL', 'LMNR']
 
-    awaitable_tasks = [CompanyBalanceSheetInfoComparisonInsertion(symbol) for symbol in dataframe]
+    awaitable_tasks = [CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol) for symbol in dataframe]
 
     results = await asyncio.gather(*awaitable_tasks)
 

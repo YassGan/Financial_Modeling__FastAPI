@@ -1,6 +1,6 @@
 
 
-from fastapi import APIRouter,Response,Query
+from fastapi import APIRouter,Response,Query,HTTPException
 from models.Sector import Sector 
 
 from config.db import get_database 
@@ -51,6 +51,26 @@ CompaniesCollection=get_companies_collection()
 
 
 
+
+@Company.get("/infos/profile")
+async def get_company_by_symbol(symbol: str = Query(..., title="Company Symbol")):
+    try:
+        company = CompaniesCollection.find_one({"Symbol": symbol})
+
+        if company:
+            # Sanitize the company data as needed
+            sanitized_company = {
+                "companyName": company.get("companyName", None),
+                "sector": company.get("sector", None),
+                "industry": company.get("industry", None),
+                "country": company.get("country", None),
+            }
+            return sanitized_company
+        else:
+            raise HTTPException(status_code=404, detail="Company not found")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 
@@ -323,7 +343,7 @@ async def CompaniesCreationApiInsertMany():
 
 from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
-@Company.get("/filterCompanies")
+@Company.get("/filterCompanies_API")
 async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
                            industry: str = Query(None, title="Industry"),
