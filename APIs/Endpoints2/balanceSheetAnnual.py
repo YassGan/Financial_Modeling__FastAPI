@@ -82,7 +82,7 @@ async def create_BS_Annual_api(Symbol: str):
 
 # Function that gets the information of the balance sheet of the company and it compares the data with 
 # the data in the database and the date data also if it exists and the date is older that the new one
-# it updates the information of the database otherwise it does nothing, if there is no data it creates a new
+# it adds the new information in the database otherwise it does nothing, if there is no data it creates a new
 # element
 async def CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol):
     print("Company with symbol", symbol, "made balance sheet API call and is comparing the API data with the data in the database")
@@ -126,6 +126,10 @@ async def CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol):
                 data[0]['_id'] = str(data[0]['_id'])
 
     return JSONResponse(content=data[0])  
+
+
+
+
 
 
 # API that launches the function CompanyBalanceSheetInfoComparisonInsertion
