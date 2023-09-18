@@ -44,32 +44,59 @@ def return_CompanyLatestBalanceSheet_Date_Symbol_Set(csv_file_path):
     try:
         df = pd.read_csv(csv_file_path)
         symbol_date_set = set()  
-        for  row in df.iterrows():
+        for index, row in df.iterrows():
             symbol_date_set.add((row['symbol'], row['date']))
         return symbol_date_set
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return set() 
-    
+        print(f"An error occurred when  return_CompanyLatestBalanceSheet_Date_Symbol_Set: {str(e)}")
+        return set()
 
 
 
 def find_date_by_symbol(symbol, symbol_date_set):
+    print(">> The symbol_date_set ")
+    print(symbol_date_set)
+    print(">> the symbol " + symbol)
+    
+    match_found = False
+    
     for s, date in symbol_date_set:
         if s == symbol:
+            match_found = True
             return date
+    
+    if not match_found:
+        print(f">> Pas de date existante dans le csv pour le symbol '{symbol}'")
+        return None
+
+
+def update_csv_file(csv_file_path, symbol_to_update, newDate):
+    try:
+        df = pd.read_csv(csv_file_path)
+        symbolDate_toChange = df['symbol'] == symbol_to_update
+
+        if symbolDate_toChange.any():
+            df.loc[symbolDate_toChange, 'date'] = newDate
+            print(f"Updated date for symbol {symbol_to_update}")
         else:
-            print("Pas de date existante dans le csv pour le symbol {symbol}")
-            return None  
+            print(f"Symbol {symbol_to_update} not found in the DataFrame. Inserting a new row.")
+            new_row = pd.DataFrame({'symbol': [symbol_to_update], 'date': [newDate]})
+            df = pd.concat([df, new_row], ignore_index=True)
+        df.to_csv(csv_file_path, index=False)
+
+    except Exception as e:
+        print(f"An error occurred when update_csv_file: {str(e)}")
 
 
 
 
 
 # the second approach for creating balance sheet 
-async def BalanceSheetCreation(symbol,balanceSheet_URL,Tous_les_Symbols_DBlist_set,Symbol_Date_BalanceSheetDF_Set,DataBaseName):
-    print("Company with symbol", symbol, "made balance sheet API call and is comparing the API data with the data in the database")
+async def BalanceSheetCreation(symbol,balanceSheet_URL,Symbol_Date_BalanceSheetDF_Set,DataBaseName,Symbol_Date_BalanceSheetDF_FileName):
     
+    print("Company with symbol '", symbol, "'made balance sheet API call ")
+    CompanyBalanceSheet_UpdatingTreatement=False
+    CompanyBalanceSheet_FirstTimeTreatement=False
     # api_url = f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{symbol}?apikey={api_key}"
     # https://financialmodelingprep.com/api/v3/balance-sheet-statement
 
@@ -79,23 +106,46 @@ async def BalanceSheetCreation(symbol,balanceSheet_URL,Tous_les_Symbols_DBlist_s
     # travailler avec le set car c'est beaucoup plus pratique et rapide dans les tests de check d'existence d'un élément dans un set
     
     symbol_to_check = symbol
-    if symbol_to_check in Tous_les_Symbols_DBlist_set:
-        companyDataExistsinBalanceSheetDB=True
-        print(f"{symbol_to_check} exists in the set of symbols.")
+
+    #symbolExistence_in_the_csv is with type date
+    symbolDate_if_Exists_in_the_csv= find_date_by_symbol(symbol,Symbol_Date_BalanceSheetDF_Set)
+
+    if symbolDate_if_Exists_in_the_csv!=None:
+       CompanyBalanceSheet_UpdatingTreatement =True
+       CompanyBalanceSheet_FirstTimeTreatement=False
+       print(f">>{symbol_to_check} exists in the set of csv and we are going to check if the data is up to date or not .")
     else:
-        print(f"{symbol_to_check} does not exist in the set of symbols.")
-        companyDataExistsinBalanceSheetDB=False
+        print(f">>{symbol_to_check} does not exist in the set of csv and we are going to create it for the first time .")
+        CompanyBalanceSheet_UpdatingTreatement=False
+        CompanyBalanceSheet_FirstTimeTreatement=True
 
 
-    if companyDataExistsinBalanceSheetDB:
+
+    if CompanyBalanceSheet_FirstTimeTreatement:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_url) as response:
+                data = await response.json()
+                data[0]['symbol'] = data[0]['symbol']
+                print("Data globale response ")
+                print(data)
+                DataBaseName.insert_many(data)
+                print(f"Inserted {symbol} balance sheet data into the database.")
+                update_csv_file(Symbol_Date_BalanceSheetDF_FileName, symbol, data[0]['date'])
+
+                if '_id' in data[0]:
+                    data[0]['_id'] = str(data[0]['_id'])
+
+
+
+
+    if CompanyBalanceSheet_UpdatingTreatement:
         async with aiohttp.ClientSession() as session:
             async with session.get(api_url) as response:
                     data = await response.json()
                     print(data[0]['symbol'])
                     api_date = datetime.datetime.strptime(data[0]['date'], '%Y-%m-%d')
-                    company_csv_date_str=find_date_by_symbol(symbol,Symbol_Date_BalanceSheetDF_Set)
                     
-                    company_csv_date = datetime.datetime.strptime(company_csv_date_str, '%Y-%m-%d')
+                    company_csv_date = datetime.datetime.strptime(symbolDate_if_Exists_in_the_csv, '%Y-%m-%d')
 
 
                     if api_date > company_csv_date:
@@ -104,23 +154,17 @@ async def BalanceSheetCreation(symbol,balanceSheet_URL,Tous_les_Symbols_DBlist_s
                         data[0]['symbol'] = data[0]['symbol']+"_"+company_csv_date.strftime("%Y-%m-%d")
                         data[0]['date'] = company_csv_date.strftime("%Y-%m-%d")
 
+
                         DataBaseName.insert_one(data[0])
+                        update_csv_file(Symbol_Date_BalanceSheetDF_FileName, symbol, data[0]['date'])
 
-
-
-                        print(f"Updated {symbol} balance sheet data in the database.")
+                        print(f">>Updated {symbol} balance sheet data in the database.")
                     else:
                         print(f"{symbol} balance sheet data in the database is up to date.")
-    # else:
-    #     async with aiohttp.ClientSession() as session:
-    #         async with session.get(api_url) as response:
-    #             data = await response.json()
-    #             data[0]['symbol'] = data[0]['symbol']
-    #             DataBaseName.insert_one(data[0])
-    #             print(f"Inserted {symbol} balance sheet data into the database.")
+
                 
-                if '_id' in data[0]:
-                    data[0]['_id'] = str(data[0]['_id'])
+                    if '_id' in data[0]:
+                        data[0]['_id'] = str(data[0]['_id'])
 
     return JSONResponse(content=data[0])  
 
@@ -130,13 +174,13 @@ async def BalanceSheetCreation(symbol,balanceSheet_URL,Tous_les_Symbols_DBlist_s
 @BS_Annual.get('/BalanceSheetCreationAPI')
 async def Insert_BS_Annual_information():
 
-    dataframe = ['AAPL', 'LMNR']
+    dataframe = ['AAPL', 'LMNR','GO']
 
-    companiesSymbolsSet=get_company_symbols()
+    Symbol_Date_BalanceSheetDF_FileName="company_symbol_date.csv"
 
     Symbol_Date_BalanceSheetDF_Set=return_CompanyLatestBalanceSheet_Date_Symbol_Set("company_symbol_date.csv")
 
-    awaitable_tasks = [BalanceSheetCreation(symbol,'https://financialmodelingprep.com/api/v3/balance-sheet-statement',companiesSymbolsSet,Symbol_Date_BalanceSheetDF_Set,companies_Annual_BalanceSheetCollection) for symbol in dataframe]
+    awaitable_tasks = [BalanceSheetCreation(symbol,'https://financialmodelingprep.com/api/v3/balance-sheet-statement',Symbol_Date_BalanceSheetDF_Set,companies_Annual_BalanceSheetCollection,Symbol_Date_BalanceSheetDF_FileName) for symbol in dataframe]
 
     results = await asyncio.gather(*awaitable_tasks)
 
@@ -253,7 +297,7 @@ async def create_BS_Annual_api(Symbol: str):
 @BS_Annual.get('/Insert_Annual_BalanceSheet_information_Comparison')
 async def Insert_BS_Annual_information():
 
-    dataframe = ['AAPL', 'LMNR']
+    dataframe = ['AAPL', 'LMNR',"GO"]
 
     awaitable_tasks = [CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol) for symbol in dataframe]
 
