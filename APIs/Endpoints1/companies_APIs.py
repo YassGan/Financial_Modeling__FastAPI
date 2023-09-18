@@ -5,6 +5,9 @@ from models.Sector import Sector
 
 from config.db import get_database 
 
+from schemas.Sector import serializeList2
+
+
 from APIs.Endpoints1.sectors_APIs import find_sector_id_by_name
 from APIs.Endpoints1.exchange_APIs import find_Exchange_id_by_name
 from APIs.Endpoints1.countries_APIs import find_Country_id_by_name  
@@ -46,6 +49,36 @@ def get_companies_collection():
 
 
 CompaniesCollection=get_companies_collection()
+
+
+
+
+
+
+def get_company_symbols():
+    try:
+        companies_collection = get_companies_collection()
+        all_companies = companies_collection.find({}, { "Symbol": 1 })
+        
+        if not all_companies:
+            return set()  # Return an empty set
+        
+        symbols = {str(company.get("Symbol")) for company in all_companies}  # Use set comprehension
+        
+        return symbols
+    except Exception as e:
+        raise e
+
+@Company.get("/getAllCompaniesFromDB")
+async def get_all_company_symbols():
+    symbols = get_company_symbols()
+    
+    if not symbols:
+        raise HTTPException(status_code=404, detail="No companies found in the database")
+    
+    return symbols
+
+
 
 
 
