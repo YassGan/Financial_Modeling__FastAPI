@@ -15,6 +15,45 @@ UtilsFunc=APIRouter()
 
 
 
+def filter_and_store_data(big_csv_url, output_csv_url, country, number):
+    try:
+        big_df = pd.read_csv(big_csv_url)
+        count = 0
+        filtered_data = []
+        for _, row in big_df.iterrows():
+            if row['country'] == country:
+                filtered_data.append(row.to_dict())
+                count += 1
+
+            if count >= number:
+                break
+
+        filtered_df = pd.DataFrame(filtered_data)
+        filtered_df.to_csv(output_csv_url, mode='a', header=False, index=False)
+
+
+        print(f"Filtered data for '{country}' with the first {number} rows saved to {output_csv_url}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+@UtilsFunc.get('/Updating_CSV_1000_Element')
+async def CompaniesCreationApiInsertMany(): 
+    filter_and_store_data("OldCSV.csv","CSV_1000_Element.csv","FR",7)
+
+@UtilsFunc.get('/Updating_CSV_1000_Element/{OldCSV}/{CSV_1000_Element}/{Country}/{Number}')
+async def CompaniesCreationApiInsertMany(OldCSV:str,CSV_1000_Element:str,Country:str,Number:int): 
+    filter_and_store_data(OldCSV,CSV_1000_Element,Country,Number)
+
+
+
+
+
+
+
+
+
+
+
 
 
 

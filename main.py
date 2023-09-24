@@ -15,10 +15,8 @@ from APIs.Endpoints1.Industries_APIs import Industry
 from APIs.Endpoints1.companiesFiltering import CompanyFiltering 
 
 
-from APIs.Endpoints2.balanceSheetAnnual import BS_Annual 
-from APIs.Endpoints2.balanceSheetQuarter import BS_Quarter
+from APIs.Endpoints2.Financial_Information import Financial_Info 
 
-from APIs.Endpoints2.incomeStatementAnnual import IncomeStatement_Annual
 
 
 #import APIs.dataManipulation
@@ -43,10 +41,6 @@ app.include_router(Company)
 app.include_router(CompanyFiltering)
 
 
-app.include_router(BS_Annual)
-app.include_router(BS_Quarter)
-
-
-app.include_router(IncomeStatement_Annual)
+app.include_router(Financial_Info)
 
 

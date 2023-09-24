@@ -358,11 +358,10 @@ def CompaniesCreationProcess(NewDataFrameValues):
 # API that launches the function creatingExchanges
 @Company.get('/creatingCompaniesWithInsertMany')
 async def CompaniesCreationApiInsertMany(): 
-    Df=Function_Intersection_Old_New_CSV()
-    CompaniesCreationProcess(Df)
+    #Df=Function_Intersection_Old_New_CSV()
+    DataFrame_1000 = pd.read_csv("CSV_1000_Element.csv", encoding='utf-8')
 
-
-
+    CompaniesCreationProcess(DataFrame_1000)
 
 
 

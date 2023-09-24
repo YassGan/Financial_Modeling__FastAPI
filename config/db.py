@@ -1,16 +1,35 @@
 from pymongo import MongoClient
 from pymongo.database import Database
 
+# #Old Satured DataBase 
 # Define the MongoDB Cloud credentials and database details as variables
-USERNAME = "financialmetamodeling"
-PASSWORD = "financialmetamodeling"
+# USERNAME = "financialmetamodeling"
+# PASSWORD = "financialmetamodeling"
+# CLUSTER_NAME = "cluster0"
+# DATABASE_NAME = "Financial_Meta_ModelingDB"
+
+
+# # mongodb+srv://financialmetamodeling:financialmetamodeling@cluster0.h6y69zd.mongodb.net/Financial_Meta_ModelingDB?retryWrites=true&w=majority
+# MONGO_CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER_NAME}.h6y69zd.mongodb.net/{DATABASE_NAME}?retryWrites=true&w=majority"
+
+
+
+USERNAME = "mupeers1000"
+PASSWORD = "mupeers1000"
 CLUSTER_NAME = "cluster0"
 DATABASE_NAME = "Financial_Meta_ModelingDB"
 
 
-# mongodb+srv://financialmetamodeling:financialmetamodeling@cluster0.h6y69zd.mongodb.net/Financial_Meta_ModelingDB?retryWrites=true&w=majority
+# mongodb+srv://mupeers1000:mupeers1000@cluster0.jw2gohm.mongodb.net/Financial_Meta_ModelingDB?retryWrites=true&w=majority
+MONGO_CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER_NAME}.jw2gohm.mongodb.net/{DATABASE_NAME}?retryWrites=true&w=majority"
 
-MONGO_CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER_NAME}.h6y69zd.mongodb.net/{DATABASE_NAME}?retryWrites=true&w=majority"
+
+
+
+
+
+
+
 client = MongoClient(MONGO_CONNECTION_STRING, maxPoolSize=10)
 #Using connection Pooling to reuse established connections instead of creating a new connection every time. This can significantly reduce connection overhead.
 def get_database() -> Database:

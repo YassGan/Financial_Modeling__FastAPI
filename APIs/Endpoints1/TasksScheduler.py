@@ -36,6 +36,9 @@ def run_job():
 
 
 
+
+
+
     print("")
     print("->->->->->->->->-> Beggining of the create_sectors_from_dataframe Function -<-<-<-<-<-<-<-<-<")
     create_sectors_from_dataframe(DataFrameToWorkWith)
