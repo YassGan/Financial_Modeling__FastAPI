@@ -19,6 +19,7 @@ from APIs.Endpoints2.Financial_Information import Financial_Info
 from APIs.Endpoints2.Get_Financial_Information import Get_Financial_Info 
 
 from APIs.Endpoints2.Quotes import Quotes 
+from APIs.Endpoints2.Get_Quotes import Get_Quotes 
 
 
 
@@ -48,5 +49,6 @@ app.include_router(Financial_Info)
 app.include_router(Get_Financial_Info)
 
 app.include_router(Quotes)
+app.include_router(Get_Quotes)
 
 

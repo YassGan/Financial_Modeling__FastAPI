@@ -96,7 +96,7 @@ async def find_all_sectors():
 import time
 from datetime import datetime
 
-def get_all_BalanceSheetAnnual_Data(symbol,start_date, end_date,maxElem,StatementType,Frequency):
+def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Frequency):
     try:
 
         if(start_date):
@@ -183,8 +183,8 @@ from datetime import datetime
 
 #A curl example to this api 
 #http://localhost:1001/get_all_BalanceSheetAnnual?symbol=GOOS.TO&start_date_str=2018-01-05&end_date_str=2022-01-05&limit=10&StatementType=PL&Frequency=Q
-@Get_Financial_Info.get('/get_all_BalanceSheetAnnual')
-def get_balance_sheet_annual(
+@Get_Financial_Info.get('/financials')
+def get_financials_API(
     symbol: str = Query(None, title="symbol"),
     start_date_str: str = Query(None, title="start_date_str"),
     end_date_str: str = Query(None, title="end_date_str"),
@@ -197,6 +197,6 @@ def get_balance_sheet_annual(
     try:
 
 
-        return get_all_BalanceSheetAnnual_Data(symbol,start_date_str, end_date_str,limit,StatementType,Frequency)
+        return get_Financials_Data(symbol,start_date_str, end_date_str,limit,StatementType,Frequency)
     except Exception as e:
         raise e

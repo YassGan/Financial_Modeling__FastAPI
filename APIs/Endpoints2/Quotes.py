@@ -111,6 +111,9 @@ async def Quotes_Creation(symbol, dataframe):
                 data = await response.json()
                 # Check if data is not empty before accessing its elements
                 if data and len(data.get("historical", [])) > 0:
+                    for obj in data.get("historical", []):
+                        obj["symbol"] = symbol
+                        
                     QuotesCollection.insert_many(data["historical"])
 
                     Symbol_Date_Quotes_CSV_FileName = "Quotes_CSV_file/Quotes_CSV_file.csv"
