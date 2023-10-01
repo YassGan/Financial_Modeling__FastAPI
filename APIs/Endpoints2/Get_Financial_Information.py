@@ -226,8 +226,8 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
             end_date=aux
 
 
-            print("Starting date ",start_date)
-            print("Ending date ",end_date)
+            # print("Starting date ",start_date)
+            # print("Ending date ",end_date)
 
 
 
@@ -237,6 +237,33 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
 
         if StatementType=="CF" and Frequency=="Q":
             Collection=CashFlowQuarterCollection
+
+
+        if StatementType=="CF" and Frequency=="LTM":
+
+            # print("Before ")
+            # print("start_date ",start_date)
+            # print("Before ")
+
+            adjusted_LTM_start_date=LTM_date_adjuster(start_date)
+            start_date=adjusted_LTM_start_date
+
+            last_Year_LTM_start_date=get_previous_year_date(start_date)
+            end_date=last_Year_LTM_start_date
+            Collection=CashFlowQuarterCollection
+
+            aux=start_date
+            start_date=end_date
+            end_date=aux
+
+
+            # print("Starting date ",start_date)
+            # print("Ending date ",end_date)
+
+
+
+
+
 
 
         print("")
