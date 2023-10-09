@@ -154,6 +154,9 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency):
         end_time = time.time()
         print(f"Elapsed Time: {end_time - start_time:.2f} seconds")
 
+        reversed_data = result[::-1]
+        result = serializeList2(reversed_data)
+
         return result
     except Exception as e:
         raise e
@@ -164,7 +167,7 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency):
 
 
 #A curl example to this api 
-#http://localhost:1001/quotes?symbol=GOOS.TO&start_date_str=2018-01-05&end_date_str=2022-01-05&Frequency=W
+#http://localhost:1001/quotes?symbol=LYFT&start_date_str=2018-01-05&end_date_str=2022-01-05&Frequency=W
 @Get_Quotes.get('/quotes')
 def get_balance_sheet_annual(
     symbol: str = Query(None, title="symbol"),

@@ -281,7 +281,13 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
             return []
 
         start_time = time.time()
+
+
         result = serializeList2(all_BalanceSheetAnnual)
+
+        reversed_data = result[::-1]
+        result = serializeList2(reversed_data)
+
         end_time = time.time()
         print(f"Elapsed Time: {end_time - start_time:.2f} seconds")
 
