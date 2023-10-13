@@ -38,6 +38,18 @@ def get_AvailableCurrencies_collection():
 AvailableCurrenciesCollection=get_AvailableCurrencies_collection()
 
 
+def get_FOREXIndexes_collection():
+    db = get_database()
+    FOREX_Indexes=db["FOREX_Indexes"]
+    FOREX_Indexes.create_index([("_id", 1)])
+    return FOREX_Indexes
+
+FOREX_IndexesCollection=get_FOREXIndexes_collection()
+
+
+
+
+
 def return_currencies_pairs():
     print("Making an api call to get the currencies pairs")
     api_url = f"https://financialmodelingprep.com/api/v3/symbol/available-forex-currency-pairs?apikey={api_key}"
@@ -65,7 +77,8 @@ async def return_currencies_pairs_API():
 
 def All_currencies_list(array_of_currencies_pairs):
     currency_names = [item["currency"] for item in array_of_currencies_pairs]
-    return currency_names
+    unique_list = list(set(currency_names))
+    return unique_list
 
 
 @FOREX.get("/return_all_currencies_list_API")
@@ -87,34 +100,111 @@ async def createAvailableCurrencies_API():
 
     currencies_list = All_currencies_list(return_currencies_pairs())
 
+
+    print(">>> Currencies list from the dataframe ",len(df))
+    print(df)
+    print("")
+    print("")
+    print(">>> Currencies list from the API with length ",len(currencies_list))
+    print(currencies_list)
+
     currency_objects = []
 
-    # Iterate through the symbols list and match with DataFrame
-
     for Currency_Code in currencies_list:
-        match = df[df['Currency_Code'] == Currency_Code]
+        match = df[(df['Currency_Code'] == Currency_Code) & (df['Status'] != 'inserted')]
         if not match.empty:
             Symbol = match.iloc[0]['Symbol']
             Currency_Full_Name = match.iloc[0]['Currency_Full_Name']
 
-            
-            # Check if the currency already exists in the database
-            existing_currency = AvailableCurrenciesCollection.find_one({"Currency_Code": Currency_Code})
-            
-            if not existing_currency:
-                currency_objects.append({
+            currency_objects.append({
                     "Currency_Code": Currency_Code,
                     "Full_Name": Currency_Full_Name,
                     "Symbol": Symbol
                 })
-
-    # Insert only the currencies that don't already exist
+            
     if currency_objects:
+        print("Currencies to be created ")
         AvailableCurrenciesCollection.insert_many(serializeList2(currency_objects))
-        
-    print(currency_objects)
+        df.loc[df['Currency_Code'].isin(currencies_list), 'Status'] = 'inserted'
+        df.to_csv(currencies_CSV_FileName, index=False)
+
     return currency_objects
     
+
+
+
+
+
+
+@FOREX.get("/createFOREX_Indexes__API")
+async def createAvailableCurrencies_API():
+    DB_Available_Currencies=serializeList2(AvailableCurrenciesCollection.find({}))
+    currencies_objects_list_from_API = return_currencies_pairs()
+    print(">>>>> currencies_objects_list_from_API")
+    print(currencies_objects_list_from_API)
+
+    print(">>>>> DB_Available_Currencies")
+    print(DB_Available_Currencies)
+
+    print("DB_FOREX_Indexes")
+    print(serializeList2(FOREX_IndexesCollection.find({})))
+
+    FOREXsymbolsList = [obj["symbol"] for obj in serializeList2(FOREX_IndexesCollection.find({}))]
+
+    print(">>>>>>>>>> FOREXsymbolsList")
+
+    print(FOREXsymbolsList)
+
+    print(">>>>>>>>>>>>>>>>>")
+
+    FOREX_Indexes=[]
+
+    for currency_object in currencies_objects_list_from_API:
+        # adding a condition to verify if the forex index exists already in the database or not 
+        if currency_object["symbol"] not in FOREXsymbolsList:
+
+            print(">>> Trating the index  ",currency_object['name'])
+            currency_parts = currency_object['name'].split('/')
+            first_currency=currency_parts[0]
+            second_currency=currency_parts[1]
+
+            for DB_available_currency_object in DB_Available_Currencies:
+                if first_currency == DB_available_currency_object['Currency_Code']:
+                    print("The first_currency ",first_currency ,"_id ",DB_available_currency_object['_id'])
+                    first_currency_id=DB_available_currency_object['_id']
+
+            for DB_available_currency_object in DB_Available_Currencies:
+                if second_currency == DB_available_currency_object['Currency_Code']:
+                    print("The second_currency ",second_currency ,"_id ",DB_available_currency_object['_id'])
+                    final_currency_id=DB_available_currency_object['_id']
+
+            FOREX_Indexes.append({
+                        "name": currency_object["name"],
+                        "symbol": currency_object["symbol"],
+                        "intial_currency": first_currency,
+                        "intial_currency_id": first_currency_id,
+                        "final_currency": second_currency,
+                        "final_currency_id": final_currency_id
+                    })      
+    if len(serializeList2(FOREX_Indexes))>0:   
+        FOREX_IndexesCollection.insert_many(serializeList2(FOREX_Indexes))
+    return("createFOREX_Indexes__API")
+
+
+
+
+
+
+
+
+@FOREX.get("/AvailableCurrenciesCollection_API")
+async def createAvailableCurrencies_API():
+    return(serializeList2(AvailableCurrenciesCollection.find({})))
+
+
+
+
+
 
 
 
