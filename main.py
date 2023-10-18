@@ -22,6 +22,7 @@ from APIs.Endpoints2.Get_Quotes import Get_Quotes
 
 
 from APIs.Endpoints3.FOREX import FOREX 
+from APIs.Endpoints3.FOREXQuotes import FOREX_Quotes 
 
 
 
@@ -55,4 +56,5 @@ app.include_router(Get_Quotes)
 
 
 app.include_router(FOREX)
+app.include_router(FOREX_Quotes)
 

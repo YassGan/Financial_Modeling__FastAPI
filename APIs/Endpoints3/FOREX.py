@@ -35,6 +35,7 @@ def get_AvailableCurrencies_collection():
     Available_Currencies.create_index([("_id", 1)])
 
     return Available_Currencies
+
 AvailableCurrenciesCollection=get_AvailableCurrencies_collection()
 
 

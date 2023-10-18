@@ -31,13 +31,26 @@ def get_Quotes_collection():
 QuotesCollection=get_Quotes_collection()
 
 
+def get_FOREX_Quotes_collection():
+    db = get_database()
+    FOREX_Quotes=db["FOREX_Quotes"]
+    FOREX_Quotes.create_index([("_id", 1)])
+    return FOREX_Quotes
+
+FOREX_QuotesCollection=get_FOREX_Quotes_collection()
+
+
+
+
+
+
 
 
 
 import time
 from datetime import datetime
 
-def get_Quotes_Data(symbol,start_date, end_date,Frequency):
+def get_Quotes_Data(symbol,start_date, end_date,Frequency,Collection):
     try:
 
         if(start_date):
@@ -56,12 +69,22 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency):
             raise HTTPException(status_code=404, detail="Frequency type required")
 
 
-        ReturnedQuotes = QuotesCollection.find({
+
+        if Collection=="QuotesCollection":
+            CollectiontoWork=QuotesCollection
+
+        if Collection=="FOREXQuotesCollection":
+            CollectiontoWork=FOREX_QuotesCollection
+
+        ReturnedQuotes = CollectiontoWork.find({
             "$and": [
                 {"date": {"$gte": start_date, "$lte": end_date}},
                 {"symbol": symbol}  
             ]
         }).sort("date", 1)
+
+
+
 
         if Frequency=="D":
             daily_data = serializeList2(ReturnedQuotes)
@@ -85,23 +108,16 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency):
             numeric_cols = ReturnedQuotes_df.select_dtypes(include=['number'])
 
             weekly_df = numeric_cols.resample('W').mean()
-
             # resetting the date column
             weekly_df.reset_index(inplace=True)
 
             weekly_df['symbol']=symbol
-
-
             # Print the resulting DataFrame
             print(weekly_df)
             print("weekly df")
             print(weekly_df)
             weekly_data = weekly_df.to_dict(orient="records")
             result=weekly_data
-
-
-
-
 
 
 
@@ -138,14 +154,6 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency):
 
 
 
-
-
-
-
-
-
-            
-
         if not ReturnedQuotes:
             return []
 
@@ -177,6 +185,22 @@ def get_balance_sheet_annual(
 ):
     
     try:
-        return get_Quotes_Data(symbol,start_date_str, end_date_str,Frequency)
+        return get_Quotes_Data(symbol,start_date_str, end_date_str,Frequency,"QuotesCollection")
+    except Exception as e:
+        raise e
+    
+
+
+#http://localhost:1001/forex?symbol=LYFT&start_date_str=2018-01-05&end_date_str=2022-01-05&Frequency=W
+@Get_Quotes.get('/forex')
+def get_balance_sheet_annual(
+    symbol: str = Query(None, title="symbol"),
+    start_date_str: str = Query(None, title="start_date_str"),
+    end_date_str: str = Query(None, title="end_date_str"),
+    Frequency: str = Query(None, title="Frequency"),
+):
+    
+    try:
+        return get_Quotes_Data(symbol,start_date_str, end_date_str,Frequency,"FOREXQuotesCollection")
     except Exception as e:
         raise e

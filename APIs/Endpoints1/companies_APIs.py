@@ -61,9 +61,9 @@ def get_company_symbols():
         all_companies = companies_collection.find({}, { "Symbol": 1 })
         
         if not all_companies:
-            return set()  # Return an empty set
+            return set()  
         
-        symbols = {str(company.get("Symbol")) for company in all_companies}  # Use set comprehension
+        symbols = {str(company.get("Symbol")) for company in all_companies}  
         
         return symbols
     except Exception as e:

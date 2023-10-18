@@ -1,4 +1,5 @@
 
+
 from fastapi import HTTPException, FastAPI, Response, status, APIRouter
 from fastapi.responses import JSONResponse
 
@@ -7,6 +8,8 @@ import pandas as pd
 from config.db import get_database 
 from APIs.Endpoints1.companies_APIs import get_company_symbols 
 
+from APIs.Endpoints3.FOREX import FOREX_IndexesCollection 
+
 
 import os
 import asyncio
@@ -14,19 +17,21 @@ import aiohttp
 import time
 import datetime
 
-Quotes = APIRouter()
+FOREX_Quotes = APIRouter()
 api_key = os.getenv("API_KEY")
 
 
 
 
-def get_Quotes_collection():
+def get_FOREX_Quotes_collection():
     db = get_database()
-    Quotes=db["Quotes"]
-    Quotes.create_index([("_id", 1)])
-    return Quotes
+    FOREX_Quotes=db["FOREX_Quotes"]
+    FOREX_Quotes.create_index([("_id", 1)])
+    return FOREX_Quotes
 
-QuotesCollection=get_Quotes_collection()
+FOREX_QuotesCollection=get_FOREX_Quotes_collection()
+
+
 
 
 
@@ -68,8 +73,27 @@ def update_csv_with_symbol_and_date(csv_url, symbol, date):
 
 
 
-async def Quotes_Creation(symbol, dataframe):
-    print("Company with symbol '", symbol, "' made Quotes API call ")
+def get_FOREXQUOTES_symbols():
+    try:
+        all_FOREXQuotes = FOREX_IndexesCollection.find({}, { "symbol": 1 })
+        
+        if not all_FOREXQuotes:
+            return set()  
+        
+        symbols = {str(company.get("symbol")) for company in all_FOREXQuotes}  
+        
+        return symbols
+    except Exception as e:
+        raise e
+
+
+
+
+
+
+
+async def FOREX_Quotes_Creation(symbol, dataframe):
+    print("ForexIndex with symbol '", symbol, "' made FOREX Quotes API call ")
     creation_Order=False
     start_date = "1950-01-01"
 
@@ -86,11 +110,11 @@ async def Quotes_Creation(symbol, dataframe):
 
     if symbolDate_if_Exists_in_the_DataFrame != formatted_todayDate:
         if(symbolDate_if_Exists_in_the_DataFrame==None):
-            print(f"-->>{symbol_to_check} does not exist in the csv and we are going to add quotes for the first time  ")
+            print(f"-->>{symbol_to_check} does not exist in the csv and we are going to add FOREXquote for the first time  ")
             creation_Order=True
 
         else:
-            print(f"-->>{symbol_to_check} exists in the csv and we are going to add new quotes and update the last date in the csv ")
+            print(f"-->>{symbol_to_check} exists in the csv and we are going to add new FOREX quote and update the last date in the csv ")
             start_date = symbolDate_if_Exists_in_the_DataFrame
             creation_Order=True
     else:
@@ -114,10 +138,10 @@ async def Quotes_Creation(symbol, dataframe):
                     for obj in data.get("historical", []):
                         obj["symbol"] = symbol
                         
-                    QuotesCollection.insert_many(data["historical"])
+                    FOREX_QuotesCollection.insert_many(data["historical"])
 
-                    Symbol_Date_Quotes_CSV_FileName = "Quotes_CSV_file/Quotes_CSV_file.csv"
-                    update_csv_with_symbol_and_date(Symbol_Date_Quotes_CSV_FileName, symbol, formatted_todayDate)
+                    Symbol_Date_FOREXQuotes_CSV_FileName = "FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv"
+                    update_csv_with_symbol_and_date(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
 
                     print(f"The compnay ' {symbol}' has Quotes data inserted into the database and updating the CSV quotes file ")
                 else:
@@ -126,22 +150,32 @@ async def Quotes_Creation(symbol, dataframe):
 
 
 
+def get_FOREX_Quotes_symbols():
+    print("The get FOREX quotes symbols ")
 
 
-@Quotes.get('/Quotes_Creation_API')
-async def Insert_Quotes_Creation_API():
 
-    allCompaniesSymobls = get_company_symbols()
-    #allCompaniesSymbolsList = list(allCompaniesSymobls)
 
-    allCompaniesSymbolsList=["LYFT","ENGIY","SBGSY","CSTM","TLPFY","VLEEY","SDXAY","FURCF","LVMUY","HESAY"]
+@FOREX_Quotes.get('/FOREX_Quotes_Creation_API')
+async def Insert_FOREX_Quotes_Creation_API():
 
-    print("Number of all the symbols ")
-    print(len(allCompaniesSymbolsList))
-    
+    all_FOREX_Quotes_Symobls = get_FOREX_Quotes_symbols()
+    #all_FOREX_Quotes_SymoblsList = list(all_FOREX_Quotes_Symobls)
+
+    all_FOREX_Quotes_SymoblsList=["EURUSD","EURTND"]
+
+    print("Quotes indexes symbols ")
+    print(get_FOREXQUOTES_symbols())
+
+    if all_FOREX_Quotes_Symobls is not None:
+        print(len(all_FOREX_Quotes_Symobls))
+    else:
+        print("all_FOREX_Quotes_Symobls is None, check your initialization logic.")
+
+        
 
     #Reading the quotes csv file that contains the symbol and the date information of the companies 
-    csv_file_path = 'Quotes_CSV_file/Quotes_CSV_file.csv'
+    csv_file_path = 'FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv'
 
     SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 
@@ -150,15 +184,10 @@ async def Insert_Quotes_Creation_API():
     results = []
     
     for i in range(0, 30, batch_size):
-        symbols_batch = allCompaniesSymbolsList[i:i + batch_size]
-        awaitable_tasks = [Quotes_Creation(symbol, SymbolDateQuotesDF) for symbol in symbols_batch]
+        symbols_batch = all_FOREX_Quotes_SymoblsList[i:i + batch_size]
+        awaitable_tasks = [FOREX_Quotes_Creation(symbol, SymbolDateQuotesDF) for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     
-    return {"message": "Quotes creation process is complete"}
-
-
-
-
-
+    return {"message": "FOREX Quotes creation process is complete"}
 
