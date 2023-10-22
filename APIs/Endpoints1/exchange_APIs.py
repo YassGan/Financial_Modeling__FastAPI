@@ -1,5 +1,6 @@
 from config.db import get_database 
 from fastapi import APIRouter,Response
+from schemas.Industry import serializeList
 
 import pandas as pd
 
@@ -19,9 +20,22 @@ def get_exchange_collection():
 
 
 
+
+
+
 exchangeCollection=get_exchange_collection()
 
 
+
+# Function that returns all the exchanges from the database
+def gettingAllExchangess():
+    return serializeList(exchangeCollection.find())
+
+
+#API to get all the Exchange from the database
+@Exchange.get('/AllExchanges')
+async def AllExchanges_API():
+    return gettingAllExchangess()
 
 
 

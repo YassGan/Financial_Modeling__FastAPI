@@ -175,32 +175,32 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency,Collection):
 
 
 #A curl example to this api 
-#http://localhost:1001/quotes?symbol=LYFT&start_date_str=2018-01-05&end_date_str=2022-01-05&Frequency=W
+#http://localhost:1001/quotes?symbol=LYFT&start_date=2018-01-05&end_date=2022-01-05&Frequency=W
 @Get_Quotes.get('/quotes')
 def get_balance_sheet_annual(
     symbol: str = Query(None, title="symbol"),
-    start_date_str: str = Query(None, title="start_date_str"),
-    end_date_str: str = Query(None, title="end_date_str"),
+    start_date: str = Query(None, title="start_date"),
+    end_date: str = Query(None, title="end_date"),
     Frequency: str = Query(None, title="Frequency"),
 ):
     
     try:
-        return get_Quotes_Data(symbol,start_date_str, end_date_str,Frequency,"QuotesCollection")
+        return get_Quotes_Data(symbol,start_date, end_date,Frequency,"QuotesCollection")
     except Exception as e:
         raise e
     
 
 
-#http://localhost:1001/forex?symbol=LYFT&start_date_str=2018-01-05&end_date_str=2022-01-05&Frequency=W
+#http://localhost:1001/forex?symbol=LYFT&start_date=2018-01-05&end_date=2022-01-05&Frequency=W
 @Get_Quotes.get('/forex')
 def get_balance_sheet_annual(
     symbol: str = Query(None, title="symbol"),
-    start_date_str: str = Query(None, title="start_date_str"),
-    end_date_str: str = Query(None, title="end_date_str"),
+    start_date: str = Query(None, title="start_date"),
+    end_date: str = Query(None, title="end_date"),
     Frequency: str = Query(None, title="Frequency"),
 ):
     
     try:
-        return get_Quotes_Data(symbol,start_date_str, end_date_str,Frequency,"FOREXQuotesCollection")
+        return get_Quotes_Data(symbol,start_date, end_date,Frequency,"FOREXQuotesCollection")
     except Exception as e:
         raise e

@@ -26,6 +26,7 @@ import requests
 
 Financial_Info = APIRouter()
 api_key = os.getenv("API_KEY")
+FOREX=APIRouter()
 
 
 
@@ -50,6 +51,12 @@ FOREX_IndexesCollection=get_FOREXIndexes_collection()
 
 
 
+#API to get all the forex indexes from the database
+@FOREX.get('/AllFOREX_Indexes')
+async def find_all_forex_indexes():
+    return serializeList2(FOREX_IndexesCollection.find())
+
+
 
 def return_currencies_pairs():
     print("Making an api call to get the currencies pairs")
@@ -62,7 +69,6 @@ def return_currencies_pairs():
 
 
 
-FOREX=APIRouter()
 
 
 
@@ -116,11 +122,13 @@ async def createAvailableCurrencies_API():
         if not match.empty:
             Symbol = match.iloc[0]['Symbol']
             Currency_Full_Name = match.iloc[0]['Currency_Full_Name']
+            Currency_flag = match.iloc[0]['flag']
 
             currency_objects.append({
                     "Currency_Code": Currency_Code,
                     "Full_Name": Currency_Full_Name,
-                    "Symbol": Symbol
+                    "Symbol": Symbol,
+                    "Flag": Currency_flag
                 })
             
     if currency_objects:
@@ -129,7 +137,7 @@ async def createAvailableCurrencies_API():
         df.loc[df['Currency_Code'].isin(currencies_list), 'Status'] = 'inserted'
         df.to_csv(currencies_CSV_FileName, index=False)
 
-    return currency_objects
+    return "currency_objects creation process is completed"
     
 
 

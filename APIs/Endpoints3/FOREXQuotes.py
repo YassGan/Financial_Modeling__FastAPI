@@ -37,6 +37,7 @@ FOREX_QuotesCollection=get_FOREX_Quotes_collection()
 
 
 
+
 def get_date_for_symbol(dataframe, symbol):
     # print("working with this dataframe")
     # print(dataframe)

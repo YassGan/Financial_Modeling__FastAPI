@@ -75,7 +75,7 @@ async def filter_companies(
         if country:
             query["country"] = {"$in": country}
 
-        projection = {"companyName": 1, "sector": 1, "industry": 1, "subregion": 1, "country": 1}
+        projection = {"companyName": 1, "sector": 1, "industry": 1, "subregion": 1, "country": 1,"description": 1}
 
         if keywords:
             keywords_list = keywords.split()
@@ -107,6 +107,8 @@ async def filter_companies(
                 "sector": company.get("sector", None),
                 "industry": company.get("industry", None),
                 "country": company.get("country", None),
+                "description": company.get("description", None),
+
             }
 
             # Handle any problematic float values by converting them to JSON-compliant values
@@ -188,7 +190,7 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
 
 
 
-
+# http://localhost:1001/infos/autoCompletete?query=app
 @CompanyFiltering.get("/infos/autoCompletete")
 async def autocomplete_company_name(query: str):
     if not query:

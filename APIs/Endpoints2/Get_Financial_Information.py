@@ -206,7 +206,7 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
 
 
 # LTM example, the company should have an income statement at the given date otherwise it will return an empty array 
-#http://localhost:1001/financials?symbol=AY&start_date_str=2015-04-05&limit=4&StatementType=PL&Frequency=LTM
+#http://localhost:1001/financials?symbol=AY&start_date=2015-04-05&limit=4&StatementType=PL&Frequency=LTM
         if StatementType=="PL" and Frequency=="LTM":
             Collection=IncomeStatementQuarterCollection
 
@@ -302,12 +302,12 @@ from datetime import datetime
 
 
 #A curl example to this api 
-#http://localhost:1001/financials?symbol=GOOS.TO&start_date_str=2018-01-05&end_date_str=2022-01-05&limit=10&StatementType=PL&Frequency=Q
+#http://localhost:1001/financials?symbol=GOOS.TO&start_date=2018-01-05&end_date=2022-01-05&limit=10&StatementType=PL&Frequency=Q
 @Get_Financial_Info.get('/financials')
 def get_financials_API(
     symbol: str = Query(None, title="symbol"),
-    start_date_str: str = Query(None, title="start_date_str"),
-    end_date_str: str = Query(None, title="end_date_str"),
+    start_date: str = Query(None, title="start_date"),
+    end_date: str = Query(None, title="end_date"),
     limit: str = Query(None, title="limit"),
     StatementType: str = Query(None, title="StatementType"),
     Frequency: str = Query(None, title="Frequency"),
@@ -316,7 +316,7 @@ def get_financials_API(
 ):
     try:
 
-        return get_Financials_Data(symbol,start_date_str, end_date_str,limit,StatementType,Frequency)
+        return get_Financials_Data(symbol,start_date, end_date,limit,StatementType,Frequency)
     except Exception as e:
         raise e
     

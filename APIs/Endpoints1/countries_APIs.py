@@ -43,6 +43,8 @@ def get_subregion_collection():
     subregions.create_index([("subregion", 1)], unique=True)
     return subregions
 
+subregionsCollection=get_subregion_collection()
+
 
 
 
@@ -128,7 +130,7 @@ def CreatingSubregion_API():
 
 # Function that returns all the subregions from the database
 def gettingAllSubregions():
-    return serializeList(get_subregion_collection().find())
+    return serializeList(subregionsCollection.find())
 
 
 #API to get all the industries from the database
@@ -139,7 +141,7 @@ async def AllSubregions_API():
 
 # Function that returns all the subregions from the database
 def gettingAllCountries():
-    return serializeList(get_countries_collection().find())
+    return serializeList(countriesCollection.find())
 
 
 #API to get all the AllSubregions from the database
