@@ -18,6 +18,21 @@ from config.db import get_database
 Get_Financial_Info = APIRouter()
 api_key = os.getenv("API_KEY")
 
+
+
+def get_ForexQuotes_collection():
+    db = get_database()
+    FOREX_Quotes=db["FOREX_Quotes"]
+    FOREX_Quotes.create_index([("_id", 1)])
+    return FOREX_Quotes
+ForexQuotesCollection=get_ForexQuotes_collection()
+
+
+
+
+
+
+
 def get_BalanceSheetAnnual_collection():
     db = get_database()
     Annual_Balance_Sheet=db["Annual_Balance_Sheet"]
@@ -311,15 +326,79 @@ def get_financials_API(
     limit: str = Query(None, title="limit"),
     StatementType: str = Query(None, title="StatementType"),
     Frequency: str = Query(None, title="Frequency"),
+    Currency:str=Query(None, title="Currency")
 
 
 ):
     try:
+        returnedData= get_Financials_Data(symbol,start_date, end_date,limit,StatementType,Frequency)
+        if(Currency is None):
+            return returnedData
+        else :
+            convertedCurrencyFinancialInformationArray=[]
+            print("We have a currency changing treatement")
+            for element in returnedData:
+                ConvettedElement=currency_converter(element,Currency)
+                convertedCurrencyFinancialInformationArray.append(ConvettedElement)
+            return(convertedCurrencyFinancialInformationArray)
 
-        return get_Financials_Data(symbol,start_date, end_date,limit,StatementType,Frequency)
     except Exception as e:
         raise e
     
+
+
+
+
+
+# This function just multiplies the values of the financial information 
+def multiply_values_by_factor(data, factor):
+    if isinstance(data, dict) and isinstance(factor, (int, float)):
+        result = {}
+        for key, value in data.items():
+            if isinstance(value, (int, float)):
+                result[key] = value * factor
+            else:
+                result[key] = value
+        return result
+    else:
+        return None
+
+
+
+# This function will return the Financial data conveted with a given currency 
+def currency_converter(FinancialData, EnteredCurrency):
+    convertedFinancialData = None
+
+    if isinstance(FinancialData, dict) and "date" in FinancialData and "reportedCurrency" in FinancialData:
+        date = FinancialData["date"]
+        reportedCurrency = FinancialData["reportedCurrency"]
+        print("date: ", date, " and symbol ", reportedCurrency + EnteredCurrency)
+
+        # Searching in the forex index collection
+        search_criteria = {
+            "date": date,
+            "symbol": reportedCurrency + EnteredCurrency
+        }
+
+        ReturnedForexQuote = ForexQuotesCollection.find(search_criteria)
+        print("--- Returned Forex Quote")
+        returnedForexQuote = serializeList2(ReturnedForexQuote)
+        print(returnedForexQuote)
+
+        if returnedForexQuote:
+            variable_to_use_for_conversion = returnedForexQuote[0]["vwap"]
+            convertedFinancialData = multiply_values_by_factor(FinancialData, variable_to_use_for_conversion)
+
+    if convertedFinancialData is not None:
+        return convertedFinancialData
+    else:
+        return None
+
+
+    
+
+
+
 
 @Get_Financial_Info.get("/date_LTM_Adjuster_tester/{entered_Date}")
 def date_LTM_Adjuster_tester_API(entered_Date: str):
