@@ -46,7 +46,7 @@ def find_sector_id_by_name(sectorName):
         return "sector not found "
     
 # API that calls the find_Country_id_by_name
-@Sector.get("/sectorMongoId/{sectorName}")
+@Sector.get("/v1/sectorMongoId/{sectorName}")
 def get_sector(sectorName: str):
     sectorid = find_sector_id_by_name(sectorName)
     return sectorid
@@ -116,7 +116,7 @@ def create_sectors_from_dataframe(DataF):
 
 
 # API that creates new sectors from the DataFrame 
-@Sector.get('/CreateSectorsFromDataFrame')
+@Sector.get('/v1/CreateSectorsFromDataFrame')
 async def create_sectors_api():
     DataF = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
@@ -124,7 +124,7 @@ async def create_sectors_api():
     return Response(status_code=201, content=result)
 
 #API to get all the sectors from the database
-@Sector.get('/AllSectors')
+@Sector.get('/v1/AllSectors')
 async def find_all_sectors():
     return serializeList2(get_sector_collection().find())
 

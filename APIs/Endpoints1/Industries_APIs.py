@@ -78,7 +78,7 @@ def create_new_industries(dataframe):
         return "----------> No new industries to create."
 
 # API that calls the function to create new industries
-@Industry.get('/CreateIndustries')
+@Industry.get('/v1/CreateIndustries')
 async def create_industries_api():
     dataframe = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
@@ -94,7 +94,7 @@ async def create_industries_api():
 
 
 #API to get all the industries from the database
-@Industry.get('/AllIndustries')
+@Industry.get('/v1/AllIndustries')
 async def find_all_industries():
     return serializeList(get_industry_collection().find())
 

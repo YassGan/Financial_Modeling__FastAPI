@@ -33,7 +33,7 @@ def gettingAllExchangess():
 
 
 #API to get all the Exchange from the database
-@Exchange.get('/AllExchanges')
+@Exchange.get('/v1/AllExchanges')
 async def AllExchanges_API():
     return gettingAllExchangess()
 
@@ -52,7 +52,7 @@ def find_Exchange_id_by_name(CPHCode):
         return "Exchange not found "
     
 # API that calls the find_Country_id_by_name
-@Exchange.get("/exchangeMongoId/{CPHCode}")
+@Exchange.get("/v1/exchangeMongoId/{CPHCode}")
 def get_exchange(CPHCode: str):
     exchangeid = find_Exchange_id_by_name(CPHCode)
     return exchangeid
@@ -99,7 +99,7 @@ def creatingExchanges(DataFrame):
 
 
 # API that launches the function creatingExchanges
-@Exchange.get('/creatingExchanges')
+@Exchange.get('/v1/creatingExchanges')
 async def CountriesListAPI(): 
     DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
    

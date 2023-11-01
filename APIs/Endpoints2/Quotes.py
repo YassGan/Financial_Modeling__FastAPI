@@ -128,7 +128,7 @@ async def Quotes_Creation(symbol, dataframe):
 
 
 
-@Quotes.get('/Quotes_Creation_API')
+@Quotes.get('/v1/Quotes_Creation_API')
 async def Insert_Quotes_Creation_API():
 
     allCompaniesSymobls = get_company_symbols()

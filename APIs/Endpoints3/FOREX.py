@@ -52,7 +52,7 @@ FOREX_IndexesCollection=get_FOREXIndexes_collection()
 
 
 #API to get all the forex indexes from the database
-@FOREX.get('/AllFOREX_Indexes')
+@FOREX.get('/v1/AllFOREX_Indexes')
 async def find_all_forex_indexes():
     return serializeList2(FOREX_IndexesCollection.find())
 
@@ -69,7 +69,7 @@ def return_currencies_pairs():
 
 
 
-
+ 
 
 
 @FOREX.get("/return_currencies_pairs_API")
@@ -206,7 +206,7 @@ async def createAvailableCurrencies_API():
 
 
 
-@FOREX.get("/AvailableCurrenciesCollection_API")
+@FOREX.get("/v1/AvailableCurrenciesCollection_API")
 async def createAvailableCurrencies_API():
     return(serializeList2(AvailableCurrenciesCollection.find({})))
 

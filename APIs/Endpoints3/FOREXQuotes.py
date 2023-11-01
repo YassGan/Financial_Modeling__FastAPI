@@ -85,7 +85,7 @@ def get_FOREXQUOTES_symbols():
         
         return symbols
     except Exception as e:
-        raise e
+        raise HTTPException(status_code=400, detail="Une erreur s'est produite lors de la récupération des données.")
 
 
 

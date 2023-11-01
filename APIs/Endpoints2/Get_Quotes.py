@@ -99,7 +99,8 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency,Collection):
             print(ReturnedQuotes_df)
 
 
-            ReturnedQuotes_df['date'] = pd.to_datetime(ReturnedQuotes_df['date'], format='%Y-%m-%d') 
+            ReturnedQuotes_df['date'] = pd.to_datetime(ReturnedQuotes_df['date'], format='%Y-%m-%d')
+
 
             # seting the date column to an index
             ReturnedQuotes_df.set_index('date', inplace=True)
@@ -167,7 +168,7 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency,Collection):
 
         return result
     except Exception as e:
-        raise e
+        raise HTTPException(status_code=400, detail="Une erreur s'est produite lors de la récupération des données.")
 
 
 
@@ -176,7 +177,7 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency,Collection):
 
 #A curl example to this api 
 #http://localhost:1001/quotes?symbol=LYFT&start_date=2018-01-05&end_date=2022-01-05&Frequency=W
-@Get_Quotes.get('/quotes')
+@Get_Quotes.get('/v1/quotes')
 def get_balance_sheet_annual(
     symbol: str = Query(None, title="symbol"),
     start_date: str = Query(None, title="start_date"),
@@ -187,12 +188,12 @@ def get_balance_sheet_annual(
     try:
         return get_Quotes_Data(symbol,start_date, end_date,Frequency,"QuotesCollection")
     except Exception as e:
-        raise e
+        raise HTTPException(status_code=400, detail="Une erreur s'est produite lors de la récupération des données.")
     
 
 
 #http://localhost:1001/forex?symbol=LYFT&start_date=2018-01-05&end_date=2022-01-05&Frequency=W
-@Get_Quotes.get('/forex')
+@Get_Quotes.get('/v1/forex')
 def get_balance_sheet_annual(
     symbol: str = Query(None, title="symbol"),
     start_date: str = Query(None, title="start_date"),
@@ -203,4 +204,4 @@ def get_balance_sheet_annual(
     try:
         return get_Quotes_Data(symbol,start_date, end_date,Frequency,"FOREXQuotesCollection")
     except Exception as e:
-        raise e
+        raise HTTPException(status_code=400, detail="Une erreur s'est produite lors de la récupération des données.")

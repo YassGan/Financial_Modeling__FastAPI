@@ -62,7 +62,7 @@ def find_Country_id_by_name(isoCode):
         return "not found "
     
 # API that calls the find_Country_id_by_name
-@Country.get("/countryMongoId/{isoCode}")
+@Country.get("/v1/countryMongoId/{isoCode}")
 def get_country(isoCode: str):
     countryid = find_Country_id_by_name(isoCode)
     return countryid
@@ -118,7 +118,7 @@ def CreatingSubregion(DataFrame):
 
 
 
-@Country.get("/CreatingSubregions")
+@Country.get("/v1/CreatingSubregions")
 def CreatingSubregion_API():
     DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
 
@@ -134,7 +134,7 @@ def gettingAllSubregions():
 
 
 #API to get all the industries from the database
-@Country.get('/AllSubregions')
+@Country.get('/v1/AllSubregions')
 async def AllSubregions_API():
     return gettingAllSubregions()
 
@@ -145,7 +145,7 @@ def gettingAllCountries():
 
 
 #API to get all the AllSubregions from the database
-@Country.get('/AllCountries')
+@Country.get('/v1/AllCountries')
 async def AllCountries_API():
     return gettingAllCountries()
 
@@ -167,7 +167,7 @@ def find_subregion_id_by_name(subregionName):
         return "subregion not found "
     
 # API that calls the find_Country_id_by_name
-@Country.get("/subregionMongoId/{subregion}")
+@Country.get("/v1/subregionMongoId/{subregion}")
 def get_subregion(subregion: str):
     subregionid = find_subregion_id_by_name(subregion)
     return subregionid
@@ -191,7 +191,7 @@ def find_subregion_id_by_Countryname(countryName):
 
     
 # API that calls the find_Country_id_by_name
-@Country.get("/subregionMongoIdbyCountry/{countryName}")
+@Country.get("/v1/subregionMongoIdbyCountry/{countryName}")
 def get_subregion(countryName: str):
     countryNameMajus=countryName.upper()
 
@@ -219,7 +219,7 @@ def CountryFlag(isoCode):
 
 
 # Endpoint to get the flag URL of a country by its ISO code
-@Country.get("/flag/{isoCode}")
+@Country.get("/v1/flag/{isoCode}")
 def get_flag(isoCode: str):
     flag_url = CountryFlag(isoCode)
     return flag_url
@@ -239,7 +239,7 @@ def get_country_name(iso_code):
         return "Country not found"
 
 # Endpoint to get the name of a country by its ISO code
-@Country.get("/countryName/{isoCode}")
+@Country.get("/v1/countryName/{isoCode}")
 def get_CountryOfficialName(isoCode: str):
     return(get_country_name(isoCode))
 
@@ -259,7 +259,7 @@ def get_country_currency(iso_code):
         return "Country not found"
 
 # Endpoint to get the name of a country by its ISO code
-@Country.get("/countryCurrency/{isoCode}")
+@Country.get("/v1/countryCurrency/{isoCode}")
 def get_CountryCurrency(isoCode: str):
     return(get_country_currency(isoCode))
 
@@ -278,7 +278,7 @@ def get_country_region(iso_code):
         return "Country not found"
 
 # Endpoint to get the region of a country by its ISO code
-@Country.get("/countryRegion/{isoCode}")
+@Country.get("/v1/countryRegion/{isoCode}")
 def get_CountryRegion(isoCode: str):
     print( get_country_region(isoCode))
     return(get_country_region(isoCode))
@@ -305,7 +305,7 @@ def get_country_Subregion(iso_code):
 
 
 # Endpoint to get the region of a country by its ISO code
-@Country.get("/countrySubRegion/{isoCode}")
+@Country.get("/v1/countrySubRegion/{isoCode}")
 def get_CountrySubRegion(isoCode: str):
     print( get_country_Subregion(isoCode))
     return(get_country_Subregion(isoCode))
@@ -398,7 +398,7 @@ def CreatingCountries(DataFrame):
 
 
 #API that launches the function CreatingCountries 
-@Country.get('/CreatingCountries')
+@Country.get('/v1/CreatingCountries')
 async def CountriesListAPI():   
     DataFrame = pd.read_csv(os.getenv("CSV_FILE"), encoding='utf-8')
  

@@ -218,7 +218,7 @@ companies_Annual_BalanceSheetCollection=get_companies_Annual_BalanceSheet()
 
 
 
-@Financial_Info.get('/Annual_BalanceSheetCreationAPI')
+@Financial_Info.get('/v1/Annual_BalanceSheetCreationAPI')
 async def Insert_BS_Annual_information():
 
     allCompaniesSymobls = get_company_symbols()
@@ -260,7 +260,7 @@ def get_companies_Quarter_BalanceSheet():
 companies_Quarter_BalanceSheetCollection=get_companies_Quarter_BalanceSheet()
 
 
-@Financial_Info.get('/Quarter_BalanceSheetCreationAPI')
+@Financial_Info.get('/v1/Quarter_BalanceSheetCreationAPI')
 async def Insert_BS_Quarter_information():
 
     allCompaniesSymobls = get_company_symbols()
@@ -302,7 +302,7 @@ def get_companies_Annual_IncomeStatement():
 companies_Annual_IncomeStatementCollection=get_companies_Annual_IncomeStatement()
 
 
-@Financial_Info.get('/Annual_IncomeStatementCreationAPI')
+@Financial_Info.get('/v1/Annual_IncomeStatementCreationAPI')
 async def Insert_IS_Annual_information():
 
     allCompaniesSymobls = get_company_symbols()
@@ -344,7 +344,7 @@ def get_companies_Quarter_IncomeStatement():
 companies_Quarter_IncomeStatementCollection=get_companies_Quarter_IncomeStatement()
 
 
-@Financial_Info.get('/Quarter_IncomeStatementCreationAPI')
+@Financial_Info.get('/v1/Quarter_IncomeStatementCreationAPI')
 async def Insert_IS_Quarter_information():
 
     allCompaniesSymobls = get_company_symbols()
@@ -385,7 +385,7 @@ def get_companies_Annual_CashFlow():
 companies_Annual_CashFlowCollection=get_companies_Annual_CashFlow()
 
 
-@Financial_Info.get('/Annual_CashFlowCreationAPI')
+@Financial_Info.get('/v1/Annual_CashFlowCreationAPI')
 async def Insert_CF_Annual_information():
 
     allCompaniesSymobls = get_company_symbols()
@@ -432,7 +432,7 @@ def get_companies_Quarter_CashFlow():
 companies_Quarter_CashFlowCollection=get_companies_Quarter_CashFlow()
 
 
-@Financial_Info.get('/Quarter_CashFlowCreationAPI')
+@Financial_Info.get('/v1/Quarter_CashFlowCreationAPI')
 async def Insert_CF_Quarter_information():
 
     allCompaniesSymobls = get_company_symbols()
@@ -503,7 +503,7 @@ async def CompanyBalanceSheetInfo(symbol):
 
 
 #API that launches the function CompanyBalanceSheetInfo
-@Financial_Info.get('/getBalanceSheet_company/{Symbol}')
+@Financial_Info.get('/v1/getBalanceSheet_company/{Symbol}')
 async def create_BS_Annual_api(Symbol: str):
     result = await CompanyBalanceSheetInfo(Symbol)
     return result
@@ -593,14 +593,14 @@ async def CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol):
 
 
 # API that launches the function CompanyBalanceSheetInfoComparisonInsertion
-@Financial_Info.get('/getBalanceSheet_company_comparison_insertion/{Symbol}')
+@Financial_Info.get('/v1/getBalanceSheet_company_comparison_insertion/{Symbol}')
 async def create_BS_Annual_api(Symbol: str):
     result = await CompanyAnnualBalanceSheetInfoComparisonInsertion(Symbol)
     return result
 
 
 # API that launches the function CompanyBalanceSheetInfoComparisonInsertion and use it with many symbols
-@Financial_Info.get('/Insert_Annual_BalanceSheet_information_Comparison')
+@Financial_Info.get('/v1/Insert_Annual_BalanceSheet_information_Comparison')
 async def Insert_BS_Annual_information():
 
     dataframe = ['AAPL', 'LMNR',"GO"]

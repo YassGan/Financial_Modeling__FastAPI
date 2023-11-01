@@ -2,6 +2,8 @@
 from fastapi import APIRouter,Response,Query
 
 from config.db import get_database 
+from schemas.Sector import serializeList2
+from schemas.Sector import serializeDict2
 
 import pymongo 
 import math 
@@ -48,7 +50,7 @@ import re
 
 
 #API curl example on http://localhost:1001/Screener?sector=Technology&country=FR&country=DK&keywords=Research%20medical&keyword_mode=and
-@CompanyFiltering.get("/Screener")
+@CompanyFiltering.get("/v1/Screener")
 async def filter_companies(
     name: str = Query(None, title="Company Name"),
     sector: List[str] = Query(None, title="Sector"),
@@ -126,18 +128,8 @@ async def filter_companies(
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-@CompanyFiltering.get("/filterCompanies_HierarchicalLogic")
+# Pas trop important
+@CompanyFiltering.get("/v1/filterCompanies_HierarchicalLogic")
 async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
                            industry: str = Query(None, title="Industry"),
@@ -180,18 +172,8 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
 
 
 
-
-
-
-
-
-
-
-
-
-
 # http://localhost:1001/infos/autoCompletete?query=app
-@CompanyFiltering.get("/infos/autoCompletete")
+@CompanyFiltering.get("/v1/infos/autoCompletete")
 async def autocomplete_company_name(query: str):
     if not query:
         return []
@@ -200,12 +182,51 @@ async def autocomplete_company_name(query: str):
     filters = {"companyName": {"$regex": regex_pattern, "$options": "i"}}
 
     companies_collection = get_companies_collection()
-    matching_companies = list(companies_collection.find(filters, {"companyName": 1}))
+    matching_companies = list(companies_collection.find(filters, {"companyName": 1,"Symbol": 1}))
 
-    autocomplete_results = [company["companyName"] for company in matching_companies]
+    autocomplete_results = [{"companyName": company["companyName"], "Symbol": company["Symbol"]} for company in matching_companies]
 
     return autocomplete_results
 
 
+
+
+
+
+#find_company_by_symbol
+def find_Comany_by_symbol(symbol):
+    result = CompaniesCollection.find_one({
+        'Symbol': symbol
+    })
+    if result:
+        return serializeDict2(result)
+    else:
+        return "not found "
+
+
+
+
+# Endpoint qui retourne les informations d'une société à partir d'un symbol à partir de notre base de données
+@CompanyFiltering.get("/v1/symbol/{symbol}")
+async def getCompanyInfoBySymbol(symbol:str):
+    CompanyResult=find_Comany_by_symbol(symbol)
+    return (CompanyResult)
+
+
+
+
+def get_all_symbols():
+    results = CompaniesCollection.find({}, {"Symbol": 1})
+    symbols = [result["Symbol"] for result in results]
+    return symbols
+
+
+
+
+# Endpoint qui retourne tous les symbôles des sociétés
+@CompanyFiltering.get("/v1/Allsymbols")
+async def getAllSymbols():
+    symbols = get_all_symbols()
+    return symbols
 
 

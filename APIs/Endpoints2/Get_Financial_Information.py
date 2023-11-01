@@ -165,7 +165,7 @@ def get_previous_year_date(input_date_str):
 
 
 
-@Get_Financial_Info.get('/AllBS')
+@Get_Financial_Info.get('/v1/AllBS')
 async def find_all_sectors():
     return serializeList2(BalanceSheetAnnualCollection.find())
 
@@ -182,12 +182,13 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
 
 
         if(not start_date):
-            start_date="1950-01-01"
+            print("The starting date is not entered")
 
         if(not end_date):
             current_date = datetime.now()
             formatted_current_date = current_date.strftime("%Y-%m-%d")
             end_date=formatted_current_date
+            print("The end date ",end_date)
         
         if(not maxElem):
             maxElem="1000"
@@ -206,8 +207,6 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
 
         if StatementType=="BS" and Frequency=="Q":
             Collection=BalanceSheetQuarterCollection
-
-
 
 
 
@@ -241,8 +240,8 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
             end_date=aux
 
 
-            # print("Starting date ",start_date)
-            # print("Ending date ",end_date)
+            print("Starting date ",start_date)
+            print("Ending date ",end_date)
 
 
 
@@ -310,19 +309,15 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
     except Exception as e:
         raise e
 
-
-
-
 from datetime import datetime
-
 
 #A curl example to this api 
 #http://localhost:1001/financials?symbol=GOOS.TO&start_date=2018-01-05&end_date=2022-01-05&limit=10&StatementType=PL&Frequency=Q
-@Get_Financial_Info.get('/financials')
+@Get_Financial_Info.get('/v1/financials')
 def get_financials_API(
     symbol: str = Query(None, title="symbol"),
-    start_date: str = Query(None, title="start_date"),
-    end_date: str = Query(None, title="end_date"),
+    start_date: str = Query("1950-05-01", title="start_date"), 
+    end_date: str = Query("2020-01-01", title="end_date"),  
     limit: str = Query(None, title="limit"),
     StatementType: str = Query(None, title="StatementType"),
     Frequency: str = Query(None, title="Frequency"),
@@ -343,7 +338,7 @@ def get_financials_API(
             return(convertedCurrencyFinancialInformationArray)
 
     except Exception as e:
-        raise e
+        raise HTTPException(status_code=400, detail="Une erreur s'est produite lors de la récupération des données.")
     
 
 
@@ -386,7 +381,7 @@ def currency_converter(FinancialData, EnteredCurrency):
         print(returnedForexQuote)
 
         if returnedForexQuote:
-            variable_to_use_for_conversion = returnedForexQuote[0]["vwap"]
+            variable_to_use_for_conversion = returnedForexQuote[0]["close"]
             convertedFinancialData = multiply_values_by_factor(FinancialData, variable_to_use_for_conversion)
 
     if convertedFinancialData is not None:
@@ -400,8 +395,11 @@ def currency_converter(FinancialData, EnteredCurrency):
 
 
 
-@Get_Financial_Info.get("/date_LTM_Adjuster_tester/{entered_Date}")
+@Get_Financial_Info.get("/v1/date_LTM_Adjuster_tester/{entered_Date}")
 def date_LTM_Adjuster_tester_API(entered_Date: str):
-    adjustedDate = LTM_date_adjuster(entered_Date)
-    last_Year=get_previous_year_date(adjustedDate)
-    return {"adjustedDate":adjustedDate,"last_Year":last_Year}
+    try:
+        adjustedDate = LTM_date_adjuster(entered_Date)
+        last_Year = get_previous_year_date(adjustedDate)
+        return {"adjustedDate": adjustedDate, "last_Year": last_Year}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Une erreur s'est produite lors du traitement de la demande.")

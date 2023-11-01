@@ -85,7 +85,7 @@ async def get_all_company_symbols():
 
 
 
-@Company.get("/infos/profile")
+@Company.get("/v1/infos/profile")
 async def get_company_by_symbol(symbol: str = Query(..., title="Company Symbol")):
     try:
         company = CompaniesCollection.find_one({"Symbol": symbol})
@@ -125,7 +125,7 @@ def gettingAllSymbols(DataFrame):
 
 
 
-@Company.get("/getAllSymbols")
+@Company.get("/v1/getAllSymbols")
 def gettingAllSymbolsAPI():
     data = gettingAllSymbols()
     print(data)
@@ -153,7 +153,7 @@ def CompanyPeers(symbol):
     
     
 # API that launches the function companyPerrs
-@Company.get("/getCompanyPeers/{Symbol}")
+@Company.get("/v1/getCompanyPeers/{Symbol}")
 def getCompanyPeersBySymbol(Symbol: str):
     data = CompanyPeers(Symbol)
     return data
@@ -356,7 +356,7 @@ def CompaniesCreationProcess(NewDataFrameValues):
 
 
 # API that launches the function creatingExchanges
-@Company.get('/creatingCompaniesWithInsertMany')
+@Company.get('/v1/creatingCompaniesWithInsertMany')
 async def CompaniesCreationApiInsertMany(): 
     #Df=Function_Intersection_Old_New_CSV()
     DataFrame_1000 = pd.read_csv("CSV_1000_Element.csv", encoding='utf-8')
@@ -375,7 +375,7 @@ async def CompaniesCreationApiInsertMany():
 
 from bson.json_util import dumps
 # API endpoint to filter companies based on name and sector
-@Company.get("/filterCompanies_API")
+@Company.get("/v1/filterCompanies_API")
 async def filter_companies(name: str = Query(None, title="Company Name"),
                            sector: str = Query(None, title="Sector"),
                            industry: str = Query(None, title="Industry"),
@@ -426,7 +426,7 @@ async def filter_companies(name: str = Query(None, title="Company Name"),
         return {"error": str(e)}
 
 
-@Company.get("/autocompleteCompanyName")
+@Company.get("/v1/autocompleteCompanyName")
 async def autocomplete_company_name(query: str):
     if not query:
         return []
@@ -474,7 +474,7 @@ def fetch_data_from_api_bySymbol(Symbol):
 
 
 # Define the API route to fetch data from the API
-@Company.get("/getCompanyBySymbol/{Symbol}")
+@Company.get("/v1/getCompanyBySymbol/{Symbol}")
 def getCompanyBySymbol(Symbol: str):
     data = fetch_data_from_api_bySymbol(Symbol)
     return data
