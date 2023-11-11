@@ -223,6 +223,15 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
 #http://localhost:1001/financials?symbol=AY&start_date=2015-04-05&limit=4&StatementType=PL&Frequency=LTM
         if StatementType=="PL" and Frequency=="LTM":
             Collection=IncomeStatementQuarterCollection
+            int_maxElem=4
+            if (not start_date):
+                result = Collection.find({"symbol": symbol}).sort("date", 1).skip(4).limit(1)
+                oldest_entry = next(result, None)
+                oldest_date = oldest_entry["date"] if oldest_entry else None
+                start_date =oldest_date
+                print("printing the starting date ",start_date)
+
+
 
             # print("Before ")
             # print("start_date ",start_date)
@@ -233,7 +242,6 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
 
             last_Year_LTM_start_date=get_previous_year_date(start_date)
             end_date=last_Year_LTM_start_date
-            Collection=IncomeStatementQuarterCollection
 
             aux=start_date
             start_date=end_date
@@ -254,17 +262,29 @@ def get_Financials_Data(symbol,start_date, end_date,maxElem,StatementType,Freque
 
 
         if StatementType=="CF" and Frequency=="LTM":
+            Collection=CashFlowQuarterCollection
 
             # print("Before ")
             # print("start_date ",start_date)
             # print("Before ")
+
+
+            int_maxElem=4
+            if (not start_date):
+                result = Collection.find({"symbol": symbol}).sort("date", 1).skip(4).limit(1)
+                oldest_entry = next(result, None)
+                oldest_date = oldest_entry["date"] if oldest_entry else None
+                start_date =oldest_date
+                print("printing the starting date ",start_date)
+
+
+
 
             adjusted_LTM_start_date=LTM_date_adjuster(start_date)
             start_date=adjusted_LTM_start_date
 
             last_Year_LTM_start_date=get_previous_year_date(start_date)
             end_date=last_Year_LTM_start_date
-            Collection=CashFlowQuarterCollection
 
             aux=start_date
             start_date=end_date
@@ -316,8 +336,8 @@ from datetime import datetime
 @Get_Financial_Info.get('/v1/financials')
 def get_financials_API(
     symbol: str = Query(None, title="symbol"),
-    start_date: str = Query("1950-05-01", title="start_date"), 
-    end_date: str = Query("2020-01-01", title="end_date"),  
+    start_date: str = Query(None, title="start_date"), 
+    end_date: str = Query(None, title="end_date"),  
     limit: str = Query(None, title="limit"),
     StatementType: str = Query(None, title="StatementType"),
     Frequency: str = Query(None, title="Frequency"),
