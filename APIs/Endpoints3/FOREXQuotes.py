@@ -192,3 +192,19 @@ async def Insert_FOREX_Quotes_Creation_API():
     
     return {"message": "FOREX Quotes creation process is complete"}
 
+
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import asyncio
+
+async def run_forex_quotes_creation():
+    print("The scheduled task call")
+    result = await Insert_FOREX_Quotes_Creation_API()
+    print(result)
+
+scheduler = AsyncIOScheduler()
+
+scheduler.add_job(run_forex_quotes_creation, trigger='interval', seconds=10, max_instances=1)
+
+scheduler.start()
+
