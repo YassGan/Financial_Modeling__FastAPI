@@ -46,7 +46,16 @@ def get_subregion_collection():
 subregionsCollection=get_subregion_collection()
 
 
-
+#Function that returns the official name of the country from our database by its id
+def get_Country_Name_by_id_from_db(id):
+    result = countriesCollection.find_one({
+        '_id': id
+    })
+    
+    if result:
+        return str(result['official_name'])
+    else:
+        return "not found "    
 
 
 

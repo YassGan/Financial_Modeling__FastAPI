@@ -13,6 +13,7 @@ import pandas as pd
 
 CompanyFiltering=APIRouter()
 
+from APIs.Endpoints1.countries_APIs import get_Country_Name_by_id_from_db
 
 from typing import List
 
@@ -182,9 +183,17 @@ async def autocomplete_company_name(query: str):
     filters = {"companyName": {"$regex": regex_pattern, "$options": "i"}}
 
     companies_collection = get_companies_collection()
-    matching_companies = list(companies_collection.find(filters, {"companyName": 1,"Symbol": 1}))
+    matching_companies = list(companies_collection.find(filters, {"companyName": 1,"Symbol": 1,"exchange":1,"country":1,"image":1,"_id":1}))
 
-    autocomplete_results = [{"companyName": company["companyName"], "Symbol": company["Symbol"]} for company in matching_companies]
+
+#With the query of the official country name that takes time of requesting the official name, element by element 
+    # autocomplete_results = [{"companyName": company["companyName"],"logo": company["image"], "Symbol": company["Symbol"],"exchange": company["exchange"],"country": company["country"],"company_country_name":get_Country_Name_by_id_from_db(company['_id']),"drapeau":f"https://flagcdn.com/w320/{company['country'].lower()}.png" } for company in matching_companies]
+
+#Without the query of the official country name 
+    autocomplete_results = [{"companyName": company["companyName"],"logo": company["image"], "Symbol": company["Symbol"],"exchange": company["exchange"],"country": company["country"],"drapeau":f"https://flagcdn.com/w320/{company['country'].lower()}.png" } for company in matching_companies]
+
+
+
 
     return autocomplete_results
 

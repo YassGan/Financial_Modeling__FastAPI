@@ -24,7 +24,9 @@ from APIs.Endpoints2.Get_Quotes import Get_Quotes
 from APIs.Endpoints3.FOREX import FOREX 
 from APIs.Endpoints3.FOREXQuotes import FOREX_Quotes 
 
+from APIs.Endpoints4.stock_indexes import stock_indexes 
 
+from APIs.Endpoints4.stock_indexes_Quotes import STOCKIndexes_Quotes
 
 #import APIs.dataManipulation
 
@@ -57,4 +59,8 @@ app.include_router(Get_Quotes)
 
 app.include_router(FOREX)
 app.include_router(FOREX_Quotes)
+
+app.include_router(stock_indexes)
+app.include_router(STOCKIndexes_Quotes)
+
 

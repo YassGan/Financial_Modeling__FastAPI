@@ -11,5 +11,11 @@
         "src": "/(.*)",
         "dest": "main.py"
       }
+    ],
+    "crons": [
+      {
+        "path": "/v1/FOREX_Quotes_Creation_API",
+        "schedule": "23 13 * * *"
+      }
     ]
   }

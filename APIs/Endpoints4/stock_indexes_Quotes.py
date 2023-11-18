@@ -17,19 +17,19 @@ import aiohttp
 import time
 import datetime
 
-FOREX_Quotes = APIRouter()
+STOCKIndexes_Quotes = APIRouter()
 api_key = os.getenv("API_KEY")
 
 
 
 
-def get_FOREX_Quotes_collection():
+def get_STOCKIndexes_Quotes_collection():
     db = get_database()
-    FOREX_Quotes=db["FOREX_Quotes"]
-    FOREX_Quotes.create_index([("_id", 1)])
-    return FOREX_Quotes
+    STOCKIndexes_Quotes=db["STOCKIndexes_Quotes"]
+    STOCKIndexes_Quotes.create_index([("_id", 1)])
+    return STOCKIndexes_Quotes
 
-FOREX_QuotesCollection=get_FOREX_Quotes_collection()
+STOCKIndexes_QuotesCollection=get_STOCKIndexes_Quotes_collection()
 
 
 
@@ -74,14 +74,14 @@ def update_csv_with_symbol_and_date(csv_url, symbol, date):
 
 
 
-def get_FOREXQUOTES_symbols():
+def get_STOCKIndexes_Quotes_symbols():
     try:
-        all_FOREXQuotes = FOREX_IndexesCollection.find({}, { "symbol": 1 })
+        all_STOCKIndexes_Quotes = STOCKIndexes_QuotesCollection.find({}, { "symbol": 1 })
         
-        if not all_FOREXQuotes:
+        if not all_STOCKIndexes_Quotes:
             return set()  
         
-        symbols = {str(company.get("symbol")) for company in all_FOREXQuotes}  
+        symbols = {str(company.get("symbol")) for company in all_STOCKIndexes_Quotes}  
         
         return symbols
     except Exception as e:
@@ -93,8 +93,8 @@ def get_FOREXQUOTES_symbols():
 
 
 
-async def FOREX_Quotes_Creation(symbol, dataframe):
-    print("ForexIndex with symbol '", symbol, "' made FOREX Quotes API call ")
+async def STOCKIndexes_Quotes_Creation(symbol, dataframe):
+    print("STOCKIndexe with symbol '", symbol, "' made Quotes API call ")
     creation_Order=False
     start_date = "1950-01-01"
 
@@ -139,9 +139,9 @@ async def FOREX_Quotes_Creation(symbol, dataframe):
                     for obj in data.get("historical", []):
                         obj["symbol"] = symbol
                         
-                    FOREX_QuotesCollection.insert_many(data["historical"])
+                    STOCKIndexes_QuotesCollection.insert_many(data["historical"])
 
-                    Symbol_Date_FOREXQuotes_CSV_FileName = "FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv"
+                    Symbol_Date_FOREXQuotes_CSV_FileName = "Stock_indexesQuotes_CSV_file/Stock_indexesQuotes_CSV_file.csv"
                     update_csv_with_symbol_and_date(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
 
                     print(f"The compnay ' {symbol}' has Quotes data inserted into the database and updating the CSV quotes file ")
@@ -151,32 +151,33 @@ async def FOREX_Quotes_Creation(symbol, dataframe):
 
 
 
-def get_FOREX_Quotes_symbols():
+def get_STOCKIndexes_Quotes_symbols():
     print("The get FOREX quotes symbols ")
 
 
 
 
-@FOREX_Quotes.get('/v1/FOREX_Quotes_Creation_API')
-async def Insert_FOREX_Quotes_Creation_API():
+@STOCKIndexes_Quotes.get('/v1/stock_indexes_Quotes_Creation_API')
+async def Insert_Stock_indexes_Quotes_Creation_API():
 
-    all_FOREX_Quotes_Symobls = get_FOREX_Quotes_symbols()
-    #all_FOREX_Quotes_SymoblsList = list(all_FOREX_Quotes_Symobls)
+    all_STOCKIndexes_Quotes_Symobls = get_STOCKIndexes_Quotes_symbols()
+    #all_FOREX_Quotes_SymoblsList = list(all_STOCKIndexes_Quotes_Symobls)
+    # print("Liste de tous les symboles des stocks indexes ")
+    # print(list(all_STOCKIndexes_Quotes_Symobls))
 
-    all_FOREX_Quotes_SymoblsList=["EURUSD","EURTND"]
+    all_STOCKIndexes_Quotes_SymoblsList=["^FCHI","^OVX"]
 
-    print("Quotes indexes symbols ")
-    print(get_FOREXQUOTES_symbols())
 
-    if all_FOREX_Quotes_Symobls is not None:
-        print(len(all_FOREX_Quotes_Symobls))
+
+    if all_STOCKIndexes_Quotes_Symobls is not None:
+        print(len(all_STOCKIndexes_Quotes_Symobls))
     else:
-        print("all_FOREX_Quotes_Symobls is None, check your initialization logic.")
+        print("all_STOCKIndexes_Quotes_Symobls is None, check your initialization logic.")
 
         
 
     #Reading the quotes csv file that contains the symbol and the date information of the companies 
-    csv_file_path = 'FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv'
+    csv_file_path = 'Stock_indexesQuotes_CSV_file/Stock_indexesQuotes_CSV_file.csv'
 
     SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 
@@ -185,31 +186,10 @@ async def Insert_FOREX_Quotes_Creation_API():
     results = []
     
     for i in range(0, 30, batch_size):
-        symbols_batch = all_FOREX_Quotes_SymoblsList[i:i + batch_size]
-        awaitable_tasks = [FOREX_Quotes_Creation(symbol, SymbolDateQuotesDF) for symbol in symbols_batch]
+        symbols_batch = all_STOCKIndexes_Quotes_SymoblsList[i:i + batch_size]
+        awaitable_tasks = [STOCKIndexes_Quotes_Creation(symbol, SymbolDateQuotesDF) for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     
-    return {"message": "FOREX Quotes creation process is complete"}
-
-
-
-
-
-## Scheduler of the forex quotes creation 
-
-# from apscheduler.schedulers.asyncio import AsyncIOScheduler
-# import asyncio
-
-# async def run_forex_quotes_creation():
-#     print("The scheduled task call")
-#     result = await Insert_FOREX_Quotes_Creation_API()
-#     print(result)
-
-
-# scheduler = AsyncIOScheduler()
-
-# scheduler.add_job(run_forex_quotes_creation, trigger='interval', seconds=10, max_instances=1)
-
-# scheduler.start()
+    return {"message": "STOCKIndexes_Quotes  creation process is complete"}
 

@@ -41,6 +41,13 @@ FOREX_QuotesCollection=get_FOREX_Quotes_collection()
 
 
 
+def get_STOCKIndexes_Quotes_collection():
+    db = get_database()
+    STOCKIndexes_Quotes=db["STOCKIndexes_Quotes"]
+    STOCKIndexes_Quotes.create_index([("_id", 1)])
+    return STOCKIndexes_Quotes
+
+STOCKIndexes_QuotesCollection=get_STOCKIndexes_Quotes_collection()
 
 
 
@@ -75,6 +82,11 @@ def get_Quotes_Data(symbol,start_date, end_date,Frequency,Collection):
 
         if Collection=="FOREXQuotesCollection":
             CollectiontoWork=FOREX_QuotesCollection
+
+        if Collection=="STOCKIndexesQuotesCollection":
+            CollectiontoWork=STOCKIndexes_QuotesCollection
+
+            
 
         ReturnedQuotes = CollectiontoWork.find({
             "$and": [
@@ -203,5 +215,19 @@ def get_balance_sheet_annual(
     
     try:
         return get_Quotes_Data(symbol,start_date, end_date,Frequency,"FOREXQuotesCollection")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Une erreur s'est produite lors de la récupération des données.")
+
+#http://localhost:1001/stock?symbol=^OVX&start_date=2018-01-05&end_date=2022-01-05&Frequency=W
+@Get_Quotes.get('/v1/stock')
+def get_balance_sheet_annual(
+    symbol: str = Query(None, title="symbol"),
+    start_date: str = Query(None, title="start_date"),
+    end_date: str = Query(None, title="end_date"),
+    Frequency: str = Query(None, title="Frequency"),
+):
+    
+    try:
+        return get_Quotes_Data(symbol,start_date, end_date,Frequency,"STOCKIndexesQuotesCollection")
     except Exception as e:
         raise HTTPException(status_code=400, detail="Une erreur s'est produite lors de la récupération des données.")

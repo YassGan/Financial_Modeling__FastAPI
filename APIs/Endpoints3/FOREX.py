@@ -77,7 +77,7 @@ async def return_currencies_pairs_API():
     currenciesPairs = return_currencies_pairs()
     
     if not currenciesPairs:
-        raise HTTPException(status_code=404, detail="No companies found in the database")
+        raise HTTPException(status_code=404, detail="No data returned from the online api ")
     
     return currenciesPairs
 
@@ -98,7 +98,6 @@ async def return_all_currencies_list_API():
 @FOREX.get("/createAvailableCurrencies_API")
 async def createAvailableCurrencies_API():
     currencies_CSV_FileName = "Currency_CSV_file/Currency_CSV_file.csv"
-    
     try:
         df = pd.read_csv(currencies_CSV_FileName)
     except Exception as e:
