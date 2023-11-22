@@ -1,6 +1,9 @@
 from pymongo import MongoClient
 from pymongo.database import Database
 
+
+
+######### La première base de données utilisée
 # #Old Satured DataBase 
 # Define the MongoDB Cloud credentials and database details as variables
 # USERNAME = "financialmetamodeling"
@@ -14,6 +17,8 @@ from pymongo.database import Database
 
 
 
+
+######## La deuxième base de données utilisée
 USERNAME = "mupeers1000"
 PASSWORD = "mupeers1000"
 CLUSTER_NAME = "cluster0"
@@ -26,7 +31,8 @@ MONGO_CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER_NAME}.j
 
 
 
-
+# ######### La base de données payante 
+# MONGO_CONNECTION_STRING = "mongodb+srv://mupeers:mupeers@stockdata.0hno10f.mongodb.net/mupeers?retryWrites=true&w=majority"
 
 
 

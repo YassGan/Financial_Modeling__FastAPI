@@ -27,16 +27,41 @@ from APIs.Endpoints3.FOREXQuotes import FOREX_Quotes
 from APIs.Endpoints4.stock_indexes import stock_indexes 
 
 from APIs.Endpoints4.stock_indexes_Quotes import STOCKIndexes_Quotes
+from APIs.Endpoints5.Quotes_marketCap_update import Quotes_update
 
 #import APIs.dataManipulation
 
 
 
 # le déclencheur du scheduler se fait quand on importe le fichier qui contient le code du scheduler
-#import APIs.Endpoints1.TasksScheduler 
+# import APIs.Endpoints1.TasksScheduler 
 
 
 app = FastAPI()
+
+
+
+# Autorisation CORS
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
+
 
 
 app.include_router(Main)
@@ -62,5 +87,8 @@ app.include_router(FOREX_Quotes)
 
 app.include_router(stock_indexes)
 app.include_router(STOCKIndexes_Quotes)
+
+app.include_router(Quotes_update)
+
 
 
