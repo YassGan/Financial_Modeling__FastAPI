@@ -25,14 +25,14 @@ CLUSTER_NAME = "cluster0"
 DATABASE_NAME = "Financial_Meta_ModelingDB"
 
 
-# mongodb+srv://mupeers1000:mupeers1000@cluster0.jw2gohm.mongodb.net/Financial_Meta_ModelingDB?retryWrites=true&w=majority
-MONGO_CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER_NAME}.jw2gohm.mongodb.net/{DATABASE_NAME}?retryWrites=true&w=majority"
+# # mongodb+srv://mupeers1000:mupeers1000@cluster0.jw2gohm.mongodb.net/Financial_Meta_ModelingDB?retryWrites=true&w=majority
+# MONGO_CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER_NAME}.jw2gohm.mongodb.net/{DATABASE_NAME}?retryWrites=true&w=majority"
 
 
 
 
-# ######### La base de données payante 
-# MONGO_CONNECTION_STRING = "mongodb+srv://mupeers:mupeers@stockdata.0hno10f.mongodb.net/mupeers?retryWrites=true&w=majority"
+######### La base de données payante 
+MONGO_CONNECTION_STRING = "mongodb+srv://mupeers:mupeers@stockdata.0hno10f.mongodb.net/mupeers?retryWrites=true&w=majority"
 
 
 

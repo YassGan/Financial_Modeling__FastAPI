@@ -132,9 +132,14 @@ async def Quotes_Creation(symbol, dataframe):
 async def Insert_Quotes_Creation_API():
 
     allCompaniesSymobls = get_company_symbols()
-    #allCompaniesSymbolsList = list(allCompaniesSymobls)
+    allCompaniesSymbolsList = list(allCompaniesSymobls)
+    print("-- All the companies symbols list ")
+    print(allCompaniesSymobls)
 
-    allCompaniesSymbolsList=["LYFT","ENGIY","SBGSY","CSTM","TLPFY","VLEEY","SDXAY","FURCF","LVMUY","HESAY"]
+
+
+    ##To work with only two symbols for testing purposes
+    #allCompaniesSymbolsList=["LYFT","ENGIY"]
 
     print("Number of all the symbols ")
     print(len(allCompaniesSymbolsList))
@@ -149,7 +154,14 @@ async def Insert_Quotes_Creation_API():
     
     results = []
     
-    for i in range(0, 30, batch_size):
+    ##To work with all the symbols for production purposes
+    for i in range(0, len(allCompaniesSymbolsList), batch_size):
+
+
+    # # To work with only few symbols for testing purposes we use only 30 symbol
+    # for i in range(0, 30, batch_size):
+
+
         symbols_batch = allCompaniesSymbolsList[i:i + batch_size]
         awaitable_tasks = [Quotes_Creation(symbol, SymbolDateQuotesDF) for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
