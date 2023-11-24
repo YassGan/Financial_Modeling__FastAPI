@@ -21,6 +21,7 @@ def get_stock_data(Symbol, current_date):
     df = pd.DataFrame.from_dict(quotes["historical"])
     columns_to_extract = ["date", "adjClose"]
     df = df[columns_to_extract]
+    print(df)
     return df
 
 
@@ -102,6 +103,6 @@ def construct_statistics(Symbol, current_date, analysis_periods=DEFAULT_PERIODS)
     return statitcs
 
 
-statitcs = construct_statistics("AAPL", current_date=date.today())
+statitcs = construct_statistics("^OVX", current_date="2023-11-08")
 
 print(statitcs)

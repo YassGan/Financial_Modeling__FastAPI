@@ -138,8 +138,8 @@ async def Insert_Quotes_Creation_API():
 
 
 
-    ##To work with only two symbols for testing purposes
-    #allCompaniesSymbolsList=["LYFT","ENGIY"]
+    #To work with only two symbols for testing purposes
+    allCompaniesSymbolsList=["LYFT"]
 
     print("Number of all the symbols ")
     print(len(allCompaniesSymbolsList))
@@ -154,12 +154,12 @@ async def Insert_Quotes_Creation_API():
     
     results = []
     
-    ##To work with all the symbols for production purposes
-    for i in range(0, len(allCompaniesSymbolsList), batch_size):
+    # ##To work with all the symbols for production purposes
+    # for i in range(0, len(allCompaniesSymbolsList), batch_size):
 
 
-    # # To work with only few symbols for testing purposes we use only 30 symbol
-    # for i in range(0, 30, batch_size):
+    # To work with only few symbols for testing purposes we use only 30 symbol
+    for i in range(0, 30, batch_size):
 
 
         symbols_batch = allCompaniesSymbolsList[i:i + batch_size]

@@ -165,7 +165,7 @@ async def Insert_Stock_indexes_Quotes_Creation_API():
     # print("Liste de tous les symboles des stocks indexes ")
     # print(list(all_STOCKIndexes_Quotes_Symobls))
 
-    all_STOCKIndexes_Quotes_SymoblsList=["^FCHI","^OVX"]
+    all_STOCKIndexes_Quotes_SymoblsList=["LYFT","ENGIY","^FCHI","^OVX"]
 
 
 
