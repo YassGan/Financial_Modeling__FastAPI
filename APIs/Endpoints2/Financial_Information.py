@@ -544,39 +544,42 @@ async def CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol):
     async with aiohttp.ClientSession() as session:
         async with session.get(api_url) as response:
             data = await response.json()
-            print(data[0]['symbol'])
-
-            existing_data = companies_Annual_BalanceSheetCollection.find_one({"symbol": data[0]['symbol']})
             
-            if existing_data:
-                api_date = datetime.datetime.strptime(data[0]['date'], '%Y-%m-%d')
-                db_date = datetime.datetime.strptime(existing_data['date'], '%Y-%m-%d')
-                
-                if api_date > db_date:
-                    data[0]['symbol'] = data[0]['symbol']
-                    companies_Annual_BalanceSheetCollection.replace_one({"symbol": data[0]['symbol']}, data[0])
-                    
-                    data[0]['symbol'] = data[0]['symbol']+"_"+db_date.strftime("%Y-%m-%d")
-                    data[0]['date'] = db_date.strftime("%Y-%m-%d")
+            if not data:
+                print("Data is empty")
+                return JSONResponse(content={"message": "Data is empty"})
 
-
-                    companies_Annual_BalanceSheetCollection.insert_one(data[0])
-
-                    print(f"Updated {symbol} balance sheet data in the database.")
-                else:
-                    print(f"{symbol} balance sheet data in the database is up to date.")
-            else:
-                data[0]['symbol'] = data[0]['symbol']
-                companies_Annual_BalanceSheetCollection.insert_one(data[0])
-                print(f"Inserted {symbol} balance sheet data into the database.")
-            
-            if '_id' in data[0]:
+            if data and data[0].get('_id'):
                 data[0]['_id'] = str(data[0]['_id'])
 
-    return JSONResponse(content=data[0])  
+            # Check if data list is not empty before accessing its elements
+            if data:
+                existing_data = companies_Annual_BalanceSheetCollection.find_one({"symbol": data[0]['symbol']})
+                
+                if existing_data:
+                    api_date = datetime.datetime.strptime(data[0]['date'], '%Y-%m-%d')
+                    db_date = datetime.datetime.strptime(existing_data['date'], '%Y-%m-%d')
+                    
+                    if api_date > db_date:
+                        data[0]['symbol'] = data[0]['symbol']
+                        companies_Annual_BalanceSheetCollection.replace_one({"symbol": data[0]['symbol']}, data[0])
+                        
+                        data[0]['symbol'] = data[0]['symbol']+"_"+db_date.strftime("%Y-%m-%d")
+                        data[0]['date'] = db_date.strftime("%Y-%m-%d")
 
+                        companies_Annual_BalanceSheetCollection.insert_one(data[0])
 
+                        print(f"Updated {symbol} balance sheet data in the database.")
+                    else:
+                        print(f"{symbol} balance sheet data in the database is up to date.")
+                else:
+                    data[0]['symbol'] = data[0]['symbol']
+                    companies_Annual_BalanceSheetCollection.insert_one(data[0])
+                    print(f"Inserted {symbol} balance sheet data into the database.")
+            else:
+                print("Data is empty")  # Handle the case where data is empty
 
+    return "process completed "
 
 
 
@@ -599,37 +602,33 @@ async def create_BS_Annual_api(Symbol: str):
     return result
 
 
+
+
+
+
+
+
+
 # API that launches the function CompanyBalanceSheetInfoComparisonInsertion and use it with many symbols
 @Financial_Info.get('/v1/Insert_Annual_BalanceSheet_information_Comparison')
 async def Insert_BS_Annual_information():
 
-    dataframe = ['AAPL', 'LMNR',"GO"]
+    allSymbols = get_company_symbols()
+    allCompaniesSymbolsList = list(allSymbols)
+    
+    # For testing purposes
+    # allCompaniesSymbolsList = ['AAPL', 'LMNR', 'GO']
 
-    awaitable_tasks = [CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol) for symbol in dataframe]
+    batch_size = 10  
+    results = []
 
-    results = await asyncio.gather(*awaitable_tasks)
+    for i in range(0, len(allCompaniesSymbolsList), batch_size):
+        symbols_batch = allCompaniesSymbolsList[i:i + batch_size]
+        awaitable_tasks = [CompanyAnnualBalanceSheetInfoComparisonInsertion(symbol) for symbol in symbols_batch]
+        batch_results = await asyncio.gather(*awaitable_tasks)
+        results.extend(batch_results)
 
-    return results
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return {"message": "Insertion process is complete", "results": results}
 
 
 

@@ -27,7 +27,7 @@ from APIs.Endpoints3.FOREXQuotes import FOREX_Quotes
 from APIs.Endpoints4.stock_indexes import stock_indexes 
 
 from APIs.Endpoints4.stock_indexes_Quotes import STOCKIndexes_Quotes
-from APIs.Endpoints5.Quotes_marketCap_update import Quotes_update
+from APIs.Endpoints5.Quotes_marketCap_EV_Statistics_update import Quotes_update
 
 #import APIs.dataManipulation
 
