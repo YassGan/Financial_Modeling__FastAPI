@@ -534,10 +534,6 @@ async def update_market_cap_ev(companySymbol):
     csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv'
     SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 
-    pipeline = [
-        {"$group": {"_id": "$symbol"}},
-        {"$project": {"_id": 0, "symbol": "$_id"}}
-    ]
 
     quotes_symbols_list = list(STOCKIndexes_QuotesCollection.aggregate(pipeline))
     symbols_list = [item['symbol'] for item in quotes_symbols_list]
@@ -750,6 +746,8 @@ async def Magic_update_quotes_marketCap_EV():
 
 
 
+
+
 import json
 import numpy as np
 
@@ -898,12 +896,140 @@ def update_quotes_statisticsFunction(companySymbol):
 
 
 
+async def update_marketCap_EValues(companySymbol):
+    print("----  update_marketCap_EValues ",companySymbol)
+
+    total_updates = 0  
+    successful_updates = 0
+    error_updates = 0
+    no_change_updates = 0
+    marketCapUrl = f"https://financialmodelingprep.com/api/v3/historical-market-capitalization/{companySymbol}?apikey={api_key}"
+    EV_resultsUrl = f"https://financialmodelingprep.com/api/v3/enterprise-values/{companySymbol}/?period=quarter&apikey=96051dba5181978c2f0ce23c1ef4014b"
+
+    # Getting today's date
+    current_date = datetime.datetime.now()
+    formatted_todayDate = current_date.strftime("%Y-%m-%d")
+    InsertionResult = QuotesCollection.insert_one({"UpdatingDay":formatted_todayDate})
 
 
-# @Quotes_update.get("/v2/update_quotes_statistics")
-# async def update_quotes_statistics_API():
-#     update_quotes_statisticsFunction("LYFT") 
-#     return "Quotes statistics update finished"   
+    QuotesStatistics_csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv'
+    SymbolDateQuotesDF = pd.read_csv(QuotesStatistics_csv_file_path)
+
+    async with httpx.AsyncClient() as client:
+        response_marketCap = await client.get(marketCapUrl)
+        response_marketCap.raise_for_status()
+        marketCap_result = response_marketCap.json()
+
+        marketCap_result.reverse()
+
+        if len(marketCap_result)>0:
+            ########making the update by adding the marketcap
+            for marketCap_element in marketCap_result:
+                    date = marketCap_element["date"]
+                    if compare_dates(get_date_for_symbol(SymbolDateQuotesDF,marketCap_element["symbol"]),date)==1:
+                        symbol = marketCap_element["symbol"]
+                        marketCapitalization = marketCap_element["marketCap"]
+
+                        filter_query = {"symbol": symbol, "date": date}
+                        update_query = {"$set": {"marketCap": marketCapitalization}}
+
+                        try:
+
+                            result = QuotesCollection.update_one(filter_query, update_query,upsert=True)
+                            total_updates += 1
+
+                            if result.modified_count > 0:
+                                successful_updates += 1
+                                status = "Success"
+                                message = f"MarketCap Update successful for {symbol} on {date}"
+                            else:
+                                no_change_updates += 1
+                                status = "NoChange"
+                                message = f"MarketCap No changes for {symbol} on {date}"
+                        except errors.PyMongoError as e:
+                            error_updates += 1
+                            status = "Error"
+                            message = f"MarketCap Error updating document: {e}"
+
+                        ## Print progress
+                        print(f"MarketCap updating : symbol {symbol} date{date}  Processed {total_updates} updates - {successful_updates} successful, {no_change_updates} no change, {error_updates} errors")
+
+
+
+
+
+
+
+    async with httpx.AsyncClient() as client:
+        response_EV = await client.get(EV_resultsUrl)
+        response_EV.raise_for_status()
+        EV_result = response_EV.json()
+
+        EV_result.reverse()
+        found = False
+
+        if len(EV_result)>2:
+            ########making the update by adding the EVs
+            for EV_element in EV_result:
+                    date = EV_element["date"]
+                    if compare_dates(get_date_for_symbol(SymbolDateQuotesDF,EV_element["symbol"]),date)==1:
+                        found = True
+
+                        symbol = EV_element["symbol"]
+
+                        numberOfShares = EV_element["numberOfShares"]
+                        minusCashAndCashEquivalents = EV_element["minusCashAndCashEquivalents"]
+                        addTotalDebt = EV_element["addTotalDebt"]
+                        enterpriseValue = EV_element["enterpriseValue"]
+
+                        filter_query = {"symbol": symbol, "date": date}
+                        update_query = {"$set": {
+                            
+                            "numberOfShares": numberOfShares,
+                            "minusCashAndCashEquivalents": minusCashAndCashEquivalents,
+                            "addTotalDebt": addTotalDebt,
+                            "enterpriseValue": enterpriseValue
+                                                }}
+                        try:
+                            result = QuotesCollection.update_one(filter_query, update_query,upsert=True)
+                            total_updates += 1
+                            update_csv_with_symbol_and_date(QuotesStatistics_csv_file_path, symbol, date)
+
+                            if result.modified_count > 0:
+                                successful_updates += 1
+                                status = "Success"
+                                message = f"MarketCap Update successful for {symbol} on {date}"
+                            else:
+                                no_change_updates += 1
+                                status = "NoChange"
+                                message = f"MarketCap No changes for {symbol} on {date}"
+                        except errors.PyMongoError as e:
+                            error_updates += 1
+                            status = "Error"
+                            message = f"MarketCap Error updating document: {e}"
+
+                        ## Print progress
+                        print(f"EValues updating : symbol {symbol} date{date}  Processed {total_updates} updates - {successful_updates} successful, {no_change_updates} no change, {error_updates} errors")
+                    
+      
+
+    return "update_marketCap_EValues_API"
+
+
+
+@Quotes_update.get('/v1/update_marketCap_EValues_API')
+async def update_marketCap_EValues_function():
+    allCompaniesSymobls=["MLIFC.PA", "AJINF", "AGGRU", "MTGRF", "RGBD", "TVTY", "RAC.AX", "4248.T", "REXR", "600936.SS", "CAMLINFINE.NS", "FINGF", "CPFXF", "AGTT", "CNNA", "LMNR", "JPFA.JK", "300368.SZ", "CPD.WA", "090350.KS", "002223.SZ", "ARYN.SW", "FROTO.IS", "GPIL.NS", "SOFT", "LSTR", "MTX", "FBVA", "TVPC", "USCTU", "LIVK", "GQMLF", "QELL", "AMIN.JK", "BRAC", "GBGPF", "ICGUF", "GRVI", "OTLKW", "PIPP", "EXRO.TO", "UMGNF", "PRU.DE", "FDUSZ", "CNBN", "STEELCAS.NS", "ICDSLTD.NS", "RATCH-R.BK", "SHMAY", "BRLIU", "CAMS.NS", "MNGG", "RFLFF", "RVVTF", "EXPI", "CKISF", "WRTBF", "1370.HK", "PHN.MI", "300546.SZ", "PGPEF", "LOV.AX", "STBI", "NTST", "LLKKF", "DMPZF", "605296.SS", "0HDK.L", "FDY.TO", "OBSN.SW", "ELK.OL", "MLLOI.PA", "MGYOY", "BNP.WA", "GZPHF", "300252.SZ", "SWTF.F", "ALSO3.SA", "2764.T", "TAINWALCHM.NS", "JSDA", "MUNJALSHOW.NS", "000856.SZ", "ASHTF", "MSON-A.ST", "WIB.CN", "9428.T", "0856.HK", "BBB.L", "601865.SS", "TSPG", "5658.T", "1982.T", "600748.SS", "IMPAL.NS", "4044.T", "GMAB.CO", "2379.TW", "TTE.PA", "6901.T", "WINE.L", "BXMT", "KARE.AT", "RGEN", "CAKE", "600612.SS", "6748.T", "MGA", "WFC", "0IV3.L", "DND.TO", "CIBUS.ST", "CYBERMEDIA.NS", "002273.SZ", "LEN-B", "DEC.PA", "NAVNETEDUL.NS", "4118.T", "EXC", "ELLKF", "3699.HK", "CTPTY", "LEVL", "LMN.SW", "THYROCARE.NS", "3056.TW", "ALQ.AX", "ELUXY", "301007.SZ", "MCPH", "REPH", "603918.SS", "002901.SZ", "ELMN.SW", "GWRE", "1447.TW", "023530.KS", "NSTS", "VSYD.ME", "603085.SS", "LAC", "GCEI", "F3C.DE", "002341.SZ", "FBTT", "IVAC", "HELN.SW", "STRNW", "SQSP", "CI.BK", "603212.SS", "0HFB.L", "601928.SS", "APO", "8289.T", "8096.T", "FLWS", "MXC.L", "PGOL.CN", "SKKRF", "PORBF", "SEMR", "603027.SS", "YPB.AX", "SREV", "PNV.AX", "CHWAW", "MBHCF", "GL.CN", "0QZ4.L", "0KYZ.L", "HO7.DE", "PREM.L", "MNIN.TA", "JIM.L", "SBGSF", "WNNR-UN", "CBY.AX", "BRSYF", "ASB-PE", "KIDS", "NCPL", "AKO-B", "3101.T", "9932.T", "1515.T", "FME.L", "GPOR", "KROS", "SCHAND.NS", "603703.SS", "03473K.KS", "MMTS", "0992.HK", "000021.SZ", "MFT.MI", "AKSHAR.NS", "ISOLF", "300689.SZ", "SKUE.OL", "SFT.F", "EMA.TO", "000413.SZ", "8387.T", "600099.SS", "TOOL","OG.V", "300790.SZ", "SHMUF", "AXE.V", "BUD.V", "ECPN", "TELIA1.HE", "PIER.L", "MSLH.L", "6032.T", "FKWL", "HAR.DE", "HITECHCORP.NS", "2590.T", "9322.T", "ONEXF", "0688.HK", "KBH", "CRWD", "FTOCU", "BYRG", "BRGE12.SA", "0631.HK", "1813.HK", "APS.TO", "5406.T", "000903.SZ", "ZIN.L", "ENBI.CN", "CRSQ", "300261.SZ", "MGG.V", "002928.SZ", "HUM.AX", "FPIP.ST", "UNIP3.SA", "000048.SZ", "2376.HK", "AMAOU", "5GG.AX", "WEGOF", "AWTRF", "ROSE.SW", "CDSG", "TRII", "002555.SZ", "000055.SZ", "SASQ.CN", "NICU.V", "NZS.AX", "BCOMF", "000953.SZ", "AYAL.TA", "002692.SZ", "CLH.JO", "THEP.PA", "TPC", "LTMAQ", "ENUA.F", "0R2Y.L", "BGOPF", "KEN.TA", "TANGI.ST", "TEAM.CN", "0118.HK", "EDHN.SW", "RAUTE.HE", "GAPAW", "CBLNF", "PCOR", "49GP.L", "IVC.AX", "JMFINANCIL.NS", "ICLD", "SKA.WA", "7762.T", "GIL.TO", "SKHSF", "SRI.V", "ALWEC.PA", "BFINVEST.NS", "GZF.DE", "ECHO", "600271.SS", "ETG.TO", "IOSP", "CDXFF", "ABSOF", "SYHLF"]
+
+    print("----- The length of all the symbols ",len(allCompaniesSymobls))
+
+
+    for entry in allCompaniesSymobls:
+        await update_marketCap_EValues(entry)
+
+    return 'update_marketCap_EValues_API'
+
+
 
 
 
