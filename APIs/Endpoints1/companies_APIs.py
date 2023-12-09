@@ -14,6 +14,13 @@ from APIs.Endpoints1.countries_APIs import find_Country_id_by_name
 from APIs.Endpoints1.countries_APIs import find_subregion_id_by_Countryname  
 from APIs.Endpoints1.utilsFunctionalitites_APIs import download_csv_from_url
 
+
+from APIs.Endpoints1.Industries_APIs import find_industry_id_by_name  
+
+
+
+
+
 from typing import List, Optional
 import os
 
@@ -203,14 +210,17 @@ def creatingCompaniesInsertMany(DataFrame):
     print(len(selected_columns_Companies))
 
 
-    with Pool(processes=5) as pool:
+    with Pool(processes=6) as pool:
         start_time_pool = time.time()
 
         selected_columns_Companies['subregionId'] = pool.map(find_subregion_id_by_Countryname, selected_columns_Companies['country'])
         selected_columns_Companies['sectorId'] = pool.map(find_sector_id_by_name, selected_columns_Companies['sector'])
         selected_columns_Companies['countryId'] = pool.map(find_Country_id_by_name, selected_columns_Companies['country'])
         selected_columns_Companies['exchangeId'] = pool.map(find_Exchange_id_by_name, selected_columns_Companies['exchangeShortName'])
+        selected_columns_Companies['industryId'] = pool.map(find_industry_id_by_name, selected_columns_Companies['industry'])    
+
         selected_columns_Companies['companyPeers'] = pool.starmap(find_peers_list_by_symbol_in_list, zip(selected_columns_Companies['Symbol'], repeat(perrsListDatafromOneAPICall)))
+
 
 
         end_time_pool = time.time()

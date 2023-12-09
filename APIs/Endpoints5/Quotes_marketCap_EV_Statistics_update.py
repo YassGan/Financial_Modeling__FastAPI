@@ -493,7 +493,8 @@ def search_company_by_symbol(symbol):
                 "country": result.get("country"), 
                 "countryId": result.get("countryId"), 
 
-                "industry": result.get("industry"),        
+                "industry": result.get("industry"),     
+                "industryId": result.get("industryId")     
                  }
     else:
         return None
@@ -538,7 +539,7 @@ async def update_market_cap_ev(companySymbol):
         {"$project": {"_id": 0, "symbol": "$_id"}}
     ]
 
-    quotes_symbols_list = list(QuotesCollection.aggregate(pipeline))
+    quotes_symbols_list = list(STOCKIndexes_QuotesCollection.aggregate(pipeline))
     symbols_list = [item['symbol'] for item in quotes_symbols_list]
 
     print("--- List of all the symbols ")
@@ -548,7 +549,7 @@ async def update_market_cap_ev(companySymbol):
     symbolslist2.append(companySymbol)
     symbols_list=symbolslist2
 
-    batch_size = 2
+    batch_size = 1
 
     for start_index in range(0, len(symbols_list), batch_size):
         end_index = start_index + batch_size
@@ -593,7 +594,7 @@ async def update_market_cap_ev(companySymbol):
                     marketCap_results.append({"symbol": symbol, "error_marketCap": str(e)})
                     EV_results.append({"symbol": symbol, "error_EV": str(e)})
 
-        all_quotes = serializeList2(QuotesCollection.find({}))
+        all_quotes = serializeList2(STOCKIndexes_QuotesCollection.find({}))
 
         ###Batch processing for marketCap updates
         marketCap_updates = []
@@ -698,8 +699,8 @@ async def update_market_cap_ev(companySymbol):
 
         ##Execute batch updates for marketCap and EV
         try:
-            marketCap_bulk_updates = [UpdateOne(update[0], update[1]) for update in marketCap_updates]
-            ev_bulk_updates = [UpdateOne(update[0], update[1]) for update in ev_updates]
+            marketCap_bulk_updates = [UpdateOne(update["filter_query"], update["update_query"]) for update in marketCap_updates]
+            ev_bulk_updates = [UpdateOne(update[1]) for update in ev_updates]
 
             if marketCap_bulk_updates:
                 result_marketCap = QuotesCollection.bulk_write(marketCap_bulk_updates)
@@ -712,7 +713,6 @@ async def update_market_cap_ev(companySymbol):
                 total_updates += len(ev_bulk_updates)
                 successful_updates += result_ev.modified_count
                 no_change_updates += len(ev_bulk_updates) - result_ev.modified_count
-
             print("Batch updates executed successfully.")
 
         except errors.PyMongoError as e:
@@ -750,12 +750,14 @@ async def Magic_update_quotes_marketCap_EV():
 
 
 
+import json
+import numpy as np
 
 
 
 
 @Quotes_update.get('/v1/update_quotes_statistics')
-async def Insert_Quotes_Creation_API():
+async def update_quotes_statistics_API():
 
     # allCompaniesSymobls = get_company_symbols()
     # allCompaniesSymbolsList = list(allCompaniesSymobls)
@@ -786,8 +788,7 @@ def update_quotes_statisticsFunction(companySymbol):
     error_updates = 0
     no_change_updates = 0
 
-    # Assuming QuotesCollection is your MongoDB collection object
-    cursor = QuotesCollection.find({"symbol":companySymbol}, {"symbol": 1, "date": 1, "_id": 0})
+    cursor = STOCKIndexes_QuotesCollection.find({"symbol":companySymbol}, {"symbol": 1, "date": 1, "_id": 0})
 
 
     
@@ -801,9 +802,7 @@ def update_quotes_statisticsFunction(companySymbol):
     # Display the result
     print(symbols_and_dates_list)
 
-    
-
-
+    symbols_and_dates_list.reverse()
 
 
 
@@ -813,7 +812,7 @@ def update_quotes_statisticsFunction(companySymbol):
     current_date = datetime.datetime.now()
     formatted_todayDate = current_date.strftime("%Y-%m-%d")
 
-    QuotesStatistics_csv_file_path = 'Quotes_CSV_file/QuotesStatistics_csv_file_path.csv'
+    QuotesStatistics_csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/QuotesStatistics_csv_file_path.csv'
     SymbolDateQuotesStatisticsDF = pd.read_csv(QuotesStatistics_csv_file_path)
 
     for entry in symbols_and_dates_list:
@@ -830,6 +829,9 @@ def update_quotes_statisticsFunction(companySymbol):
             JsonValues = serializeDict2(statistics)
 
             JsonValues = {key: int(value) if isinstance(value, np.int64) else value for key, value in JsonValues.items()}
+
+            # Convert to JSON to handle numpy types
+            JsonValues = json.loads(json.dumps(JsonValues, default=str))
 
             company_info = search_company_by_symbol(symbol)
             
@@ -852,7 +854,6 @@ def update_quotes_statisticsFunction(companySymbol):
                     "return": JsonValues['return'],
                     "maxDrowDown": JsonValues['maxDrowDown'],
 
-                    "drawUp": JsonValues['drawUp'],
                     "daysNoChangePercentage": JsonValues['daysNoChangePercentage'],
                     "daysUpPercentage": JsonValues['daysUpPercentage'],
 

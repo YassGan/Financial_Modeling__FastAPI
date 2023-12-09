@@ -34,7 +34,7 @@ from APIs.Endpoints5.Quotes_marketCap_EV_Statistics_update import Quotes_update
 
 
 # le déclencheur du scheduler se fait quand on importe le fichier qui contient le code du scheduler
-import APIs.Endpoints1.TasksScheduler 
+# import APIs.Endpoints1.TasksScheduler 
 
 
 app = FastAPI()

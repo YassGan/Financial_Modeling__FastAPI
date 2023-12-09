@@ -34,8 +34,20 @@ def get_industry_collection():
     db = get_database()
     return db["industries"]
 
+industriesCollection=get_industry_collection()
 
 
+
+#find_industry_id_by_name
+def find_industry_id_by_name(IndustryName):
+    result = industriesCollection.find_one({
+        'Industry': IndustryName
+    })
+    
+    if result:
+        return str(result['_id'])
+    else:
+        return "not found "
 
 
 

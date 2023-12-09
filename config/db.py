@@ -37,7 +37,7 @@ DATABASE_NAME = "Financial_Meta_ModelingDB"
 
 
 ######### La nouvelle base de données payante de 30GB
-MONGO_CONNECTION_STRING = "mongodb+srv://mupeers:mupeers@cluster0.knzl8.mongodb.net/mupeers?retryWrites=true&w=majority"
+MONGO_CONNECTION_STRING = "mongodb+srv://mupeers:mupeers@cluster0.knzl8.mongodb.net/mupeersData?retryWrites=true&w=majority"
 
 
 
