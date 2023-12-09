@@ -81,15 +81,19 @@ def construct_statistics(Symbol, current_date, analysis_periods=DEFAULT_PERIODS)
             statitcs["averagePrice"][period_name] = selected_prices.mean()
             statitcs["emAveragePrice"][period_name]=selected_prices.ewm(span=10, min_periods=0, adjust=False).mean().iloc[-1]
             statitcs["maxPrice"][period_name] = selected_prices.max()
+
             statitcs["minPrice"][period_name] = selected_prices.min()
             statitcs["return"][period_name] = selected_prices[-1] / selected_prices[0] - 1
             statitcs["maxDrowDown"][period_name] = (cum_returns / cum_returns.cummax() - 1).min()
+
             statitcs["drawUp"][period_name] = (1 + positive_returns).cumprod().iloc[-1] - 1
             statitcs["daysNoChangePercentage"][period_name] = (percentage_change == 0).sum() / len(percentage_change)
             statitcs["daysUpPercentage"][period_name] = (percentage_change > 0).sum() / len(percentage_change)
+           
             statitcs["daysDownPercentage"][period_name] = (percentage_change < 0).sum() / len(percentage_change)
             statitcs["dailyVol"][period_name] = np.std(daily_log_returns) * np.sqrt(252)
             statitcs["weeklyVol"][period_name] = np.std(weekly_log_returns) * np.sqrt(52)
+           
             statitcs["monthlyVol"][period_name] = np.std(monthly_log_returns) * np.sqrt(12)
             statitcs["dailyEmaVol"][period_name] = daily_ema_volatility * np.sqrt(252)
             statitcs["weeklyEmaVol"][period_name] = weekly_ema_volatility *  np.sqrt(52)
