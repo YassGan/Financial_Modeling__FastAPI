@@ -278,7 +278,7 @@ async def update_market_cap_ev():
 
 
 
-    csv_file_path = 'Quotes_CSV_file/Quotes_marketCap_EV_update.csv'
+    csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv'
     SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 
 
@@ -412,7 +412,7 @@ async def update_market_cap_ev():
 
                          ## Print progress
                         print(f"EV updating : symbol {symbol} date{date}  Processed {total_updates} updates - {successful_updates} successful, {no_change_updates} no change, {error_updates} errors")
-                        update_csv_with_symbol_and_date("Quotes_CSV_file/Quotes_marketCap_EV_update.csv",symbol,formatted_todayDate)
+                        update_csv_with_symbol_and_date("HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv",symbol,formatted_todayDate)
                         break
 
 
@@ -467,7 +467,7 @@ async def update_market_cap_ev():
 
                             ## Print progress
                             print(f"EV updating : symbol {symbol} date{date}  Processed {total_updates} updates - {successful_updates} successful, {no_change_updates} no change, {error_updates} errors")
-                            update_csv_with_symbol_and_date("Quotes_CSV_file/Quotes_marketCap_EV_update.csv",symbol,formatted_todayDate)
+                            update_csv_with_symbol_and_date("HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv",symbol,formatted_todayDate)
                             break
 
     if not found:
@@ -530,7 +530,7 @@ async def update_market_cap_ev(companySymbol):
     current_date = datetime.datetime.now()
     formatted_todayDate = current_date.strftime("%Y-%m-%d")
 
-    csv_file_path = 'Quotes_CSV_file/Quotes_marketCap_EV_update.csv'
+    csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv'
     SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 
     pipeline = [
@@ -654,7 +654,7 @@ async def update_market_cap_ev(companySymbol):
                             print(
                                 f"EV updating : symbol {symbol} date{date}  Processed {total_updates} updates - {successful_updates} successful, {no_change_updates} no change, {error_updates} errors"
                             )
-                            update_csv_with_symbol_and_date("Quotes_CSV_file/Quotes_marketCap_EV_update.csv", symbol, formatted_todayDate)
+                            update_csv_with_symbol_and_date("HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv", symbol, formatted_todayDate)
                             break
 
                     if not found:
@@ -693,7 +693,7 @@ async def update_market_cap_ev(companySymbol):
                                 print(
                                     f"EV updating : symbol {symbol} date{date}  Processed {total_updates} updates - {successful_updates} successful, {no_change_updates} no change, {error_updates} errors"
                                 )
-                                update_csv_with_symbol_and_date("Quotes_CSV_file/Quotes_marketCap_EV_update.csv", symbol, formatted_todayDate)
+                                update_csv_with_symbol_and_date("HistoriqueCSV/Quotes_CSV_file/Quotes_marketCap_EV_update.csv", symbol, formatted_todayDate)
                                 break
 
         ##Execute batch updates for marketCap and EV

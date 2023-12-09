@@ -141,7 +141,7 @@ async def FOREX_Quotes_Creation(symbol, dataframe):
                         
                     FOREX_QuotesCollection.insert_many(data["historical"])
 
-                    Symbol_Date_FOREXQuotes_CSV_FileName = "FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv"
+                    Symbol_Date_FOREXQuotes_CSV_FileName = "HistoriqueCSV/FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv"
                     update_csv_with_symbol_and_date(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
 
                     print(f"The compnay ' {symbol}' has Quotes data inserted into the database and updating the CSV quotes file ")
@@ -176,7 +176,7 @@ async def Insert_FOREX_Quotes_Creation_API():
         
 
     #Reading the quotes csv file that contains the symbol and the date information of the companies 
-    csv_file_path = 'FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv'
+    csv_file_path = 'HistoriqueCSV/FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv'
 
     SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 

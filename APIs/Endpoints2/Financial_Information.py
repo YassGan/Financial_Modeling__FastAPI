@@ -225,9 +225,9 @@ async def Insert_BS_Annual_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv"
+    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv"
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv")
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv")
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
@@ -267,9 +267,9 @@ async def Insert_BS_Quarter_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv"
+    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv"
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv")
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv")
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
@@ -309,9 +309,9 @@ async def Insert_IS_Annual_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv"
+    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv"
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv")
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv")
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
@@ -351,9 +351,9 @@ async def Insert_IS_Quarter_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv"
+    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv"
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv")
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv")
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
@@ -392,9 +392,9 @@ async def Insert_CF_Annual_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv"
+    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv"
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv")
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv")
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
@@ -439,9 +439,9 @@ async def Insert_CF_Quarter_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv"
+    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv"
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv")
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv")
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    

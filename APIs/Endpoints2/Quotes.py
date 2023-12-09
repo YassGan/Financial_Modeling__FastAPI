@@ -116,7 +116,7 @@ async def Quotes_Creation(symbol, dataframe):
                         
                     QuotesCollection.insert_many(data["historical"])
 
-                    Symbol_Date_Quotes_CSV_FileName = "Quotes_CSV_file/Quotes_CSV_file.csv"
+                    Symbol_Date_Quotes_CSV_FileName = "HistoriqueCSV/Quotes_CSV_file/Quotes_CSV_file.csv"
                     update_csv_with_symbol_and_date(Symbol_Date_Quotes_CSV_FileName, symbol, formatted_todayDate)
 
                     print(f"The compnay ' {symbol}' has Quotes data inserted into the database and updating the CSV quotes file ")
@@ -149,7 +149,7 @@ async def Insert_Quotes_Creation_API():
     
 
     #Reading the quotes csv file that contains the symbol and the date information of the companies 
-    csv_file_path = 'Quotes_CSV_file/Quotes_CSV_file.csv'
+    csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/Quotes_CSV_file.csv'
 
     SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 

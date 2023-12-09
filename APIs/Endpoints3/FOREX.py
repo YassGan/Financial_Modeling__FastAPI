@@ -97,7 +97,7 @@ async def return_all_currencies_list_API():
 
 @FOREX.get("/createAvailableCurrencies_API")
 async def createAvailableCurrencies_API():
-    currencies_CSV_FileName = "Currency_CSV_file/Currency_CSV_file.csv"
+    currencies_CSV_FileName = "HistoriqueCSV/Currency_CSV_file/Currency_CSV_file.csv"
     try:
         df = pd.read_csv(currencies_CSV_FileName)
     except Exception as e:
