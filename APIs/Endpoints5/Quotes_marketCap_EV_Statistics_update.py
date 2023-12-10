@@ -66,7 +66,7 @@ QuotesTestCollection=get_QuotesTest_collection()
 def get_date_for_symbol(dataframe, symbol):
     # print("working with this dataframe")
     # print(dataframe)
-    print("Treating the symbol  ", symbol)
+    # print("Treating the symbol  ", symbol)
     filtered_df = dataframe[dataframe['symbol'] == symbol]
 
     if not filtered_df.empty:
@@ -142,17 +142,17 @@ def get_stock_data(symbol, target_date):
 
     if results:
         data_list = list(results)
-        print("Retrieved data from MongoDB:")
-        print(data_list)
+        # print("Retrieved data from MongoDB:")
+        # print(data_list)
 
         df = pd.DataFrame(data_list)
 
         columns_to_extract = ["date", "adjClose"]
-        print("Columns in DataFrame:", df.columns)
+        # print("Columns in DataFrame:", df.columns)
 
         df = df[columns_to_extract]
-        print("DataFrame after column extraction:")
-        print(df)
+        # print("DataFrame after column extraction:")
+        # print(df)
 
         return df
     else:
@@ -164,7 +164,7 @@ def get_stock_data(symbol, target_date):
 DEFAULT_PERIODS = [0.5] + np.arange(1, 10, 1).tolist()
 
 
-
+#ajouter symbole stockdata, qui va prendre toute l'historique du stock
 def construct_statistics(Symbol, current_date, analysis_periods=DEFAULT_PERIODS):
     df = get_stock_data(Symbol, current_date)
 
@@ -248,7 +248,7 @@ def construct_statistics(Symbol, current_date, analysis_periods=DEFAULT_PERIODS)
 @Quotes_update.get("/v1/testerFonctionStatistiques")
 async def testerFonctionsStatistiques():
     # statitcs = construct_statistics("ENGIY", current_date="2023-11-10")
-    statitcs = construct_statistics("LYFT", current_date="2023-11-10")
+    statitcs = construct_statistics("AGGRU", current_date="2023-11-10")
 
     print(statitcs)
     return serializeDict2(statitcs)
@@ -304,6 +304,26 @@ import numpy as np
 
 
 
+
+
+
+##The same api as /v1/update_marketCap_EValues_API but with batch and parrallel logic, it has some issues that are not logged in the console so i can't debug them 
+@Quotes_update.get('/vY/update_quotes_statistics')
+async def update_marketCap_EValues_function():
+    batch_size = 4
+    allCompaniesSymobls=[ "AJINF", "AGGRU",  "RGBD", "TVTY", "RAC.AX", "4248.T", "REXR", "600936.SS", "CAMLINFINE.NS", "FINGF", "CPFXF", "AGTT", "CNNA", "LMNR", "JPFA.JK", "300368.SZ", "CPD.WA", "090350.KS", "002223.SZ", "ARYN.SW", "FROTO.IS", "GPIL.NS", "SOFT", "LSTR", "MTX", "FBVA", "TVPC", "USCTU", "LIVK", "GQMLF", "QELL", "AMIN.JK", "BRAC", "GBGPF", "ICGUF", "GRVI", "OTLKW", "PIPP", "EXRO.TO", "UMGNF", "PRU.DE", "FDUSZ", "CNBN", "STEELCAS.NS", "ICDSLTD.NS", "RATCH-R.BK", "SHMAY", "BRLIU", "CAMS.NS", "MNGG", "RFLFF", "RVVTF", "EXPI", "CKISF", "WRTBF", "1370.HK", "PHN.MI", "300546.SZ", "PGPEF", "LOV.AX", "STBI", "NTST", "LLKKF", "DMPZF", "605296.SS", "0HDK.L", "FDY.TO", "OBSN.SW", "ELK.OL", "MLLOI.PA", "MGYOY", "BNP.WA", "GZPHF", "300252.SZ", "SWTF.F", "ALSO3.SA", "2764.T", "TAINWALCHM.NS", "JSDA", "MUNJALSHOW.NS", "000856.SZ", "ASHTF", "MSON-A.ST", "WIB.CN", "9428.T", "0856.HK", "BBB.L", "601865.SS", "TSPG", "5658.T", "1982.T", "600748.SS", "IMPAL.NS", "4044.T", "GMAB.CO", "2379.TW", "TTE.PA", "6901.T", "WINE.L", "BXMT", "KARE.AT", "RGEN", "CAKE", "600612.SS", "6748.T", "MGA", "WFC", "0IV3.L", "DND.TO", "CIBUS.ST", "CYBERMEDIA.NS", "002273.SZ", "LEN-B", "DEC.PA", "NAVNETEDUL.NS", "4118.T", "EXC", "ELLKF", "3699.HK", "CTPTY", "LEVL", "LMN.SW", "THYROCARE.NS", "3056.TW", "ALQ.AX", "ELUXY", "301007.SZ", "MCPH", "REPH", "603918.SS", "002901.SZ", "ELMN.SW", "GWRE", "1447.TW", "023530.KS", "NSTS", "VSYD.ME", "603085.SS", "LAC", "GCEI", "F3C.DE", "002341.SZ", "FBTT", "IVAC", "HELN.SW", "STRNW", "SQSP", "CI.BK", "603212.SS", "0HFB.L", "601928.SS", "APO", "8289.T", "8096.T", "FLWS", "MXC.L", "PGOL.CN", "SKKRF", "PORBF", "SEMR", "603027.SS", "YPB.AX", "SREV", "PNV.AX", "CHWAW", "MBHCF", "GL.CN", "0QZ4.L", "0KYZ.L", "HO7.DE", "PREM.L", "MNIN.TA", "JIM.L", "SBGSF", "WNNR-UN", "CBY.AX", "BRSYF", "ASB-PE", "KIDS", "NCPL", "AKO-B", "3101.T", "9932.T", "1515.T", "FME.L", "GPOR", "KROS", "SCHAND.NS", "603703.SS", "03473K.KS", "MMTS", "0992.HK", "000021.SZ", "MFT.MI", "AKSHAR.NS", "ISOLF", "300689.SZ", "SKUE.OL", "SFT.F", "EMA.TO", "000413.SZ", "8387.T", "600099.SS", "TOOL","OG.V", "300790.SZ", "SHMUF", "AXE.V", "BUD.V", "ECPN", "TELIA1.HE", "PIER.L", "MSLH.L", "6032.T", "FKWL", "HAR.DE", "HITECHCORP.NS", "2590.T", "9322.T", "ONEXF", "0688.HK", "KBH", "CRWD", "FTOCU", "BYRG", "BRGE12.SA", "0631.HK", "1813.HK", "APS.TO", "5406.T", "000903.SZ", "ZIN.L", "ENBI.CN", "CRSQ", "300261.SZ", "MGG.V", "002928.SZ", "HUM.AX", "FPIP.ST", "UNIP3.SA", "000048.SZ", "2376.HK", "AMAOU", "5GG.AX", "WEGOF", "AWTRF", "ROSE.SW", "CDSG", "TRII", "002555.SZ", "000055.SZ", "SASQ.CN", "NICU.V", "NZS.AX", "BCOMF", "000953.SZ", "AYAL.TA", "002692.SZ", "CLH.JO", "THEP.PA", "TPC", "LTMAQ", "ENUA.F", "0R2Y.L", "BGOPF", "KEN.TA", "TANGI.ST", "TEAM.CN", "0118.HK", "EDHN.SW", "RAUTE.HE", "GAPAW", "CBLNF", "PCOR", "49GP.L", "IVC.AX", "JMFINANCIL.NS", "ICLD", "SKA.WA", "7762.T", "GIL.TO", "SKHSF", "SRI.V", "ALWEC.PA", "BFINVEST.NS", "GZF.DE", "ECHO", "600271.SS", "ETG.TO", "IOSP", "CDXFF", "ABSOF", "SYHLF"]
+    print("----- The length of all the symbols ", len(allCompaniesSymobls))
+
+    # Process symbols in batches
+    for i in range(0, len(allCompaniesSymobls), batch_size):
+        batch_symbols = allCompaniesSymobls[i:i + batch_size]
+        tasks = [update_quotes_statisticsFunction(entry) for entry in batch_symbols]
+        await asyncio.gather(*tasks)
+
+    return 'update_marketCap_EValues_API'
+
+
+
 @Quotes_update.get('/v1/update_quotes_statistics')
 async def update_quotes_statistics_API():
 
@@ -341,33 +361,47 @@ def update_quotes_statisticsFunction(companySymbol):
 
     
 
-
+    QuotesStatistics_csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/QuotesStatistics_csv_file_path.csv'
+    SymbolDateQuotesStatisticsDF = pd.read_csv(QuotesStatistics_csv_file_path)
 
 
     # Convert the cursor to a list of dictionaries
     symbols_and_dates_list = list(cursor)
 
     # Display the result
-    print(symbols_and_dates_list)
 
     symbols_and_dates_list.reverse()
 
 
 
-    print("------- symbols_and_dates_list")
+    print("------- symbols_and_dates_list before the filter with the latest date from the csv")
     print(symbols_and_dates_list)
+
+
+                # Filter elements with dates older than "the latest csv date"
+    if get_date_for_symbol(SymbolDateQuotesStatisticsDF, companySymbol) !=None:
+                symbols_and_dates_list = [quote for quote in symbols_and_dates_list
+                                    if quote.get("date") >= get_date_for_symbol(SymbolDateQuotesStatisticsDF,companySymbol)]
+                
+
+
+    print("------- symbols_and_dates_list after the filter with the latest date from the csv")
+    print(symbols_and_dates_list)
+
+
+
+
 
     current_date = datetime.datetime.now()
     formatted_todayDate = current_date.strftime("%Y-%m-%d")
 
-    QuotesStatistics_csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/QuotesStatistics_csv_file_path.csv'
-    SymbolDateQuotesStatisticsDF = pd.read_csv(QuotesStatistics_csv_file_path)
+
 
     for entry in symbols_and_dates_list:
         
         symbol = entry['symbol']
         date = entry['date']
-        print("---- date : ",date)
+        # print("---- date : ",date)
         # extraire la dernière date de mise à jour du csv
 
         if (compare_dates(get_date_for_symbol(SymbolDateQuotesStatisticsDF, symbol), date ) == 1):
@@ -383,12 +417,12 @@ def update_quotes_statisticsFunction(companySymbol):
 
             company_info = search_company_by_symbol(symbol)
             
-            print("------------ JSON values")
-            print(JsonValues)
+            # print("------------ JSON values")
+            # print(JsonValues)
 
 
-            print("------------ company_info")
-            print(company_info)
+            # print("------------ company_info")
+            # print(company_info)
 
 
 
