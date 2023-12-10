@@ -134,12 +134,10 @@ def compare_dates(csv_date_str, date_to_compare_str):
 
 
 
-def get_stock_data(symbol, target_date):
+def get_stock_data(historiqueStockSymbol,symbol, target_date):
     start_date = (pd.to_datetime(target_date) - pd.DateOffset(years=10)).strftime('%Y-%m-%d')
 
-    query = {"symbol": symbol, "date": {"$gte": start_date, "$lte": target_date}}
-    results = STOCKIndexes_QuotesCollection.find(query)
-
+    results = [entry for entry in historiqueStockSymbol if start_date <= entry['date'] <= target_date]
     if results:
         data_list = list(results)
         # print("Retrieved data from MongoDB:")
@@ -165,8 +163,9 @@ DEFAULT_PERIODS = [0.5] + np.arange(1, 10, 1).tolist()
 
 
 #ajouter symbole stockdata, qui va prendre toute l'historique du stock
-def construct_statistics(Symbol, current_date, analysis_periods=DEFAULT_PERIODS):
-    df = get_stock_data(Symbol, current_date)
+def construct_statistics(historiqueStockSymbol,Symbol, current_date, analysis_periods=DEFAULT_PERIODS):
+    
+    df = get_stock_data(historiqueStockSymbol,Symbol, current_date)
 
     df["date"] = pd.to_datetime(df["date"])
     df = df.set_index("date", inplace=False)
@@ -352,141 +351,173 @@ async def update_quotes_statistics_API():
 
 import time 
 
-def update_quotes_statisticsFunction(companySymbol):
+async def update_quotes_statisticsFunction(companySymbol):
     print("----  update_quotes_statisticsFunction ",companySymbol)
-    total_updates = 0  
-    successful_updates = 0
-    error_updates = 0
-    no_change_updates = 0
 
-    cursor = STOCKIndexes_QuotesCollection.find({"symbol":companySymbol}, {"symbol": 1, "date": 1, "_id": 0})
-
-
-    
 
     QuotesStatistics_csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/QuotesStatistics_csv_file_path.csv'
     SymbolDateQuotesStatisticsDF = pd.read_csv(QuotesStatistics_csv_file_path)
 
-
-    # Convert the cursor to a list of dictionaries
-    symbols_and_dates_list = list(cursor)
-
-    # Display the result
-
-    symbols_and_dates_list.reverse()
-
-
-
-    print("------- symbols_and_dates_list before the filter with the latest date from the csv")
-    print(symbols_and_dates_list)
-
-
-                # Filter elements with dates older than "the latest csv date"
-    if get_date_for_symbol(SymbolDateQuotesStatisticsDF, companySymbol) !=None:
-                symbols_and_dates_list = [quote for quote in symbols_and_dates_list
-                                    if quote.get("date") >= get_date_for_symbol(SymbolDateQuotesStatisticsDF,companySymbol)]
-                
-
-
-    print("------- symbols_and_dates_list after the filter with the latest date from the csv")
-    print(symbols_and_dates_list)
-
-    
-    print(">>>>>> The length of symbols_and_dates_list that we are going to create statistics for them ", len(symbols_and_dates_list))
-
-
-
-
-
-
     current_date = datetime.datetime.now()
     formatted_todayDate = current_date.strftime("%Y-%m-%d")
 
+    get_date_for_symbol(SymbolDateQuotesStatisticsDF,companySymbol)
 
-    company_info = search_company_by_symbol(companySymbol)
 
 
-    nombre_par_insert_many=100
-    compteur=0
-    bulk_documents=[]
-    for entry in symbols_and_dates_list:
+    if get_date_for_symbol(SymbolDateQuotesStatisticsDF,companySymbol)==None or get_date_for_symbol(SymbolDateQuotesStatisticsDF,companySymbol)<formatted_todayDate:
 
-        compteur=compteur+1
+        total_updates = 0  
+        successful_updates = 0
+        error_updates = 0
+        no_change_updates = 0
+
+        query = {"symbol": companySymbol}
+        historiqueStock = STOCKIndexes_QuotesCollection.find(query)
+        historiqueStock = list(historiqueStock)
+
+
+        print("---------- Historique stock ")
+        print(historiqueStock)
+        print(" Type Historique stock ",type(historiqueStock))
+        print("---------- Fin Historique stock ")
+
+        cursor = STOCKIndexes_QuotesCollection.find({"symbol":companySymbol}, {"symbol": 1, "date": 1, "_id": 0})
+
+
         
-        symbol = entry['symbol']
-        date = entry['date']
-        print("----  creating statistics for the symbol ",symbol," and date : ",date)
-        # extraire la dernière date de mise à jour du csv
 
-        if (compare_dates(get_date_for_symbol(SymbolDateQuotesStatisticsDF, symbol), date ) == 1):
-            #Ca veut dire que la date du quote dans la base de donnée est après la date de la dernière mise à jour, ça veut dire qu'on doit performer le traitement de quotes statistics update
+        QuotesStatistics_csv_file_path = 'HistoriqueCSV/Quotes_CSV_file/QuotesStatistics_csv_file_path.csv'
+        SymbolDateQuotesStatisticsDF = pd.read_csv(QuotesStatistics_csv_file_path)
+
+
+        # Convert the cursor to a list of dictionaries
+        symbols_and_dates_list = list(cursor)
+
+        # Display the result
+
+        symbols_and_dates_list.reverse()
+
+
+
+        # print("------- symbols_and_dates_list before the filter with the latest date from the csv")
+        # print(symbols_and_dates_list)
+
+
+                    # Filter elements with dates older than "the latest csv date"
+        if get_date_for_symbol(SymbolDateQuotesStatisticsDF, companySymbol) !=None:
+                    symbols_and_dates_list = [quote for quote in symbols_and_dates_list
+                                        if quote.get("date") >= get_date_for_symbol(SymbolDateQuotesStatisticsDF,companySymbol)]
+                    
+
+
+        # print("------- symbols_and_dates_list after the filter with the latest date from the csv")
+        # print(symbols_and_dates_list)
+
+        
+        # print(">>>>>> The length of symbols_and_dates_list that we are going to create statistics for them ", len(symbols_and_dates_list))
+
+
+
+
+
+
+
+
+
+        company_info = search_company_by_symbol(companySymbol)
+
+
+        nombre_par_insert_many=1000
+        compteur=0
+        bulk_documents=[]
+        for entry in symbols_and_dates_list:
+
+            compteur=compteur+1
             
-            start_time = time.time()  # Record the start time
+            symbol = entry['symbol']
+            date = entry['date']
+            print("----  creating statistics for the symbol ",symbol," and date : ",date)
+            # extraire la dernière date de mise à jour du csv
 
-            statistics = construct_statistics(symbol, date)
-            JsonValues = serializeDict2(statistics)
-
-            JsonValues = {key: int(value) if isinstance(value, np.int64) else value for key, value in JsonValues.items()}
-
-            # Convert to JSON to handle numpy types
-            JsonValues = json.loads(json.dumps(JsonValues, default=str))
-
-
-            elapsed_time = time.time() - start_time
-            print(f"----- Retour des données statistiques {elapsed_time:.2f} seconds")
-    
-            # print("------------ JSON values")
-            # print(JsonValues)
-
-
-            # print("------------ company_info")
-            # print(company_info)
-
-
-
-            # filter_query = {"symbol": symbol, "date": date}
-            document = {
-                    "max_price": JsonValues['maxPrice'],
-                    "minPrice": JsonValues['minPrice'],
-                    "emAveragePrice": JsonValues['emAveragePrice'],
-                    "averagePrice": JsonValues['averagePrice'],
-                    "return": JsonValues['return'],
-                    "maxDrowDown": JsonValues['maxDrowDown'],
-
-                    "daysNoChangePercentage": JsonValues['daysNoChangePercentage'],
-                    "daysUpPercentage": JsonValues['daysUpPercentage'],
-
-                    "daysDownPercentage": JsonValues['daysDownPercentage'],
-                    "dailyVol": JsonValues['dailyVol'],
-                    "weeklyVol": JsonValues['weeklyVol'],
-
-                    "monthlyVol": JsonValues['monthlyVol'],
-                    "dailyEmaVol": JsonValues['dailyEmaVol'],
-                    "weeklyEmaVol": JsonValues['weeklyEmaVol'],
-                    "monthlyEmaVol": JsonValues['monthlyEmaVol'],
-
-                    **company_info
+            if (compare_dates(get_date_for_symbol(SymbolDateQuotesStatisticsDF, symbol), date ) == 1):
+                #Ca veut dire que la date du quote dans la base de donnée est après la date de la dernière mise à jour, ça veut dire qu'on doit performer le traitement de quotes statistics update
                 
-            }
+                start_time = time.time()  # Record the start time
 
-            bulk_documents.append(document)
+                statistics = construct_statistics(historiqueStock,symbol, date)
+                JsonValues = serializeDict2(statistics)
 
-            if compteur==nombre_par_insert_many:
-                try:
-                    result = QuotesStatisticsCollection.insert_many(bulk_documents, ordered=False)
+                JsonValues = {key: int(value) if isinstance(value, np.int64) else value for key, value in JsonValues.items()}
 
-
-                    compteur=0
-                    bulk_documents=[]
+                # Convert to JSON to handle numpy types
+                JsonValues = json.loads(json.dumps(JsonValues, default=str))
 
 
-                except errors.PyMongoError as e:
-                    error_updates += 1
-                    status = "Error"
-                    message = f"EV Error updating document: {e}"
+                elapsed_time = time.time() - start_time
+                print(f"----- Retour des données statistiques {elapsed_time:.2f} seconds")
         
-        
-    update_csv_with_symbol_and_date(QuotesStatistics_csv_file_path, symbol, formatted_todayDate)
+                # print("------------ JSON values")
+                # print(JsonValues)
+
+
+                # print("------------ company_info")
+                # print(company_info)
+
+
+
+                # filter_query = {"symbol": symbol, "date": date}
+                document = {
+                        "max_price": JsonValues['maxPrice'],
+                        "minPrice": JsonValues['minPrice'],
+                        "emAveragePrice": JsonValues['emAveragePrice'],
+                        "averagePrice": JsonValues['averagePrice'],
+                        "return": JsonValues['return'],
+                        "maxDrowDown": JsonValues['maxDrowDown'],
+
+                        "daysNoChangePercentage": JsonValues['daysNoChangePercentage'],
+                        "daysUpPercentage": JsonValues['daysUpPercentage'],
+
+                        "daysDownPercentage": JsonValues['daysDownPercentage'],
+                        "dailyVol": JsonValues['dailyVol'],
+                        "weeklyVol": JsonValues['weeklyVol'],
+
+                        "monthlyVol": JsonValues['monthlyVol'],
+                        "dailyEmaVol": JsonValues['dailyEmaVol'],
+                        "weeklyEmaVol": JsonValues['weeklyEmaVol'],
+                        "monthlyEmaVol": JsonValues['monthlyEmaVol'],
+
+                        "date":date,
+
+                        **company_info
+                    
+                }
+
+                bulk_documents.append(document)
+
+                if compteur>=nombre_par_insert_many:
+                    try:
+                        result = QuotesStatisticsCollection.insert_many(bulk_documents, ordered=False)
+
+
+                        compteur=0
+                        bulk_documents=[]
+
+
+                    except errors.PyMongoError as e:
+                        error_updates += 1
+                        status = "Error"
+                        message = f"EV Error updating document: {e}"
+                    # Insert the remaining documents if any
+        if compteur > 0:
+            try:
+                result = QuotesStatisticsCollection.insert_many(bulk_documents, ordered=False)
+            except errors.PyMongoError as e:
+                error_updates += 1
+                status = "Error"
+                message = f"EV Error updating document: {e}"
+            
+            update_csv_with_symbol_and_date(QuotesStatistics_csv_file_path, symbol, formatted_todayDate)
 
 
     return "Statistics update finished"
