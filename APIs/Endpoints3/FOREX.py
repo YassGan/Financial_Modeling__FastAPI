@@ -95,11 +95,27 @@ async def return_all_currencies_list_API():
 
 
 
+from APIs.Endpoints5.googleSheetAPI import read_data_from_sheets
+
+from APIs.Endpoints5.googleSheetAPI import update_googleSheet_data_in
+
+
+
+
+from APIs.Endpoints5.googleSheetAPI import service
+
 @FOREX.get("/createAvailableCurrencies_API")
 async def createAvailableCurrencies_API():
-    currencies_CSV_FileName = "HistoriqueCSV/Currency_CSV_file/Currency_CSV_file.csv"
+
+    # ##working with local csv
+    # currencies_CSV_FileName = "HistoriqueCSV/Currency_CSV_file/Currency_CSV_file.csv"
+
+    
+    currencies_CSV_FileName_id = "1hkLa14YFHHrPjQA-SSd0ST_4EW9u-7vfuhm3oykjcEo"
+
+
     try:
-        df = pd.read_csv(currencies_CSV_FileName)
+        df = read_data_from_sheets(currencies_CSV_FileName_id,"A1:F1000")
     except Exception as e:
         print(f"Error loading the .csv file: {e}")
         raise HTTPException(status_code=500, detail="Error loading .csv file")
@@ -134,7 +150,20 @@ async def createAvailableCurrencies_API():
         print("Currencies to be created ")
         AvailableCurrenciesCollection.insert_many(serializeList2(currency_objects))
         df.loc[df['Currency_Code'].isin(currencies_list), 'Status'] = 'inserted'
-        df.to_csv(currencies_CSV_FileName, index=False)
+        ##working locally
+        updated_values = [df.columns.tolist()] + df.values.tolist()
+
+        # Update the data in the Google Sheet
+        service.spreadsheets().values().update(
+            spreadsheetId="1hkLa14YFHHrPjQA-SSd0ST_4EW9u-7vfuhm3oykjcEo",
+            range="A1:F1000",
+            body={'values': updated_values},
+            valueInputOption="RAW"
+        ).execute()
+
+
+
+        # df.to_csv(currencies_CSV_FileName_id, index=False)
 
     return "currency_objects creation process is completed"
     

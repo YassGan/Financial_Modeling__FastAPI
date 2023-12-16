@@ -33,6 +33,9 @@ FOREX_QuotesCollection=get_FOREX_Quotes_collection()
 
 
 
+from APIs.Endpoints5.googleSheetAPI import update_googleSheet_data_in
+
+
 
 
 
@@ -141,8 +144,15 @@ async def FOREX_Quotes_Creation(symbol, dataframe):
                         
                     FOREX_QuotesCollection.insert_many(data["historical"])
 
-                    Symbol_Date_FOREXQuotes_CSV_FileName = "HistoriqueCSV/FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv"
-                    update_csv_with_symbol_and_date(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
+
+####working with local csvs
+                    # Symbol_Date_FOREXQuotes_CSV_FileName = "HistoriqueCSV/FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv"
+                    # update_csv_with_symbol_and_date(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
+
+
+
+                    Symbol_Date_FOREXQuotes_CSV_FileName = "1M1IDk6NgBI86VSvqPP7ObmCf1w457U7OgawSHpUcO5w"
+                    update_googleSheet_data_in(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
 
                     print(f"The compnay ' {symbol}' has Quotes data inserted into the database and updating the CSV quotes file ")
                 else:
@@ -154,6 +164,7 @@ async def FOREX_Quotes_Creation(symbol, dataframe):
 def get_FOREX_Quotes_symbols():
     print("The get FOREX quotes symbols ")
 
+from APIs.Endpoints5.googleSheetAPI import read_data_from_sheets
 
 
 
@@ -174,11 +185,15 @@ async def Insert_FOREX_Quotes_Creation_API():
         print("all_FOREX_Quotes_Symobls is None, check your initialization logic.")
 
         
+###working with local csvs
+    # #Reading the quotes csv file that contains the symbol and the date information of the companies 
+    # csv_file_path = 'HistoriqueCSV/FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv'
+    # SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 
-    #Reading the quotes csv file that contains the symbol and the date information of the companies 
-    csv_file_path = 'HistoriqueCSV/FOREXQuotes_CSV_fle/FOREXQuotes_CSV_fle.csv'
 
-    SymbolDateQuotesDF = pd.read_csv(csv_file_path)
+    csv_file_path = '1M1IDk6NgBI86VSvqPP7ObmCf1w457U7OgawSHpUcO5w'
+    SymbolDateQuotesDF = read_data_from_sheets(csv_file_path,"Sheet1")
+
 
     batch_size = 10  
     

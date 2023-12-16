@@ -11,6 +11,10 @@ import time
 import datetime
 
 
+from APIs.Endpoints5.googleSheetAPI import read_data_from_sheets
+
+from APIs.Endpoints5.googleSheetAPI import update_googleSheet_data_in
+
 
 
 from APIs.Endpoints1.companiesFiltering import CompaniesCollection 
@@ -34,7 +38,10 @@ api_key = os.getenv("API_KEY")
 #Function that gets the csv path of the file that contains companies symbols and the latest data of its balancesheet
 def return_CompanyLatestBalanceSheet_Date_Symbol_Set(csv_file_path):
     try:
-        df = pd.read_csv(csv_file_path)
+        ##working with local csv
+        # df = pd.read_csv(csv_file_path)
+
+        df = read_data_from_sheets(csv_file_path)
         symbol_date_set = set()  
         for index, row in df.iterrows():
             symbol_date_set.add((row['symbol'], row['date']))
@@ -151,7 +158,7 @@ async def FinancialInformation_Creation(symbol,balanceSheet_URL,Symbol_Date_Bala
                     # DataBaseName.insert_one(data[0])
 
                     print(f"Inserted {symbol} balance sheet data into the database.")
-                    update_csv_file(Symbol_Date_BalanceSheetDF_FileName, symbol, data[0]['date'])
+                    update_googleSheet_data_in(Symbol_Date_BalanceSheetDF_FileName, symbol, data[0]['date'])
 
                     if '_id' in data[0]:
                         data[0]['_id'] = str(data[0]['_id'])
@@ -185,7 +192,7 @@ async def FinancialInformation_Creation(symbol,balanceSheet_URL,Symbol_Date_Bala
 
 
                             DataBaseName.insert_one(data[0])
-                            update_csv_file(Symbol_Date_BalanceSheetDF_FileName, symbol, api_date.strftime("%Y-%m-%d"))
+                            update_googleSheet_data_in(Symbol_Date_BalanceSheetDF_FileName, symbol, api_date.strftime("%Y-%m-%d"))
 
                             print(f">>Updated {symbol} balance sheet data in the database.")
                         else:
@@ -225,10 +232,19 @@ async def Insert_BS_Annual_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv"
+
+
+    #### Working with local csv
+    # Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv"
+    # Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv")
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualBalanceSheet_company_symbol_date.csv")
+
+    ### Working with google
+    Symbol_Date_BalanceSheetDF_IdSheet = "1OiODwDr9A9BhBhv_1lZdjeUZO8O2NzDOggx8YbMvEnQ"
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set(Symbol_Date_BalanceSheetDF_IdSheet)
     
+
+
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
     allCompaniesSymobls=list(allCompaniesSymobls)
@@ -240,7 +256,7 @@ async def Insert_BS_Annual_information():
     
     for i in range(0, len(allCompaniesSymobls), batch_size):
         symbols_batch = allCompaniesSymobls[i:i + batch_size]
-        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/balance-sheet-statement', Symbol_Date_BalanceSheetDF_Set, companies_Annual_BalanceSheetCollection, Symbol_Date_BalanceSheetDF_FileName,"annual") for symbol in symbols_batch]
+        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/balance-sheet-statement', Symbol_Date_BalanceSheetDF_Set, companies_Annual_BalanceSheetCollection, Symbol_Date_BalanceSheetDF_IdSheet,"annual") for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     
@@ -267,10 +283,20 @@ async def Insert_BS_Quarter_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv"
+
+    # ## Working with local csvs
+    # Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv"
+    # Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv")
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterBalanceSheet_company_symbol_date.csv")
+
+        ### Working with google
+    Symbol_Date_QuarterBalanceSheetDF_IdSheet = "12e1sE25Q9G6rBHbP6rKCzMudDRh_p43SqRUmER-Ea-E"
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set(Symbol_Date_QuarterBalanceSheetDF_IdSheet)
     
+
+
+
+
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
     allCompaniesSymobls=list(allCompaniesSymobls)
@@ -282,7 +308,7 @@ async def Insert_BS_Quarter_information():
     
     for i in range(0, len(allCompaniesSymobls), batch_size):
         symbols_batch = allCompaniesSymobls[i:i + batch_size]
-        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/balance-sheet-statement', Symbol_Date_BalanceSheetDF_Set, companies_Quarter_BalanceSheetCollection, Symbol_Date_BalanceSheetDF_FileName,"quarter") for symbol in symbols_batch]
+        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/balance-sheet-statement', Symbol_Date_BalanceSheetDF_Set, companies_Quarter_BalanceSheetCollection, Symbol_Date_QuarterBalanceSheetDF_IdSheet,"quarter") for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     
@@ -309,10 +335,17 @@ async def Insert_IS_Annual_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv"
+
+    ## Working with local csv
+    # Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv"
+    # Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv")
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualIncomeStatement_company_symbol_date.csv")
+
+    ## Working with google sheets
+    Symbol_Date_Annual_IncomeStatementDF_id = "17EoOzl--dKJVwAbLD-VOCj0FR7JgPRbR3rR32--0YJg"
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set(Symbol_Date_Annual_IncomeStatementDF_id)
     
+
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
     allCompaniesSymobls=list(allCompaniesSymobls)
@@ -324,7 +357,7 @@ async def Insert_IS_Annual_information():
     
     for i in range(0, len(allCompaniesSymobls), batch_size):
         symbols_batch = allCompaniesSymobls[i:i + batch_size]
-        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/income-statement', Symbol_Date_BalanceSheetDF_Set, companies_Annual_IncomeStatementCollection, Symbol_Date_BalanceSheetDF_FileName,"annual") for symbol in symbols_batch]
+        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/income-statement', Symbol_Date_BalanceSheetDF_Set, companies_Annual_IncomeStatementCollection, Symbol_Date_Annual_IncomeStatementDF_id,"annual") for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     
@@ -350,10 +383,17 @@ async def Insert_IS_Quarter_information():
     allCompaniesSymobls = get_company_symbols()
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
+
+
+   ### working with local csvs 
+    # Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv"
+    # Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv")
     
-    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv"
+
+        ## Working with google sheets
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterIncomeStatement_company_symbol_date.csv")
+    Symbol_Date_Quoter_IncomeStatementDF_id = "1bpKrlEaXaFgEPjr3lc3Hq9RyGQJ-Nt8q4ryecaidefU"
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set(Symbol_Date_Quoter_IncomeStatementDF_id)
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
@@ -366,7 +406,7 @@ async def Insert_IS_Quarter_information():
     
     for i in range(0, len(allCompaniesSymobls), batch_size):
         symbols_batch = allCompaniesSymobls[i:i + batch_size]
-        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/income-statement', Symbol_Date_BalanceSheetDF_Set, companies_Quarter_IncomeStatementCollection, Symbol_Date_BalanceSheetDF_FileName,"quarter") for symbol in symbols_batch]
+        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/income-statement', Symbol_Date_BalanceSheetDF_Set, companies_Quarter_IncomeStatementCollection, Symbol_Date_Quoter_IncomeStatementDF_id,"quarter") for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     
@@ -392,9 +432,17 @@ async def Insert_CF_Annual_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv"
+
+    ### working with local csv 
+    # Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv"
+    # Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv")
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/AnnualCashFlow_company_symbol_date.csv")
+
+    Symbol_Date_BalanceSheetDF_FileName_id = "1PsCEtOqLffwdHDuWfACctDdmGs3GfqC5UkZy0VB4DWQ"
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set(Symbol_Date_BalanceSheetDF_FileName_id)
+    
+
+
     
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
@@ -407,7 +455,7 @@ async def Insert_CF_Annual_information():
     
     for i in range(0, len(allCompaniesSymobls), batch_size):
         symbols_batch = allCompaniesSymobls[i:i + batch_size]
-        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/cash-flow-statement', Symbol_Date_BalanceSheetDF_Set, companies_Annual_CashFlowCollection, Symbol_Date_BalanceSheetDF_FileName,"annual") for symbol in symbols_batch]
+        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/cash-flow-statement', Symbol_Date_BalanceSheetDF_Set, companies_Annual_CashFlowCollection, Symbol_Date_BalanceSheetDF_FileName_id,"annual") for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     
@@ -439,10 +487,16 @@ async def Insert_CF_Quarter_information():
     print("Number of all the symbols ")
     print(len(allCompaniesSymobls))
     
-    Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv"
+
+    #### working with local csvs
+    # Symbol_Date_BalanceSheetDF_FileName = "HistoriqueCSV/Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv"
+    # Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv")
     
-    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set("HistoriqueCSV/Financial_Information_CSV_files/QuarterCashFlow_company_symbol_date.csv")
+
+    Symbol_Date_BalanceSheetDF_FileName_id = "1p-6VQnyFMi1DQfz_nk_iwD3znbQuceGgh0aCID6MgdM"
+    Symbol_Date_BalanceSheetDF_Set = return_CompanyLatestBalanceSheet_Date_Symbol_Set(Symbol_Date_BalanceSheetDF_FileName_id)
     
+
 
     Symbol_Date_BalanceSheetDF_Set = list(Symbol_Date_BalanceSheetDF_Set)    
     allCompaniesSymobls=list(allCompaniesSymobls)
@@ -454,7 +508,7 @@ async def Insert_CF_Quarter_information():
     
     for i in range(0, len(allCompaniesSymobls), batch_size):
         symbols_batch = allCompaniesSymobls[i:i + batch_size]
-        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/cash-flow-statement', Symbol_Date_BalanceSheetDF_Set, companies_Quarter_CashFlowCollection, Symbol_Date_BalanceSheetDF_FileName,"quarter") for symbol in symbols_batch]
+        awaitable_tasks = [FinancialInformation_Creation(symbol, 'https://financialmodelingprep.com/api/v3/cash-flow-statement', Symbol_Date_BalanceSheetDF_Set, companies_Quarter_CashFlowCollection, Symbol_Date_BalanceSheetDF_FileName_id,"quarter") for symbol in symbols_batch]
         batch_results = await asyncio.gather(*awaitable_tasks)
         results.extend(batch_results)
     

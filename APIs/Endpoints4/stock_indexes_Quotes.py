@@ -11,6 +11,10 @@ from APIs.Endpoints1.companies_APIs import get_company_symbols
 from APIs.Endpoints3.FOREX import FOREX_IndexesCollection 
 
 
+from APIs.Endpoints5.googleSheetAPI import read_data_from_sheets
+from APIs.Endpoints5.googleSheetAPI import update_googleSheet_data_in
+
+
 import os
 import asyncio
 import aiohttp  
@@ -140,9 +144,14 @@ async def STOCKIndexes_Quotes_Creation(symbol, dataframe):
                         obj["symbol"] = symbol
                         
                     STOCKIndexes_QuotesCollection.insert_many(data["historical"])
+                    #### working with local csv 
+                    # Symbol_Date_FOREXQuotes_CSV_FileName = "HistoriqueCSV/Stock_indexesQuotes_CSV_file/Stock_indexesQuotes_CSV_file.csv"
+                    # update_csv_with_symbol_and_date(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
 
-                    Symbol_Date_FOREXQuotes_CSV_FileName = "HistoriqueCSV/Stock_indexesQuotes_CSV_file/Stock_indexesQuotes_CSV_file.csv"
-                    update_csv_with_symbol_and_date(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
+                    Symbol_Date_FOREXQuotes_CSV_FileName = "16aaqkVf7K1N9B9mQwwfvvp2gT5uLNegd4w7EujLu1YM"
+                    update_googleSheet_data_in(Symbol_Date_FOREXQuotes_CSV_FileName, symbol, formatted_todayDate)
+
+
 
                     print(f"The compnay ' {symbol}' has Quotes data inserted into the database and updating the CSV quotes file ")
                 else:
@@ -153,6 +162,7 @@ async def STOCKIndexes_Quotes_Creation(symbol, dataframe):
 
 def get_STOCKIndexes_Quotes_symbols():
     print("The get FOREX quotes symbols ")
+
 
 
 
@@ -188,10 +198,14 @@ async def Insert_Stock_indexes_Quotes_Creation_API():
 
         
 
-    #Reading the quotes csv file that contains the symbol and the date information of the companies 
-    csv_file_path = 'HistoriqueCSV/Stock_indexesQuotes_CSV_file/Stock_indexesQuotes_CSV_file.csv'
+    # #Reading the quotes csv file that contains the symbol and the date information of the companies 
+    # csv_file_path = 'HistoriqueCSV/Stock_indexesQuotes_CSV_file/Stock_indexesQuotes_CSV_file.csv'
+    # SymbolDateQuotesDF = pd.read_csv(csv_file_path)
 
-    SymbolDateQuotesDF = pd.read_csv(csv_file_path)
+
+
+    csv_file_path_id = '16aaqkVf7K1N9B9mQwwfvvp2gT5uLNegd4w7EujLu1YM'
+    SymbolDateQuotesDF = read_data_from_sheets(csv_file_path_id,"Sheet1")
 
     batch_size = 10  
     
