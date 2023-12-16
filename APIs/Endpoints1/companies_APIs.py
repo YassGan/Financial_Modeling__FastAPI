@@ -248,13 +248,6 @@ def creatingCompaniesInsertMany(DataFrame):
 
 
 
-
-
-
-
-
-
-
 #This funciton returns the intersection between the old and the new csv file
 def Function_Intersection_Old_New_CSV():
 

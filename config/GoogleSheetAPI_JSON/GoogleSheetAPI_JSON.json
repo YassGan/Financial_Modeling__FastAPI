@@ -1,0 +1,14 @@
+{
+    "type": "service_account",
+    "project_id": "mupeers-408315",
+    "private_key_id": "35baf50e2f9f2074cd04bf57ba3e0607a4edd80b",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCsbOC6MYcJB8U4\nVKHZGf0my92l4EwFuhyszoahqbdfE0EOrQDZq9MBJMiLd6DDM1mr3I99Wj4RQzod\niqY3BMv0deyLJY1/7n3V/lKbV25KqRke3dfGCp7qX4OpmXbTiLCp9G7tjtQzN8OA\nWex3xABhhDKTC4WGwn/PBAoRjT7mgrwblDnKOymMimFOw3lY47YELxOAZT1e/hAg\nHKkXZmRBs1NsOhT9vCRTUaU6e3Cyz48LeXQxtBxWVBI70yHRPHRLuQPSaU1OaMM3\nV5rdMMkjqcvl+sWExcrXvI4tLfXavugrFK/cgsHUJ2NyRdPaN3MWjh1wdHWvsL1o\nVpxX97F1AgMBAAECggEAAx10ceizJ9acGYht5B40FJ9aQcTrmq7iFb0lcYY/adhP\nNJSrj0MrbLndZaejn+Mtm41AimM2+9jbE+2NUzEi/iejPmBPTiBg5ZzSoTvTIkYr\nzgL0Av/uHw3asxWyr9+oUWm5F1GdQ8+eGJOHUiKYXyqkP0PWBbk91d+czvReTovG\nba5gWBMTcgrs74AIDrlkjEDJ1XWlpbXFR8Yl/3fBvMDhtO0x2qvOJ9f9CMNH4OTb\ns8jGDtNi2Eup6A5fi4lJjToLL5G5FrbuNRIjxO9fTOS3I8mZdrzk5h095ugJ285j\nfRQHLh6Lffqn947bjE7ty2rduOpjTIgujB45DcVbgQKBgQDzdRqGA0Hmer+LJMTW\nBEu0kVKzQJvl4AxlKu9FGCbg5pXCxN2vEsbJNpE+Oxhfk7AFJVgwr2MNfG3PGeqJ\ngc6i36+Oz62I/mmZOJjRt+fCS1wZ71xBeyOGe9hC1fFao5J2oe1pUC8OfjPjufmH\nQ+uEtL6Q65D2/hpR2Jk6r9TGbwKBgQC1TvM114gRh8QjejfQkozreKA/w1uychjO\nFU0B6voQN/RibMmifMMD1jvjYC8JTM0/YbPkdeV0G/Ofu8tGmaCcHybF9ZBhn49l\nq6SoexettNczlZgw8Ar+hPFDhmJ+tWPyhBGZHGLrcEwowTNpTteVqJY4rKYLCQ0b\nEHAntlFYWwKBgBPe2fRYLbfHCv0rWhlxrlAlkE9rFY5UlA5py6+jAgFXMJ/9+23/\npVPk7UPcBOhAIJy66JDIr9f48Ol3XwosGxZ2FVkdoDdPNIU59lcfoH3eMr03KRt7\nFnIyh3slBRb1xM2D9+GhlsWjDU8n7bLZm05whiFD6MgQA0vs1szQbxhnAoGAEtht\n9z676faOsJFXk9pnw2H6ZiZMNbQeV+1m37go3d6zDDf6jWUicBeoie3JddIB04C4\nThrjCrqNDCFc862sQA4M3a60nzESmqLIrqp8v5V4eOgntY591g7DdR1Wx4zbIq4P\nljaZIZe+ks3iJiQHzIqFcsafS65ZKmL/BWGx+tkCgYBEaSfc0KQROgCFvmRdltii\nkI8P3ynSGO2akMWFxM6QUnmC+UZHvBRb8ruPBozoBit7Vnvyxagwr16EJkIoFQ6n\nCKOLd3kEZFYKKKaQfLl8Ibab5u43dUHrjE6KhYm13jFOClj21rEXLsW81LXAcD8g\nJEDCx2smHKaQaLIlsgCj5Q==\n-----END PRIVATE KEY-----\n",
+    "client_email": "mupeeradmin@mupeers-408315.iam.gserviceaccount.com",
+    "client_id": "102620057739680260704",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mupeeradmin%40mupeers-408315.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }
+  

@@ -29,6 +29,15 @@ from APIs.Endpoints4.stock_indexes import stock_indexes
 from APIs.Endpoints4.stock_indexes_Quotes import STOCKIndexes_Quotes
 from APIs.Endpoints5.Quotes_marketCap_EV_Statistics_update import Quotes_update
 
+
+from APIs.Endpoints5.googleSheetAPI_Test import googleSheetRouter
+
+
+
+
+
+
+
 #import APIs.dataManipulation
 
 
@@ -89,6 +98,7 @@ app.include_router(stock_indexes)
 app.include_router(STOCKIndexes_Quotes)
 
 app.include_router(Quotes_update)
+app.include_router(googleSheetRouter)
 
 
 
