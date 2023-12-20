@@ -27,6 +27,11 @@ from APIs.Endpoints5.googleSheetAPI import read_data_from_sheets
 from APIs.Endpoints5.googleSheetAPI import update_googleSheet_data_in
 
 
+
+from APIs.Endpoints1.sectors_APIs import sectorsCollection
+
+
+
 from typing import List
 
 
@@ -259,9 +264,6 @@ async def testerFonctionsStatistiques():
 
 
 
-
-
-
 def search_company_by_symbol(symbol):
     result = CompaniesCollection.find_one({"Symbol": symbol})
     if result:
@@ -341,7 +343,19 @@ async def update_quotes_statistics_API():
 
     # allCompaniesSymobls=["MLIFC.PA", "AJINF", "AGGRU", "MTGRF", "RGBD", "TVTY", "RAC.AX", "4248.T", "REXR", "600936.SS", "CAMLINFINE.NS", "FINGF", "CPFXF", "AGTT", "CNNA", "LMNR", "JPFA.JK", "300368.SZ", "CPD.WA", "090350.KS", "002223.SZ", "ARYN.SW", "FROTO.IS", "GPIL.NS", "SOFT", "LSTR", "MTX", "FBVA", "TVPC", "USCTU", "LIVK", "GQMLF", "QELL", "AMIN.JK", "BRAC", "GBGPF", "ICGUF", "GRVI", "OTLKW", "PIPP", "EXRO.TO", "UMGNF", "PRU.DE", "FDUSZ", "CNBN", "STEELCAS.NS", "ICDSLTD.NS", "RATCH-R.BK", "SHMAY", "BRLIU", "CAMS.NS", "MNGG", "RFLFF", "RVVTF", "EXPI", "CKISF", "WRTBF", "1370.HK", "PHN.MI", "300546.SZ", "PGPEF", "LOV.AX", "STBI", "NTST", "LLKKF", "DMPZF", "605296.SS", "0HDK.L", "FDY.TO", "OBSN.SW", "ELK.OL", "MLLOI.PA", "MGYOY", "BNP.WA", "GZPHF", "300252.SZ", "SWTF.F", "ALSO3.SA", "2764.T", "TAINWALCHM.NS", "JSDA", "MUNJALSHOW.NS", "000856.SZ", "ASHTF", "MSON-A.ST", "WIB.CN", "9428.T", "0856.HK", "BBB.L", "601865.SS", "TSPG", "5658.T", "1982.T", "600748.SS", "IMPAL.NS", "4044.T", "GMAB.CO", "2379.TW", "TTE.PA", "6901.T", "WINE.L", "BXMT", "KARE.AT", "RGEN", "CAKE", "600612.SS", "6748.T", "MGA", "WFC", "0IV3.L", "DND.TO", "CIBUS.ST", "CYBERMEDIA.NS", "002273.SZ", "LEN-B", "DEC.PA", "NAVNETEDUL.NS", "4118.T", "EXC", "ELLKF", "3699.HK", "CTPTY", "LEVL", "LMN.SW", "THYROCARE.NS", "3056.TW", "ALQ.AX", "ELUXY", "301007.SZ", "MCPH", "REPH", "603918.SS", "002901.SZ", "ELMN.SW", "GWRE", "1447.TW", "023530.KS", "NSTS", "VSYD.ME", "603085.SS", "LAC", "GCEI", "F3C.DE", "002341.SZ", "FBTT", "IVAC", "HELN.SW", "STRNW", "SQSP", "CI.BK", "603212.SS", "0HFB.L", "601928.SS", "APO", "8289.T", "8096.T", "FLWS", "MXC.L", "PGOL.CN", "SKKRF", "PORBF", "SEMR", "603027.SS", "YPB.AX", "SREV", "PNV.AX", "CHWAW", "MBHCF", "GL.CN", "0QZ4.L", "0KYZ.L", "HO7.DE", "PREM.L", "MNIN.TA", "JIM.L", "SBGSF", "WNNR-UN", "CBY.AX", "BRSYF", "ASB-PE", "KIDS", "NCPL", "AKO-B", "3101.T", "9932.T", "1515.T", "FME.L", "GPOR", "KROS", "SCHAND.NS", "603703.SS", "03473K.KS", "MMTS", "0992.HK", "000021.SZ", "MFT.MI", "AKSHAR.NS", "ISOLF", "300689.SZ", "SKUE.OL", "SFT.F", "EMA.TO", "000413.SZ", "8387.T", "600099.SS", "TOOL","OG.V", "300790.SZ", "SHMUF", "AXE.V", "BUD.V", "ECPN", "TELIA1.HE", "PIER.L", "MSLH.L", "6032.T", "FKWL", "HAR.DE", "HITECHCORP.NS", "2590.T", "9322.T", "ONEXF", "0688.HK", "KBH", "CRWD", "FTOCU", "BYRG", "BRGE12.SA", "0631.HK", "1813.HK", "APS.TO", "5406.T", "000903.SZ", "ZIN.L", "ENBI.CN", "CRSQ", "300261.SZ", "MGG.V", "002928.SZ", "HUM.AX", "FPIP.ST", "UNIP3.SA", "000048.SZ", "2376.HK", "AMAOU", "5GG.AX", "WEGOF", "AWTRF", "ROSE.SW", "CDSG", "TRII", "002555.SZ", "000055.SZ", "SASQ.CN", "NICU.V", "NZS.AX", "BCOMF", "000953.SZ", "AYAL.TA", "002692.SZ", "CLH.JO", "THEP.PA", "TPC", "LTMAQ", "ENUA.F", "0R2Y.L", "BGOPF", "KEN.TA", "TANGI.ST", "TEAM.CN", "0118.HK", "EDHN.SW", "RAUTE.HE", "GAPAW", "CBLNF", "PCOR", "49GP.L", "IVC.AX", "JMFINANCIL.NS", "ICLD", "SKA.WA", "7762.T", "GIL.TO", "SKHSF", "SRI.V", "ALWEC.PA", "BFINVEST.NS", "GZF.DE", "ECHO", "600271.SS", "ETG.TO", "IOSP", "CDXFF", "ABSOF", "SYHLF"]
     
-    allCompaniesSymobls=["AAPL"]
+
+    QuotesStatistics_csv_file_path_stockIndexesCSV_Id = '16aaqkVf7K1N9B9mQwwfvvp2gT5uLNegd4w7EujLu1YM'
+    SymbolDateQuotesDF = read_data_from_sheets(QuotesStatistics_csv_file_path_stockIndexesCSV_Id,"Sheet1")
+
+    print("DF of the QuotesStatistics_csv_file_path_stockIndexesCSV_Id")
+    print(SymbolDateQuotesDF)
+
+    symbols_list = SymbolDateQuotesDF['symbol'].tolist()
+
+    allCompaniesSymobls=symbols_list
+
+
+
     print("----- The length of all the symbols ",len(allCompaniesSymobls))
 
     #To work with only two symbols for testing purposes
@@ -351,13 +365,31 @@ async def update_quotes_statistics_API():
 
 
     for entry in allCompaniesSymobls:
-        update_quotes_statisticsFunction(entry)
+       await update_quotes_statisticsFunction(entry)
 
     return "Quotes statistics update finished"
 
 
 
 import time 
+
+
+
+
+import calendar
+import datetime  
+
+
+
+
+def is_last_day_of_month(date_str):
+    date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+    _, last_day = calendar.monthrange(date_obj.year, date_obj.month)
+    return date_obj.day == last_day
+
+
+
+
 
 async def update_quotes_statisticsFunction(companySymbol):
     print("----  update_quotes_statisticsFunction ",companySymbol)
@@ -384,11 +416,25 @@ async def update_quotes_statisticsFunction(companySymbol):
         historiqueStock = STOCKIndexes_QuotesCollection.find(query)
         historiqueStock = list(historiqueStock)
 
+        # Check the type of historiqueStock
+        print(f"Type of historiqueStock: {type(historiqueStock)}")
 
-        print("---------- Historique stock ")
-        print(historiqueStock)
-        print(" Type Historique stock ",type(historiqueStock))
-        print("---------- Fin Historique stock ")
+        # Check the number of elements in historiqueStock
+        print(f"Number of elements in historiqueStock: {len(historiqueStock)}")
+
+
+        filtered_list = [element for element in historiqueStock if is_last_day_of_month(element['date'])]
+
+        print(f"Number of elements in filtered_list: {len(filtered_list)}")
+        # print(filtered_list)
+
+        historiqueStock=filtered_list
+
+
+        # print("---------- Historique stock ")
+        # print(historiqueStock)
+        # print(" Type Historique stock ",type(historiqueStock))
+        # print("---------- Fin Historique stock ")
 
         cursor = STOCKIndexes_QuotesCollection.find({"symbol":companySymbol}, {"symbol": 1, "date": 1, "_id": 0})
 
@@ -396,7 +442,7 @@ async def update_quotes_statisticsFunction(companySymbol):
         
 
         QuotesStatistics_csv_file_path = '1lI_ihXxz0ofnEYNCQr8lOs1LvFx6RboSX2wrEjuPX98'
-        SymbolDateQuotesStatisticsDF = read_data_from_sheets(QuotesStatistics_csv_file_path)
+        SymbolDateQuotesStatisticsDF = read_data_from_sheets(QuotesStatistics_csv_file_path,"Sheet1")
 
 
         # Convert the cursor to a list of dictionaries
@@ -419,16 +465,14 @@ async def update_quotes_statisticsFunction(companySymbol):
                     
 
 
-        # print("------- symbols_and_dates_list after the filter with the latest date from the csv")
-        # print(symbols_and_dates_list)
+        print("------- length symbols_and_dates_list after the filter with the latest date from the csv")
+        print(len(symbols_and_dates_list))
 
+        filtered_list_symbols_and_dates_list  = [element for element in symbols_and_dates_list if is_last_day_of_month(element['date'])]
+
+        symbols_and_dates_list=filtered_list_symbols_and_dates_list
         
-        # print(">>>>>> The length of symbols_and_dates_list that we are going to create statistics for them ", len(symbols_and_dates_list))
-
-
-
-
-
+        # #print(">>>>>> The length of symbols_and_dates_list that we are going to create statistics for them ", len(symbols_and_dates_list))
 
 
 
@@ -445,7 +489,7 @@ async def update_quotes_statisticsFunction(companySymbol):
             
             symbol = entry['symbol']
             date = entry['date']
-            print("----  creating statistics for the symbol ",symbol," and date : ",date)
+            #print("----  creating statistics for the symbol ",symbol," and date : ",date)
             # extraire la dernière date de mise à jour du csv
 
             if (compare_dates(get_date_for_symbol(SymbolDateQuotesStatisticsDF, symbol), date ) == 1):
@@ -564,7 +608,6 @@ def return_EV_element_with_closest_date(data_list, target_date):
 
 
 
-
 def find_closest_date(data_list, target_date):
     target_datetime = dt.strptime(target_date, "%Y-%m-%d")
     
@@ -601,6 +644,7 @@ async def update_marketCap_EValues(companySymbol):
     marketCapUrl = f"https://financialmodelingprep.com/api/v3/historical-market-capitalization/{companySymbol}?apikey={api_key}"
     EV_resultsUrl = f"https://financialmodelingprep.com/api/v3/enterprise-values/{companySymbol}/?period=quarter&apikey=96051dba5181978c2f0ce23c1ef4014b"
 
+
     # Getting today's date
     current_date = datetime.datetime.now()
     formatted_todayDate = current_date.strftime("%Y-%m-%d")
@@ -625,8 +669,8 @@ async def update_marketCap_EValues(companySymbol):
         if len(marketCap_result)>0:
             ########making the update by adding the marketcap
 
-            print("------The marketCap results before the filter ")
-            print(marketCap_result)
+            #print("------The marketCap results before the filter ")
+            #print(marketCap_result)
             print("------ ")
             print("------ ")
             print("------ ")
@@ -636,16 +680,16 @@ async def update_marketCap_EValues(companySymbol):
                 marketCap_result = [marketCap_element for marketCap_element in marketCap_result
                                     if marketCap_element.get("date") >= get_date_for_symbol(SymbolDateQuotesDF,companySymbol)]
                 
-            print("------The marketCap results after the filter ")
-            print(marketCap_result)
+            #print("------The marketCap results after the filter ")
+            #print(marketCap_result)
 
 
 
 
             for marketCap_element in marketCap_result:
                     date = marketCap_element["date"]
-                    print("-- la date dans le CSV du symbol ",companySymbol," est :",get_date_for_symbol(SymbolDateQuotesDF,marketCap_element["symbol"]))
-                    print("-- la date du quote ",date)
+                    #print("-- la date dans le CSV du symbol ",companySymbol," est :",get_date_for_symbol(SymbolDateQuotesDF,marketCap_element["symbol"]))
+                    # print("-- la date du quote ",date)
 
                     if compare_dates(get_date_for_symbol(SymbolDateQuotesDF,marketCap_element["symbol"]),date)==1:
                         symbol = marketCap_element["symbol"]
@@ -760,10 +804,8 @@ async def update_marketCap_EValues_function():
 
     return 'update_marketCap_EValues_API'
 
-
-
-
-
+ 
+  
 ##The same api as /v1/update_marketCap_EValues_API but with batch and parrallel logic, it has some issues that are not logged in the console so i can't debug them 
 @Quotes_update.get('/vY/update_marketCap_EValues_API')
 async def update_marketCap_EValues_function():
@@ -778,6 +820,103 @@ async def update_marketCap_EValues_function():
         await asyncio.gather(*tasks)
 
     return 'update_marketCap_EValues_API'
+
+
+
+
+
+
+
+from tqdm import tqdm
+
+
+def fetch_large_data_from_mongodb(collection, batch_size=1000):
+    total_documents = collection.count_documents({})  # Get the total number of documents
+    # cursor = collection.find({}).limit(2000)
+    cursor = collection.find({}).limit(2000)
+    
+    # Use tqdm for progress bar
+    cursor.batch_size(batch_size)
+    cursor = tqdm(cursor, total=total_documents, desc="Fetching data from MongoDB", unit="docs")
+
+    data = []
+    for document in cursor:
+        data.append(document)
+
+    return data
+
+
+# statisticsDBdataList the statistics database data should be called from the database just one time and
+# should be converted to a list and passed in the parameters of the SpecialStatistics function
+
+
+def DFSpecialStatistics(statisticsDBdataList, given_date, given_sector):
+    df = pd.DataFrame(statisticsDBdataList)
+    # print("statisticsDBdataList ")
+    # print(statisticsDBdataList)
+
+    filtered_data = df[(df['date'] == given_date) & (df['sector'] == given_sector)]
+    return filtered_data
+
+
+def ListSpecialStatistics_Sectors(statisticsDBdataList, given_date, given_sector):
+    filtered_data = [
+        item for item in statisticsDBdataList
+        if item.get('date') == given_date and item.get('sector') == given_sector
+    ]
+    return filtered_data
+
+
+@Quotes_update.get('/v1/SpecialStatisticsAPI_Sectors_Creation')
+async def SpecialStatisticsAPIFunction():
+    print("Inside SpecialStatisticsAPIFunction")
+
+    statisticsDBdataList = fetch_large_data_from_mongodb(QuotesStatisticsCollection)
+    
+
+
+    AllSectorsfrom_DB=sectorsCollection.find({})
+    AllSectors_List = list(AllSectorsfrom_DB)
+
+    names_list = [item['name'] for item in AllSectors_List]
+
+    AllSectors_List=names_list
+
+    for sector in AllSectors_List:
+  
+
+  
+        earliest_date_result = QuotesStatisticsCollection.find(
+            {"date": {"$exists": True}, "sector": sector},
+            {"_id": 0, "date": 1}
+        ).sort("date", 1).limit(1)
+        
+        earliestDate_DB=earliest_date_result[0]["date"]
+
+
+        oldest_date_result = QuotesStatisticsCollection.find(
+            {"date": {"$exists": True}},
+            {"_id": 0, "date": 1}
+        ).sort("date", pymongo.ASCENDING).limit(1)
+
+        oldestDate_DB=oldest_date_result[0]["date"]
+
+        print("oldest date in the database for ",sector," is ",oldestDate_DB)  
+        print("earliest date in the database for ",sector," is ",earliestDate_DB)  
+
+
+    
+        
+
+        result = ListSpecialStatistics_Sectors(statisticsDBdataList, "2007-07-31", "Industrials")
+        # print("The reuslt of the filtered statistics")
+        # print(result)
+
+        print("The number of elements from the filtered query")
+        print(len(result))
+
+    return 'SpecialStatisticsAPI'
+
 
 
 

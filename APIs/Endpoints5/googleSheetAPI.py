@@ -6,6 +6,12 @@ from googleapiclient.discovery import build
 import pandas as pd
 
 
+
+from googleapiclient.errors import HttpError
+import time
+
+
+
 googleSheetRouter = APIRouter()
 
 # Load credentials from the JSON file you downloaded from GCP
@@ -79,24 +85,36 @@ def update_googleSheet_data_in(sheet_id: str, symbol: str, date: str):
 
 
 
-def read_data_from_sheets(sheet_id: str, range_name: str):
-    try:
-  
-        result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=range_name).execute()
-        values = result.get('values', [])
 
-        if not values:
-            print("No data found.")
-            return None
+MAX_RETRIES = 3
+RETRY_DELAY_SECONDS = 60
 
-        # Convert the values to a DataFrame
-        df = pd.DataFrame(values[1:], columns=values[0])
+def read_data_from_sheets( sheet_id: str, range_name: str):
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            result = service.spreadsheets().values().get(spreadsheetId=sheet_id, range=range_name).execute()
+            values = result.get('values', [])
 
-        return df
+            if not values:
+                print("No data found.")
+                return None
 
-    except Exception as e:
-        print(f"Error reading data from Google Sheets: {e}")
-        return None
+            df = pd.DataFrame(values[1:], columns=values[0])
+
+            return df
+
+        except HttpError as e:
+            if e.status_code == 429:
+                retries += 1
+                print(f"Rate limit exceeded. Retrying after {RETRY_DELAY_SECONDS * retries} seconds...")
+                time.sleep(RETRY_DELAY_SECONDS * retries)
+            else:
+                print(f"Error reading data from Google Sheets: {e}")
+                return None
+
+    print("Unable to fetch data after multiple retries.")
+    return None
     
 # Example usage:
 # sheet_id = "18fv1_nvo2WW9jgC5hzjrZpgqIf4PZbgPX2Sxc1_nt5c"
