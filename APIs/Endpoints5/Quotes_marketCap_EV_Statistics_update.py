@@ -833,7 +833,7 @@ from tqdm import tqdm
 def fetch_large_data_from_mongodb(collection, batch_size=1000):
     total_documents = collection.count_documents({})  # Get the total number of documents
     # cursor = collection.find({}).limit(2000)
-    cursor = collection.find({}).limit(2000)
+    cursor = collection.find({}).limit(500)
     
     # Use tqdm for progress bar
     cursor.batch_size(batch_size)
@@ -867,6 +867,33 @@ def ListSpecialStatistics_Sectors(statisticsDBdataList, given_date, given_sector
     return filtered_data
 
 
+
+
+
+def get_date_for_symbol(symbol, df):
+    filtered_data = df.loc[df['symbol'] == symbol, 'date'].values
+    return filtered_data[0] if len(filtered_data) > 0 else None
+
+
+
+from dateutil.relativedelta import relativedelta
+
+def generate_month_end_dates(start_date, end_date):
+    # Parse the start and end dates
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+    # Generate a range of dates with month end frequency
+    date_range = pd.date_range(start=start_date, end=end_date, freq='M')
+
+    # Adjust the dates to the last day of the month
+    last_day_of_month = date_range + pd.offsets.MonthEnd(0)
+
+    return last_day_of_month.strftime('%Y-%m-%d').tolist()
+
+
+
+
 @Quotes_update.get('/v1/SpecialStatisticsAPI_Sectors_Creation')
 async def SpecialStatisticsAPIFunction():
     print("Inside SpecialStatisticsAPIFunction")
@@ -874,18 +901,31 @@ async def SpecialStatisticsAPIFunction():
     statisticsDBdataList = fetch_large_data_from_mongodb(QuotesStatisticsCollection)
     
 
+    ### This returns the values of the sectors that are in the collection of the sectors
+    # AllSectorsfrom_DB=sectorsCollection.find({})
+    # AllSectors_List = list(AllSectorsfrom_DB)
+    # names_list = [item['name'] for item in AllSectors_List]
+    # AllSectors_List=names_list
 
-    AllSectorsfrom_DB=sectorsCollection.find({})
-    AllSectors_List = list(AllSectorsfrom_DB)
+    ## This returns only the sectors with them that are created the statistics
+    unique_sectors = QuotesStatisticsCollection.distinct('sector')
 
-    names_list = [item['name'] for item in AllSectors_List]
 
-    AllSectors_List=names_list
+    AllSectors_List=unique_sectors
+
+    print("The secotrs with them are the statistcs created ")
+    print(AllSectors_List)
+
+
+
+
+    SpecialStatistics_csv_file_path_stockIndexesCSV_Id = '1IYqXr5n1vipIvQ6mlI4duM3GDlDEU-1Yk2OB-nUJ5No'
+    SpecialStatisticsDF = read_data_from_sheets(SpecialStatistics_csv_file_path_stockIndexesCSV_Id,"Sheet1")
+    
+    print(SpecialStatisticsDF)
 
     for sector in AllSectors_List:
-  
 
-  
         earliest_date_result = QuotesStatisticsCollection.find(
             {"date": {"$exists": True}, "sector": sector},
             {"_id": 0, "date": 1}
@@ -901,25 +941,66 @@ async def SpecialStatisticsAPIFunction():
 
         oldestDate_DB=oldest_date_result[0]["date"]
 
+
+        date_to_begin=get_date_for_symbol("S_"+sector,SpecialStatisticsDF)
+
+        if date_to_begin==None:
+            date_to_begin=oldestDate_DB
+
+        date_to_finish=earliestDate_DB
+
+        date_range = generate_month_end_dates(date_to_begin, date_to_finish)
+
+
+
         print("oldest date in the database for ",sector," is ",oldestDate_DB)  
         print("earliest date in the database for ",sector," is ",earliestDate_DB)  
 
+        print("Date range ")
+        print(date_range)
 
-    
+
+
+
+
+        for date in date_range:
+            result = ListSpecialStatistics_Sectors(statisticsDBdataList, date, sector)
+            print("Nombre d'éléments qu'on va utiliser dans la création des statistiques spéciales ",len(result))
+            # Process the result as needed
+            print(f"sector {sector} date {date}: on a n° {len(result)}")
+
         
 
-        result = ListSpecialStatistics_Sectors(statisticsDBdataList, "2007-07-31", "Industrials")
         # print("The reuslt of the filtered statistics")
         # print(result)
 
-        print("The number of elements from the filtered query")
-        print(len(result))
-
+ 
     return 'SpecialStatisticsAPI'
 
 
 
 
+
+@Quotes_update.get('/v1/SpecialStatistics_sector_realTime_data_return/{sector}/{date}')
+async def SpecialStatisticsAPIFunction(sector:str,date:str):
+
+    data_to_treat_cursor = QuotesStatisticsCollection.find({"date":date,"sector":sector})
+    data_to_treat=list(data_to_treat_cursor)
+    print("data_to_treat for {sector} {date} has n° ",len(data_to_treat))
+
+
+    return_0_5y=[]
+    return_1y=[]
+
+    for element in data_to_treat[:2]:
+        print ("------")
+        return_0_5y.append(element['return']['0.5y'])
+        return_1y.append(element['return']['1y'])
+
+
+
+
+    return ("SpecialStatistics_sector_realTime_data_return")
 
 
 
