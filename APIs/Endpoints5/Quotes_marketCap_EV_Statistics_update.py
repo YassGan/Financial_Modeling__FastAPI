@@ -401,6 +401,13 @@ async def update_quotes_statisticsFunction(companySymbol):
     current_date = datetime.datetime.now()
     formatted_todayDate = current_date.strftime("%Y-%m-%d")
 
+
+    print("    print(type(SymbolDateQuotesStatisticsDF))")
+    print(type(SymbolDateQuotesStatisticsDF))
+    print(SymbolDateQuotesStatisticsDF.columns)
+
+
+
     get_date_for_symbol(SymbolDateQuotesStatisticsDF,companySymbol)
 
 
@@ -632,6 +639,17 @@ def find_closest_date(data_list, target_date):
     else:
         return closest_date, "Date proche"
 
+
+def get_date_for_symbol(dataframe, symbol):
+    # print("working with this dataframe")
+    # print(dataframe)
+    # print("Treating the symbol  ", symbol)
+    filtered_df = dataframe[dataframe['symbol'] == symbol]
+
+    if not filtered_df.empty:
+        return filtered_df['date'].iloc[0]
+    else:
+        return None
 
 
 async def update_marketCap_EValues(companySymbol):
@@ -870,7 +888,7 @@ def ListSpecialStatistics_Sectors(statisticsDBdataList, given_date, given_sector
 
 
 
-def get_date_for_symbol(symbol, df):
+def get_date_for_symbol_Operation_StatSpeciales(symbol, df):
     filtered_data = df.loc[df['symbol'] == symbol, 'date'].values
     return filtered_data[0] if len(filtered_data) > 0 else None
 
@@ -942,7 +960,7 @@ async def SpecialStatisticsAPIFunction():
         oldestDate_DB=oldest_date_result[0]["date"]
 
 
-        date_to_begin=get_date_for_symbol("S_"+sector,SpecialStatisticsDF)
+        date_to_begin=get_date_for_symbol_Operation_StatSpeciales("S_"+sector,SpecialStatisticsDF)
 
         if date_to_begin==None:
             date_to_begin=oldestDate_DB
@@ -983,96 +1001,94 @@ async def SpecialStatisticsAPIFunction():
 
 
 
-def calculate_average(number_list):
-    if not number_list:
-        return None
-
-    cleaned_list = [0 if value != value else value for value in number_list]
-
-    average_value = sum(cleaned_list) / len(cleaned_list)
-    return average_value
-
-
-import numpy as np
-def calculate_mean(number_list):
-    if not number_list:
-        return None
-
-    # Replace NaN values with 0
-    cleaned_list = [0 if value != value else value for value in number_list]
-
-    mean_value = np.mean(cleaned_list)
-    return mean_value
-
-
-def calculate_max(number_list):
-    if not number_list:
-        return None
-
-    # Replace NaN values with 0
-    cleaned_list = [0 if value != value else value for value in number_list]
-
-    max_value = max(cleaned_list)
-    return max_value
-
-
-def calculate_min(number_list):
-    if not number_list:
-        return None
-
-    cleaned_list = [0 if value != value else value for value in number_list]
-
-    min_value = min(cleaned_list)
-    return min_value
-
-
-def replace_nan_with_zero(number_list):
-    return [0 if np.isnan(value) else value for value in number_list]
-
-def calculate_q10(number_list):
-    if not number_list:
-        return None
-    cleaned_list = replace_nan_with_zero(number_list)
-    q10_value = np.percentile(cleaned_list, 10)
-    return q10_value
-
-def calculate_q25(number_list):
-    if not number_list:
-        return None
-    cleaned_list = replace_nan_with_zero(number_list)
-    q25_value = np.percentile(cleaned_list, 25)
-    return q25_value
-
-def calculate_q75(number_list):
-    if not number_list:
-        return None
-    cleaned_list = replace_nan_with_zero(number_list)
-    q75_value = np.percentile(cleaned_list, 75)
-    return q75_value
-
-def calculate_q50(number_list):
-    if not number_list:
-        return None
-    cleaned_list = replace_nan_with_zero(number_list)
-    q50_value = np.median(cleaned_list)
-    return q50_value
-
-def calculate_q90(number_list):
-    if not number_list:
-        return None
-    cleaned_list = replace_nan_with_zero(number_list)
-    q90_value = np.percentile(cleaned_list, 90)
-    return q90_value
 
 
 
 
-@Quotes_update.get('/v1/SpecialStatistics_sector_realTime_data_return/{sector}/{date}')
-async def SpecialStatisticsAPIFunction(sector:str,date:str):
+def calculateur_stat_speciales(rawData):
+    
 
-    data_to_treat_cursor = QuotesStatisticsCollection.find({"date":date,"sector":sector})
-    data_to_treat=list(data_to_treat_cursor)
-    print("data_to_treat for {sector} {date} has n° ",len(data_to_treat))
+    def calculate_average(number_list):
+        if not number_list:
+            return None
+
+        cleaned_list = [0 if value != value else value for value in number_list]
+
+        average_value = sum(cleaned_list) / len(cleaned_list)
+        return average_value
+
+
+    import numpy as np
+    def calculate_mean(number_list):
+        if not number_list:
+            return None
+
+        # Replace NaN values with 0
+        cleaned_list = [0 if value != value else value for value in number_list]
+
+        mean_value = np.mean(cleaned_list)
+        return mean_value
+
+
+    def calculate_max(number_list):
+        if not number_list:
+            return None
+
+        # Replace NaN values with 0
+        cleaned_list = [0 if value != value else value for value in number_list]
+
+        max_value = max(cleaned_list)
+        return max_value
+
+
+    def calculate_min(number_list):
+        if not number_list:
+            return None
+
+        cleaned_list = [0 if value != value else value for value in number_list]
+
+        min_value = min(cleaned_list)
+        return min_value
+
+
+    def replace_nan_with_zero(number_list):
+        return [0 if np.isnan(value) else value for value in number_list]
+
+    def calculate_q10(number_list):
+        if not number_list:
+            return None
+        cleaned_list = replace_nan_with_zero(number_list)
+        q10_value = np.percentile(cleaned_list, 10)
+        return q10_value
+
+    def calculate_q25(number_list):
+        if not number_list:
+            return None
+        cleaned_list = replace_nan_with_zero(number_list)
+        q25_value = np.percentile(cleaned_list, 25)
+        return q25_value
+
+    def calculate_q75(number_list):
+        if not number_list:
+            return None
+        cleaned_list = replace_nan_with_zero(number_list)
+        q75_value = np.percentile(cleaned_list, 75)
+        return q75_value
+
+    def calculate_q50(number_list):
+        if not number_list:
+            return None
+        cleaned_list = replace_nan_with_zero(number_list)
+        q50_value = np.median(cleaned_list)
+        return q50_value
+
+    def calculate_q90(number_list):
+        if not number_list:
+            return None
+        cleaned_list = replace_nan_with_zero(number_list)
+        q90_value = np.percentile(cleaned_list, 90)
+        return q90_value
+
 
 
 
@@ -1182,7 +1198,7 @@ async def SpecialStatisticsAPIFunction(sector:str,date:str):
 
 
 
-    for element in data_to_treat[:10]:
+    for element in rawData:
         # print ("  ")
         return_0_5y.append(element['return']['0.5y'])
         return_1y.append(element['return']['1y'])
@@ -1275,8 +1291,9 @@ async def SpecialStatisticsAPIFunction(sector:str,date:str):
         monthlyEmaVol_all.append(element['monthlyEmaVol']['all'])
 
         document = {
-                    "monthlyEmaVol": {"0.5y":
-                                      {
+                    "monthlyEmaVol": {
+                        
+                                    "0.5y":{
                                         "min":calculate_min(monthlyEmaVol_0_5y) ,
                                         "max":calculate_max(monthlyEmaVol_0_5y),
                                         "mean":calculate_mean(monthlyEmaVol_0_5y),
@@ -1289,19 +1306,989 @@ async def SpecialStatisticsAPIFunction(sector:str,date:str):
                                              }, 
 
                                     "1y":{
-                                        "min":calculate_min(monthlyEmaVol_1y) ,
-                                        "max":calculate_max(monthlyEmaVol_1y),
-                                        "mean":calculate_mean(monthlyEmaVol_1y),
-                                        "avg":calculate_average(monthlyEmaVol_1y),
-                                        "q10":calculate_q10(monthlyEmaVol_1y),
-                                        "q25":calculate_q25(monthlyEmaVol_1y),
-                                        "q50":calculate_q50(monthlyEmaVol_1y),
-                                        "q75":calculate_q75(monthlyEmaVol_1y),
-                                        "q90":calculate_q90(monthlyEmaVol_1y)
-                                             }
-                                             }
+                                                    "min":calculate_min(monthlyEmaVol_1y) ,
+                                                    "max":calculate_max(monthlyEmaVol_1y),
+                                                    "mean":calculate_mean(monthlyEmaVol_1y),
+                                                    "avg":calculate_average(monthlyEmaVol_1y),
+                                                    "q10":calculate_q10(monthlyEmaVol_1y),
+                                                    "q25":calculate_q25(monthlyEmaVol_1y),
+                                                    "q50":calculate_q50(monthlyEmaVol_1y),
+                                                    "q75":calculate_q75(monthlyEmaVol_1y),
+                                                    "q90":calculate_q90(monthlyEmaVol_1y)
+                                                },
+
+                                                
+                                    "2y":{
+                                                    "min":calculate_min(monthlyEmaVol_2y) ,
+                                                    "max":calculate_max(monthlyEmaVol_2y),
+                                                    "mean":calculate_mean(monthlyEmaVol_2y),
+                                                    "avg":calculate_average(monthlyEmaVol_2y),
+                                                    "q10":calculate_q10(monthlyEmaVol_2y),
+                                                    "q25":calculate_q25(monthlyEmaVol_2y),
+                                                    "q50":calculate_q50(monthlyEmaVol_2y),
+                                                    "q75":calculate_q75(monthlyEmaVol_2y),
+                                                    "q90":calculate_q90(monthlyEmaVol_2y)
+                                                        },
+                                        
+                                    
+                                    "3y":{
+                                                    "min":calculate_min(monthlyEmaVol_3y) ,
+                                                    "max":calculate_max(monthlyEmaVol_3y),
+                                                    "mean":calculate_mean(monthlyEmaVol_3y),
+                                                    "avg":calculate_average(monthlyEmaVol_3y),
+                                                    "q10":calculate_q10(monthlyEmaVol_3y),
+                                                    "q25":calculate_q25(monthlyEmaVol_3y),
+                                                    "q50":calculate_q50(monthlyEmaVol_3y),
+                                                    "q75":calculate_q75(monthlyEmaVol_3y),
+                                                    "q90":calculate_q90(monthlyEmaVol_3y)
+                                                        },
+
+                                    "4y":{
+                                                    "min":calculate_min(monthlyEmaVol_4y) ,
+                                                    "max":calculate_max(monthlyEmaVol_4y),
+                                                    "mean":calculate_mean(monthlyEmaVol_4y),
+                                                    "avg":calculate_average(monthlyEmaVol_4y),
+                                                    "q10":calculate_q10(monthlyEmaVol_4y),
+                                                    "q25":calculate_q25(monthlyEmaVol_4y),
+                                                    "q50":calculate_q50(monthlyEmaVol_4y),
+                                                    "q75":calculate_q75(monthlyEmaVol_4y),
+                                                    "q90":calculate_q90(monthlyEmaVol_4y)
+                                                        },
+
+                        
+                                    "5y":{
+                                        "min":calculate_min(monthlyEmaVol_5y) ,
+                                        "max":calculate_max(monthlyEmaVol_5y),
+                                        "mean":calculate_mean(monthlyEmaVol_5y),
+                                        "avg":calculate_average(monthlyEmaVol_5y),
+                                        "q10":calculate_q10(monthlyEmaVol_5y),
+                                        "q25":calculate_q25(monthlyEmaVol_5y),
+                                        "q50":calculate_q50(monthlyEmaVol_5y),
+                                        "q75":calculate_q75(monthlyEmaVol_5y),
+                                        "q90":calculate_q90(monthlyEmaVol_5y)
+                            },
+                        
+                                    "6y":{
+                                        "min":calculate_min(monthlyEmaVol_6y) ,
+                                        "max":calculate_max(monthlyEmaVol_6y),
+                                        "mean":calculate_mean(monthlyEmaVol_6y),
+                                        "avg":calculate_average(monthlyEmaVol_6y),
+                                        "q10":calculate_q10(monthlyEmaVol_6y),
+                                        "q25":calculate_q25(monthlyEmaVol_6y),
+                                        "q50":calculate_q50(monthlyEmaVol_6y),
+                                        "q75":calculate_q75(monthlyEmaVol_6y),
+                                        "q90":calculate_q90(monthlyEmaVol_6y)
+                                             },
+
+                                    "7y":{
+                                        "min":calculate_min(monthlyEmaVol_7y) ,
+                                        "max":calculate_max(monthlyEmaVol_7y),
+                                        "mean":calculate_mean(monthlyEmaVol_7y),
+                                        "avg":calculate_average(monthlyEmaVol_7y),
+                                        "q10":calculate_q10(monthlyEmaVol_7y),
+                                        "q25":calculate_q25(monthlyEmaVol_7y),
+                                        "q50":calculate_q50(monthlyEmaVol_7y),
+                                        "q75":calculate_q75(monthlyEmaVol_7y),
+                                        "q90":calculate_q90(monthlyEmaVol_7y)
+                                             },
+
+                                    "8y":{
+                                        "min":calculate_min(monthlyEmaVol_8y) ,
+                                        "max":calculate_max(monthlyEmaVol_8y),
+                                        "mean":calculate_mean(monthlyEmaVol_8y),
+                                        "avg":calculate_average(monthlyEmaVol_8y),
+                                        "q10":calculate_q10(monthlyEmaVol_8y),
+                                        "q25":calculate_q25(monthlyEmaVol_8y),
+                                        "q50":calculate_q50(monthlyEmaVol_8y),
+                                        "q75":calculate_q75(monthlyEmaVol_8y),
+                                        "q90":calculate_q90(monthlyEmaVol_8y)
+                                             },
+
+
+                                    "9y":{
+                                        "min":calculate_min(monthlyEmaVol_9y) ,
+                                        "max":calculate_max(monthlyEmaVol_9y),
+                                        "mean":calculate_mean(monthlyEmaVol_9y),
+                                        "avg":calculate_average(monthlyEmaVol_9y),
+                                        "q10":calculate_q10(monthlyEmaVol_9y),
+                                        "q25":calculate_q25(monthlyEmaVol_9y),
+                                        "q50":calculate_q50(monthlyEmaVol_9y),
+                                        "q75":calculate_q75(monthlyEmaVol_9y),
+                                        "q90":calculate_q90(monthlyEmaVol_9y)
+                                             },
+
+                                    "all":{
+                                        "min":calculate_min(monthlyEmaVol_all) ,
+                                        "max":calculate_max(monthlyEmaVol_all),
+                                        "mean":calculate_mean(monthlyEmaVol_all),
+                                        "avg":calculate_average(monthlyEmaVol_all),
+                                        "q10":calculate_q10(monthlyEmaVol_all),
+                                        "q25":calculate_q25(monthlyEmaVol_all),
+                                        "q50":calculate_q50(monthlyEmaVol_all),
+                                        "q75":calculate_q75(monthlyEmaVol_all),
+                                        "q90":calculate_q90(monthlyEmaVol_all)
+                                             }   
+
+                                    },
+                    "weeklyEmaVol": {
+                        
+                                    "0.5y":{
+                                        "min":calculate_min(weeklyEmaVol_0_5y) ,
+                                        "max":calculate_max(weeklyEmaVol_0_5y),
+                                        "mean":calculate_mean(weeklyEmaVol_0_5y),
+                                        "avg":calculate_average(weeklyEmaVol_0_5y),
+                                        "q10":calculate_q10(weeklyEmaVol_0_5y),
+                                        "q25":calculate_q25(weeklyEmaVol_0_5y),
+                                        "q50":calculate_q50(weeklyEmaVol_0_5y),
+                                        "q75":calculate_q75(weeklyEmaVol_0_5y),
+                                        "q90":calculate_q90(weeklyEmaVol_0_5y)
+                                             }, 
+
+                                    "1y":{
+                                                    "min":calculate_min(weeklyEmaVol_1y) ,
+                                                    "max":calculate_max(weeklyEmaVol_1y),
+                                                    "mean":calculate_mean(weeklyEmaVol_1y),
+                                                    "avg":calculate_average(weeklyEmaVol_1y),
+                                                    "q10":calculate_q10(weeklyEmaVol_1y),
+                                                    "q25":calculate_q25(weeklyEmaVol_1y),
+                                                    "q50":calculate_q50(weeklyEmaVol_1y),
+                                                    "q75":calculate_q75(weeklyEmaVol_1y),
+                                                    "q90":calculate_q90(weeklyEmaVol_1y)
+                                                },
+
+                                                
+                                    "2y":{
+                                                    "min":calculate_min(weeklyEmaVol_2y) ,
+                                                    "max":calculate_max(weeklyEmaVol_2y),
+                                                    "mean":calculate_mean(weeklyEmaVol_2y),
+                                                    "avg":calculate_average(weeklyEmaVol_2y),
+                                                    "q10":calculate_q10(weeklyEmaVol_2y),
+                                                    "q25":calculate_q25(weeklyEmaVol_2y),
+                                                    "q50":calculate_q50(weeklyEmaVol_2y),
+                                                    "q75":calculate_q75(weeklyEmaVol_2y),
+                                                    "q90":calculate_q90(weeklyEmaVol_2y)
+                                                        },
+                                        
+                                    
+                                    "3y":{
+                                                    "min":calculate_min(weeklyEmaVol_3y) ,
+                                                    "max":calculate_max(weeklyEmaVol_3y),
+                                                    "mean":calculate_mean(weeklyEmaVol_3y),
+                                                    "avg":calculate_average(weeklyEmaVol_3y),
+                                                    "q10":calculate_q10(weeklyEmaVol_3y),
+                                                    "q25":calculate_q25(weeklyEmaVol_3y),
+                                                    "q50":calculate_q50(weeklyEmaVol_3y),
+                                                    "q75":calculate_q75(weeklyEmaVol_3y),
+                                                    "q90":calculate_q90(weeklyEmaVol_3y)
+                                                        },
+
+                                    "4y":{
+                                                    "min":calculate_min(weeklyEmaVol_4y) ,
+                                                    "max":calculate_max(weeklyEmaVol_4y),
+                                                    "mean":calculate_mean(weeklyEmaVol_4y),
+                                                    "avg":calculate_average(weeklyEmaVol_4y),
+                                                    "q10":calculate_q10(weeklyEmaVol_4y),
+                                                    "q25":calculate_q25(weeklyEmaVol_4y),
+                                                    "q50":calculate_q50(weeklyEmaVol_4y),
+                                                    "q75":calculate_q75(weeklyEmaVol_4y),
+                                                    "q90":calculate_q90(weeklyEmaVol_4y)
+                                                        },
+
+                        
+                                    "5y":{
+                                        "min":calculate_min(weeklyEmaVol_5y) ,
+                                        "max":calculate_max(weeklyEmaVol_5y),
+                                        "mean":calculate_mean(weeklyEmaVol_5y),
+                                        "avg":calculate_average(weeklyEmaVol_5y),
+                                        "q10":calculate_q10(weeklyEmaVol_5y),
+                                        "q25":calculate_q25(weeklyEmaVol_5y),
+                                        "q50":calculate_q50(weeklyEmaVol_5y),
+                                        "q75":calculate_q75(weeklyEmaVol_5y),
+                                        "q90":calculate_q90(weeklyEmaVol_5y)
+                            },
+                        
+                                    "6y":{
+                                        "min":calculate_min(weeklyEmaVol_6y) ,
+                                        "max":calculate_max(weeklyEmaVol_6y),
+                                        "mean":calculate_mean(weeklyEmaVol_6y),
+                                        "avg":calculate_average(weeklyEmaVol_6y),
+                                        "q10":calculate_q10(weeklyEmaVol_6y),
+                                        "q25":calculate_q25(weeklyEmaVol_6y),
+                                        "q50":calculate_q50(weeklyEmaVol_6y),
+                                        "q75":calculate_q75(weeklyEmaVol_6y),
+                                        "q90":calculate_q90(weeklyEmaVol_6y)
+                                             },
+
+                                    "7y":{
+                                        "min":calculate_min(weeklyEmaVol_7y) ,
+                                        "max":calculate_max(weeklyEmaVol_7y),
+                                        "mean":calculate_mean(weeklyEmaVol_7y),
+                                        "avg":calculate_average(weeklyEmaVol_7y),
+                                        "q10":calculate_q10(weeklyEmaVol_7y),
+                                        "q25":calculate_q25(weeklyEmaVol_7y),
+                                        "q50":calculate_q50(weeklyEmaVol_7y),
+                                        "q75":calculate_q75(weeklyEmaVol_7y),
+                                        "q90":calculate_q90(weeklyEmaVol_7y)
+                                             },
+
+                                    "8y":{
+                                        "min":calculate_min(weeklyEmaVol_8y) ,
+                                        "max":calculate_max(weeklyEmaVol_8y),
+                                        "mean":calculate_mean(weeklyEmaVol_8y),
+                                        "avg":calculate_average(weeklyEmaVol_8y),
+                                        "q10":calculate_q10(weeklyEmaVol_8y),
+                                        "q25":calculate_q25(weeklyEmaVol_8y),
+                                        "q50":calculate_q50(weeklyEmaVol_8y),
+                                        "q75":calculate_q75(weeklyEmaVol_8y),
+                                        "q90":calculate_q90(weeklyEmaVol_8y)
+                                             },
+
+
+                                    "9y":{
+                                        "min":calculate_min(weeklyEmaVol_9y) ,
+                                        "max":calculate_max(weeklyEmaVol_9y),
+                                        "mean":calculate_mean(weeklyEmaVol_9y),
+                                        "avg":calculate_average(weeklyEmaVol_9y),
+                                        "q10":calculate_q10(weeklyEmaVol_9y),
+                                        "q25":calculate_q25(weeklyEmaVol_9y),
+                                        "q50":calculate_q50(weeklyEmaVol_9y),
+                                        "q75":calculate_q75(weeklyEmaVol_9y),
+                                        "q90":calculate_q90(weeklyEmaVol_9y)
+                                             },
+
+                                    "all":{
+                                        "min":calculate_min(weeklyEmaVol_all) ,
+                                        "max":calculate_max(weeklyEmaVol_all),
+                                        "mean":calculate_mean(weeklyEmaVol_all),
+                                        "avg":calculate_average(weeklyEmaVol_all),
+                                        "q10":calculate_q10(weeklyEmaVol_all),
+                                        "q25":calculate_q25(weeklyEmaVol_all),
+                                        "q50":calculate_q50(weeklyEmaVol_all),
+                                        "q75":calculate_q75(weeklyEmaVol_all),
+                                        "q90":calculate_q90(weeklyEmaVol_all)
+                                             }   
+
+                                    },
+
+                    "dailyEmaVol": {
+                        
+                                    "0.5y":{
+                                        "min":calculate_min(dailyEmaVol_0_5y) ,
+                                        "max":calculate_max(dailyEmaVol_0_5y),
+                                        "mean":calculate_mean(dailyEmaVol_0_5y),
+                                        "avg":calculate_average(dailyEmaVol_0_5y),
+                                        "q10":calculate_q10(dailyEmaVol_0_5y),
+                                        "q25":calculate_q25(dailyEmaVol_0_5y),
+                                        "q50":calculate_q50(dailyEmaVol_0_5y),
+                                        "q75":calculate_q75(dailyEmaVol_0_5y),
+                                        "q90":calculate_q90(dailyEmaVol_0_5y)
+                                             }, 
+
+                                    "1y":{
+                                                    "min":calculate_min(dailyEmaVol_1y) ,
+                                                    "max":calculate_max(dailyEmaVol_1y),
+                                                    "mean":calculate_mean(dailyEmaVol_1y),
+                                                    "avg":calculate_average(dailyEmaVol_1y),
+                                                    "q10":calculate_q10(dailyEmaVol_1y),
+                                                    "q25":calculate_q25(dailyEmaVol_1y),
+                                                    "q50":calculate_q50(dailyEmaVol_1y),
+                                                    "q75":calculate_q75(dailyEmaVol_1y),
+                                                    "q90":calculate_q90(dailyEmaVol_1y)
+                                                },
+
+                                                
+                                    "2y":{
+                                                    "min":calculate_min(dailyEmaVol_2y) ,
+                                                    "max":calculate_max(dailyEmaVol_2y),
+                                                    "mean":calculate_mean(dailyEmaVol_2y),
+                                                    "avg":calculate_average(dailyEmaVol_2y),
+                                                    "q10":calculate_q10(dailyEmaVol_2y),
+                                                    "q25":calculate_q25(dailyEmaVol_2y),
+                                                    "q50":calculate_q50(dailyEmaVol_2y),
+                                                    "q75":calculate_q75(dailyEmaVol_2y),
+                                                    "q90":calculate_q90(dailyEmaVol_2y)
+                                                        },
+                                        
+                                    
+                                    "3y":{
+                                                    "min":calculate_min(dailyEmaVol_3y) ,
+                                                    "max":calculate_max(dailyEmaVol_3y),
+                                                    "mean":calculate_mean(dailyEmaVol_3y),
+                                                    "avg":calculate_average(dailyEmaVol_3y),
+                                                    "q10":calculate_q10(dailyEmaVol_3y),
+                                                    "q25":calculate_q25(dailyEmaVol_3y),
+                                                    "q50":calculate_q50(dailyEmaVol_3y),
+                                                    "q75":calculate_q75(dailyEmaVol_3y),
+                                                    "q90":calculate_q90(dailyEmaVol_3y)
+                                                        },
+
+                                    "4y":{
+                                                    "min":calculate_min(dailyEmaVol_4y) ,
+                                                    "max":calculate_max(dailyEmaVol_4y),
+                                                    "mean":calculate_mean(dailyEmaVol_4y),
+                                                    "avg":calculate_average(dailyEmaVol_4y),
+                                                    "q10":calculate_q10(dailyEmaVol_4y),
+                                                    "q25":calculate_q25(dailyEmaVol_4y),
+                                                    "q50":calculate_q50(dailyEmaVol_4y),
+                                                    "q75":calculate_q75(dailyEmaVol_4y),
+                                                    "q90":calculate_q90(dailyEmaVol_4y)
+                                                        },
+
+                        
+                                    "5y":{
+                                        "min":calculate_min(dailyEmaVol_5y) ,
+                                        "max":calculate_max(dailyEmaVol_5y),
+                                        "mean":calculate_mean(dailyEmaVol_5y),
+                                        "avg":calculate_average(dailyEmaVol_5y),
+                                        "q10":calculate_q10(dailyEmaVol_5y),
+                                        "q25":calculate_q25(dailyEmaVol_5y),
+                                        "q50":calculate_q50(dailyEmaVol_5y),
+                                        "q75":calculate_q75(dailyEmaVol_5y),
+                                        "q90":calculate_q90(dailyEmaVol_5y)
+                            },
+                        
+                                    "6y":{
+                                        "min":calculate_min(dailyEmaVol_6y) ,
+                                        "max":calculate_max(dailyEmaVol_6y),
+                                        "mean":calculate_mean(dailyEmaVol_6y),
+                                        "avg":calculate_average(dailyEmaVol_6y),
+                                        "q10":calculate_q10(dailyEmaVol_6y),
+                                        "q25":calculate_q25(dailyEmaVol_6y),
+                                        "q50":calculate_q50(dailyEmaVol_6y),
+                                        "q75":calculate_q75(dailyEmaVol_6y),
+                                        "q90":calculate_q90(dailyEmaVol_6y)
+                                             },
+
+                                    "7y":{
+                                        "min":calculate_min(dailyEmaVol_7y) ,
+                                        "max":calculate_max(dailyEmaVol_7y),
+                                        "mean":calculate_mean(dailyEmaVol_7y),
+                                        "avg":calculate_average(dailyEmaVol_7y),
+                                        "q10":calculate_q10(dailyEmaVol_7y),
+                                        "q25":calculate_q25(dailyEmaVol_7y),
+                                        "q50":calculate_q50(dailyEmaVol_7y),
+                                        "q75":calculate_q75(dailyEmaVol_7y),
+                                        "q90":calculate_q90(dailyEmaVol_7y)
+                                             },
+
+                                    "8y":{
+                                        "min":calculate_min(dailyEmaVol_8y) ,
+                                        "max":calculate_max(dailyEmaVol_8y),
+                                        "mean":calculate_mean(dailyEmaVol_8y),
+                                        "avg":calculate_average(dailyEmaVol_8y),
+                                        "q10":calculate_q10(dailyEmaVol_8y),
+                                        "q25":calculate_q25(dailyEmaVol_8y),
+                                        "q50":calculate_q50(dailyEmaVol_8y),
+                                        "q75":calculate_q75(dailyEmaVol_8y),
+                                        "q90":calculate_q90(dailyEmaVol_8y)
+                                             },
+
+
+                                    "9y":{
+                                        "min":calculate_min(dailyEmaVol_9y) ,
+                                        "max":calculate_max(dailyEmaVol_9y),
+                                        "mean":calculate_mean(dailyEmaVol_9y),
+                                        "avg":calculate_average(dailyEmaVol_9y),
+                                        "q10":calculate_q10(dailyEmaVol_9y),
+                                        "q25":calculate_q25(dailyEmaVol_9y),
+                                        "q50":calculate_q50(dailyEmaVol_9y),
+                                        "q75":calculate_q75(dailyEmaVol_9y),
+                                        "q90":calculate_q90(dailyEmaVol_9y)
+                                             },
+
+                                    "all":{
+                                        "min":calculate_min(dailyEmaVol_all) ,
+                                        "max":calculate_max(dailyEmaVol_all),
+                                        "mean":calculate_mean(dailyEmaVol_all),
+                                        "avg":calculate_average(dailyEmaVol_all),
+                                        "q10":calculate_q10(dailyEmaVol_all),
+                                        "q25":calculate_q25(dailyEmaVol_all),
+                                        "q50":calculate_q50(dailyEmaVol_all),
+                                        "q75":calculate_q75(dailyEmaVol_all),
+                                        "q90":calculate_q90(dailyEmaVol_all)
+                                             }   
+
+                                    },
+       
+
+                    "monthlyVol": {
+                        
+                                    "0.5y":{
+                                        "min":calculate_min(monthlyVol_0_5y) ,
+                                        "max":calculate_max(monthlyVol_0_5y),
+                                        "mean":calculate_mean(monthlyVol_0_5y),
+                                        "avg":calculate_average(monthlyVol_0_5y),
+                                        "q10":calculate_q10(monthlyVol_0_5y),
+                                        "q25":calculate_q25(monthlyVol_0_5y),
+                                        "q50":calculate_q50(monthlyVol_0_5y),
+                                        "q75":calculate_q75(monthlyVol_0_5y),
+                                        "q90":calculate_q90(monthlyVol_0_5y)
+                                             }, 
+
+                                    "1y":{
+                                                    "min":calculate_min(monthlyVol_1y) ,
+                                                    "max":calculate_max(monthlyVol_1y),
+                                                    "mean":calculate_mean(monthlyVol_1y),
+                                                    "avg":calculate_average(monthlyVol_1y),
+                                                    "q10":calculate_q10(monthlyVol_1y),
+                                                    "q25":calculate_q25(monthlyVol_1y),
+                                                    "q50":calculate_q50(monthlyVol_1y),
+                                                    "q75":calculate_q75(monthlyVol_1y),
+                                                    "q90":calculate_q90(monthlyVol_1y)
+                                                },
+
+                                                
+                                    "2y":{
+                                                    "min":calculate_min(monthlyVol_2y) ,
+                                                    "max":calculate_max(monthlyVol_2y),
+                                                    "mean":calculate_mean(monthlyVol_2y),
+                                                    "avg":calculate_average(monthlyVol_2y),
+                                                    "q10":calculate_q10(monthlyVol_2y),
+                                                    "q25":calculate_q25(monthlyVol_2y),
+                                                    "q50":calculate_q50(monthlyVol_2y),
+                                                    "q75":calculate_q75(monthlyVol_2y),
+                                                    "q90":calculate_q90(monthlyVol_2y)
+                                                        },
+                                        
+                                    
+                                    "3y":{
+                                                    "min":calculate_min(monthlyVol_3y) ,
+                                                    "max":calculate_max(monthlyVol_3y),
+                                                    "mean":calculate_mean(monthlyVol_3y),
+                                                    "avg":calculate_average(monthlyVol_3y),
+                                                    "q10":calculate_q10(monthlyVol_3y),
+                                                    "q25":calculate_q25(monthlyVol_3y),
+                                                    "q50":calculate_q50(monthlyVol_3y),
+                                                    "q75":calculate_q75(monthlyVol_3y),
+                                                    "q90":calculate_q90(monthlyVol_3y)
+                                                        },
+
+                                    "4y":{
+                                                    "min":calculate_min(monthlyVol_4y) ,
+                                                    "max":calculate_max(monthlyVol_4y),
+                                                    "mean":calculate_mean(monthlyVol_4y),
+                                                    "avg":calculate_average(monthlyVol_4y),
+                                                    "q10":calculate_q10(monthlyVol_4y),
+                                                    "q25":calculate_q25(monthlyVol_4y),
+                                                    "q50":calculate_q50(monthlyVol_4y),
+                                                    "q75":calculate_q75(monthlyVol_4y),
+                                                    "q90":calculate_q90(monthlyVol_4y)
+                                                        },
+
+                        
+                                    "5y":{
+                                        "min":calculate_min(monthlyVol_5y) ,
+                                        "max":calculate_max(monthlyVol_5y),
+                                        "mean":calculate_mean(monthlyVol_5y),
+                                        "avg":calculate_average(monthlyVol_5y),
+                                        "q10":calculate_q10(monthlyVol_5y),
+                                        "q25":calculate_q25(monthlyVol_5y),
+                                        "q50":calculate_q50(monthlyVol_5y),
+                                        "q75":calculate_q75(monthlyVol_5y),
+                                        "q90":calculate_q90(monthlyVol_5y)
+                            },
+                        
+                                    "6y":{
+                                        "min":calculate_min(monthlyVol_6y) ,
+                                        "max":calculate_max(monthlyVol_6y),
+                                        "mean":calculate_mean(monthlyVol_6y),
+                                        "avg":calculate_average(monthlyVol_6y),
+                                        "q10":calculate_q10(monthlyVol_6y),
+                                        "q25":calculate_q25(monthlyVol_6y),
+                                        "q50":calculate_q50(monthlyVol_6y),
+                                        "q75":calculate_q75(monthlyVol_6y),
+                                        "q90":calculate_q90(monthlyVol_6y)
+                                             },
+
+                                    "7y":{
+                                        "min":calculate_min(monthlyVol_7y) ,
+                                        "max":calculate_max(monthlyVol_7y),
+                                        "mean":calculate_mean(monthlyVol_7y),
+                                        "avg":calculate_average(monthlyVol_7y),
+                                        "q10":calculate_q10(monthlyVol_7y),
+                                        "q25":calculate_q25(monthlyVol_7y),
+                                        "q50":calculate_q50(monthlyVol_7y),
+                                        "q75":calculate_q75(monthlyVol_7y),
+                                        "q90":calculate_q90(monthlyVol_7y)
+                                             },
+
+                                    "8y":{
+                                        "min":calculate_min(monthlyVol_8y) ,
+                                        "max":calculate_max(monthlyVol_8y),
+                                        "mean":calculate_mean(monthlyVol_8y),
+                                        "avg":calculate_average(monthlyVol_8y),
+                                        "q10":calculate_q10(monthlyVol_8y),
+                                        "q25":calculate_q25(monthlyVol_8y),
+                                        "q50":calculate_q50(monthlyVol_8y),
+                                        "q75":calculate_q75(monthlyVol_8y),
+                                        "q90":calculate_q90(monthlyVol_8y)
+                                             },
+
+
+                                    "9y":{
+                                        "min":calculate_min(monthlyVol_9y) ,
+                                        "max":calculate_max(monthlyVol_9y),
+                                        "mean":calculate_mean(monthlyVol_9y),
+                                        "avg":calculate_average(monthlyVol_9y),
+                                        "q10":calculate_q10(monthlyVol_9y),
+                                        "q25":calculate_q25(monthlyVol_9y),
+                                        "q50":calculate_q50(monthlyVol_9y),
+                                        "q75":calculate_q75(monthlyVol_9y),
+                                        "q90":calculate_q90(monthlyVol_9y)
+                                             },
+
+                                    "all":{
+                                        "min":calculate_min(monthlyVol_all) ,
+                                        "max":calculate_max(monthlyVol_all),
+                                        "mean":calculate_mean(monthlyVol_all),
+                                        "avg":calculate_average(monthlyVol_all),
+                                        "q10":calculate_q10(monthlyVol_all),
+                                        "q25":calculate_q25(monthlyVol_all),
+                                        "q50":calculate_q50(monthlyVol_all),
+                                        "q75":calculate_q75(monthlyVol_all),
+                                        "q90":calculate_q90(monthlyVol_all)
+                                             }   
+
+                                    }
+       
+,
+                    "dailyVol": {
+                        
+                                    "0.5y":{
+                                        "min":calculate_min(dailyVol_0_5y) ,
+                                        "max":calculate_max(dailyVol_0_5y),
+                                        "mean":calculate_mean(dailyVol_0_5y),
+                                        "avg":calculate_average(dailyVol_0_5y),
+                                        "q10":calculate_q10(dailyVol_0_5y),
+                                        "q25":calculate_q25(dailyVol_0_5y),
+                                        "q50":calculate_q50(dailyVol_0_5y),
+                                        "q75":calculate_q75(dailyVol_0_5y),
+                                        "q90":calculate_q90(dailyVol_0_5y)
+                                             }, 
+
+                                    "1y":{
+                                                    "min":calculate_min(dailyVol_1y) ,
+                                                    "max":calculate_max(dailyVol_1y),
+                                                    "mean":calculate_mean(dailyVol_1y),
+                                                    "avg":calculate_average(dailyVol_1y),
+                                                    "q10":calculate_q10(dailyVol_1y),
+                                                    "q25":calculate_q25(dailyVol_1y),
+                                                    "q50":calculate_q50(dailyVol_1y),
+                                                    "q75":calculate_q75(dailyVol_1y),
+                                                    "q90":calculate_q90(dailyVol_1y)
+                                                },
+
+                                                
+                                    "2y":{
+                                                    "min":calculate_min(dailyVol_2y) ,
+                                                    "max":calculate_max(dailyVol_2y),
+                                                    "mean":calculate_mean(dailyVol_2y),
+                                                    "avg":calculate_average(dailyVol_2y),
+                                                    "q10":calculate_q10(dailyVol_2y),
+                                                    "q25":calculate_q25(dailyVol_2y),
+                                                    "q50":calculate_q50(dailyVol_2y),
+                                                    "q75":calculate_q75(dailyVol_2y),
+                                                    "q90":calculate_q90(dailyVol_2y)
+                                                        },
+                                        
+                                    
+                                    "3y":{
+                                                    "min":calculate_min(dailyVol_3y) ,
+                                                    "max":calculate_max(dailyVol_3y),
+                                                    "mean":calculate_mean(dailyVol_3y),
+                                                    "avg":calculate_average(dailyVol_3y),
+                                                    "q10":calculate_q10(dailyVol_3y),
+                                                    "q25":calculate_q25(dailyVol_3y),
+                                                    "q50":calculate_q50(dailyVol_3y),
+                                                    "q75":calculate_q75(dailyVol_3y),
+                                                    "q90":calculate_q90(dailyVol_3y)
+                                                        },
+
+                                    "4y":{
+                                                    "min":calculate_min(dailyVol_4y) ,
+                                                    "max":calculate_max(dailyVol_4y),
+                                                    "mean":calculate_mean(dailyVol_4y),
+                                                    "avg":calculate_average(dailyVol_4y),
+                                                    "q10":calculate_q10(dailyVol_4y),
+                                                    "q25":calculate_q25(dailyVol_4y),
+                                                    "q50":calculate_q50(dailyVol_4y),
+                                                    "q75":calculate_q75(dailyVol_4y),
+                                                    "q90":calculate_q90(dailyVol_4y)
+                                                        },
+
+                        
+                                    "5y":{
+                                        "min":calculate_min(dailyVol_5y) ,
+                                        "max":calculate_max(dailyVol_5y),
+                                        "mean":calculate_mean(dailyVol_5y),
+                                        "avg":calculate_average(dailyVol_5y),
+                                        "q10":calculate_q10(dailyVol_5y),
+                                        "q25":calculate_q25(dailyVol_5y),
+                                        "q50":calculate_q50(dailyVol_5y),
+                                        "q75":calculate_q75(dailyVol_5y),
+                                        "q90":calculate_q90(dailyVol_5y)
+                            },
+                        
+                                    "6y":{
+                                        "min":calculate_min(dailyVol_6y) ,
+                                        "max":calculate_max(dailyVol_6y),
+                                        "mean":calculate_mean(dailyVol_6y),
+                                        "avg":calculate_average(dailyVol_6y),
+                                        "q10":calculate_q10(dailyVol_6y),
+                                        "q25":calculate_q25(dailyVol_6y),
+                                        "q50":calculate_q50(dailyVol_6y),
+                                        "q75":calculate_q75(dailyVol_6y),
+                                        "q90":calculate_q90(dailyVol_6y)
+                                             },
+
+                                    "7y":{
+                                        "min":calculate_min(dailyVol_7y) ,
+                                        "max":calculate_max(dailyVol_7y),
+                                        "mean":calculate_mean(dailyVol_7y),
+                                        "avg":calculate_average(dailyVol_7y),
+                                        "q10":calculate_q10(dailyVol_7y),
+                                        "q25":calculate_q25(dailyVol_7y),
+                                        "q50":calculate_q50(dailyVol_7y),
+                                        "q75":calculate_q75(dailyVol_7y),
+                                        "q90":calculate_q90(dailyVol_7y)
+                                             },
+
+                                    "8y":{
+                                        "min":calculate_min(dailyVol_8y) ,
+                                        "max":calculate_max(dailyVol_8y),
+                                        "mean":calculate_mean(dailyVol_8y),
+                                        "avg":calculate_average(dailyVol_8y),
+                                        "q10":calculate_q10(dailyVol_8y),
+                                        "q25":calculate_q25(dailyVol_8y),
+                                        "q50":calculate_q50(dailyVol_8y),
+                                        "q75":calculate_q75(dailyVol_8y),
+                                        "q90":calculate_q90(dailyVol_8y)
+                                             },
+
+
+                                    "9y":{
+                                        "min":calculate_min(dailyVol_9y) ,
+                                        "max":calculate_max(dailyVol_9y),
+                                        "mean":calculate_mean(dailyVol_9y),
+                                        "avg":calculate_average(dailyVol_9y),
+                                        "q10":calculate_q10(dailyVol_9y),
+                                        "q25":calculate_q25(dailyVol_9y),
+                                        "q50":calculate_q50(dailyVol_9y),
+                                        "q75":calculate_q75(dailyVol_9y),
+                                        "q90":calculate_q90(dailyVol_9y)
+                                             },
+
+                                    "all":{
+                                        "min":calculate_min(dailyVol_all) ,
+                                        "max":calculate_max(dailyVol_all),
+                                        "mean":calculate_mean(dailyVol_all),
+                                        "avg":calculate_average(dailyVol_all),
+                                        "q10":calculate_q10(dailyVol_all),
+                                        "q25":calculate_q25(dailyVol_all),
+                                        "q50":calculate_q50(dailyVol_all),
+                                        "q75":calculate_q75(dailyVol_all),
+                                        "q90":calculate_q90(dailyVol_all)
+                                             }   
+
+                                    }
+       
+,
+
+                    "weeklyVol": {
+                        
+                                    "0.5y":{
+                                        "min":calculate_min(weeklyVol_0_5y) ,
+                                        "max":calculate_max(weeklyVol_0_5y),
+                                        "mean":calculate_mean(weeklyVol_0_5y),
+                                        "avg":calculate_average(weeklyVol_0_5y),
+                                        "q10":calculate_q10(weeklyVol_0_5y),
+                                        "q25":calculate_q25(weeklyVol_0_5y),
+                                        "q50":calculate_q50(weeklyVol_0_5y),
+                                        "q75":calculate_q75(weeklyVol_0_5y),
+                                        "q90":calculate_q90(weeklyVol_0_5y)
+                                             }, 
+
+                                    "1y":{
+                                                    "min":calculate_min(weeklyVol_1y) ,
+                                                    "max":calculate_max(weeklyVol_1y),
+                                                    "mean":calculate_mean(weeklyVol_1y),
+                                                    "avg":calculate_average(weeklyVol_1y),
+                                                    "q10":calculate_q10(weeklyVol_1y),
+                                                    "q25":calculate_q25(weeklyVol_1y),
+                                                    "q50":calculate_q50(weeklyVol_1y),
+                                                    "q75":calculate_q75(weeklyVol_1y),
+                                                    "q90":calculate_q90(weeklyVol_1y)
+                                                },
+
+                                                
+                                    "2y":{
+                                                    "min":calculate_min(weeklyVol_2y) ,
+                                                    "max":calculate_max(weeklyVol_2y),
+                                                    "mean":calculate_mean(weeklyVol_2y),
+                                                    "avg":calculate_average(weeklyVol_2y),
+                                                    "q10":calculate_q10(weeklyVol_2y),
+                                                    "q25":calculate_q25(weeklyVol_2y),
+                                                    "q50":calculate_q50(weeklyVol_2y),
+                                                    "q75":calculate_q75(weeklyVol_2y),
+                                                    "q90":calculate_q90(weeklyVol_2y)
+                                                        },
+                                        
+                                    
+                                    "3y":{
+                                                    "min":calculate_min(weeklyVol_3y) ,
+                                                    "max":calculate_max(weeklyVol_3y),
+                                                    "mean":calculate_mean(weeklyVol_3y),
+                                                    "avg":calculate_average(weeklyVol_3y),
+                                                    "q10":calculate_q10(weeklyVol_3y),
+                                                    "q25":calculate_q25(weeklyVol_3y),
+                                                    "q50":calculate_q50(weeklyVol_3y),
+                                                    "q75":calculate_q75(weeklyVol_3y),
+                                                    "q90":calculate_q90(weeklyVol_3y)
+                                                        },
+
+                                    "4y":{
+                                                    "min":calculate_min(weeklyVol_4y) ,
+                                                    "max":calculate_max(weeklyVol_4y),
+                                                    "mean":calculate_mean(weeklyVol_4y),
+                                                    "avg":calculate_average(weeklyVol_4y),
+                                                    "q10":calculate_q10(weeklyVol_4y),
+                                                    "q25":calculate_q25(weeklyVol_4y),
+                                                    "q50":calculate_q50(weeklyVol_4y),
+                                                    "q75":calculate_q75(weeklyVol_4y),
+                                                    "q90":calculate_q90(weeklyVol_4y)
+                                                        },
+
+                        
+                                    "5y":{
+                                        "min":calculate_min(weeklyVol_5y) ,
+                                        "max":calculate_max(weeklyVol_5y),
+                                        "mean":calculate_mean(weeklyVol_5y),
+                                        "avg":calculate_average(weeklyVol_5y),
+                                        "q10":calculate_q10(weeklyVol_5y),
+                                        "q25":calculate_q25(weeklyVol_5y),
+                                        "q50":calculate_q50(weeklyVol_5y),
+                                        "q75":calculate_q75(weeklyVol_5y),
+                                        "q90":calculate_q90(weeklyVol_5y)
+                            },
+                        
+                                    "6y":{
+                                        "min":calculate_min(weeklyVol_6y) ,
+                                        "max":calculate_max(weeklyVol_6y),
+                                        "mean":calculate_mean(weeklyVol_6y),
+                                        "avg":calculate_average(weeklyVol_6y),
+                                        "q10":calculate_q10(weeklyVol_6y),
+                                        "q25":calculate_q25(weeklyVol_6y),
+                                        "q50":calculate_q50(weeklyVol_6y),
+                                        "q75":calculate_q75(weeklyVol_6y),
+                                        "q90":calculate_q90(weeklyVol_6y)
+                                             },
+
+                                    "7y":{
+                                        "min":calculate_min(weeklyVol_7y) ,
+                                        "max":calculate_max(weeklyVol_7y),
+                                        "mean":calculate_mean(weeklyVol_7y),
+                                        "avg":calculate_average(weeklyVol_7y),
+                                        "q10":calculate_q10(weeklyVol_7y),
+                                        "q25":calculate_q25(weeklyVol_7y),
+                                        "q50":calculate_q50(weeklyVol_7y),
+                                        "q75":calculate_q75(weeklyVol_7y),
+                                        "q90":calculate_q90(weeklyVol_7y)
+                                             },
+
+                                    "8y":{
+                                        "min":calculate_min(weeklyVol_8y) ,
+                                        "max":calculate_max(weeklyVol_8y),
+                                        "mean":calculate_mean(weeklyVol_8y),
+                                        "avg":calculate_average(weeklyVol_8y),
+                                        "q10":calculate_q10(weeklyVol_8y),
+                                        "q25":calculate_q25(weeklyVol_8y),
+                                        "q50":calculate_q50(weeklyVol_8y),
+                                        "q75":calculate_q75(weeklyVol_8y),
+                                        "q90":calculate_q90(weeklyVol_8y)
+                                             },
+
+
+                                    "9y":{
+                                        "min":calculate_min(weeklyVol_9y) ,
+                                        "max":calculate_max(weeklyVol_9y),
+                                        "mean":calculate_mean(weeklyVol_9y),
+                                        "avg":calculate_average(weeklyVol_9y),
+                                        "q10":calculate_q10(weeklyVol_9y),
+                                        "q25":calculate_q25(weeklyVol_9y),
+                                        "q50":calculate_q50(weeklyVol_9y),
+                                        "q75":calculate_q75(weeklyVol_9y),
+                                        "q90":calculate_q90(weeklyVol_9y)
+                                             },
+
+                                    "all":{
+                                        "min":calculate_min(weeklyVol_all) ,
+                                        "max":calculate_max(weeklyVol_all),
+                                        "mean":calculate_mean(weeklyVol_all),
+                                        "avg":calculate_average(weeklyVol_all),
+                                        "q10":calculate_q10(weeklyVol_all),
+                                        "q25":calculate_q25(weeklyVol_all),
+                                        "q50":calculate_q50(weeklyVol_all),
+                                        "q75":calculate_q75(weeklyVol_all),
+                                        "q90":calculate_q90(weeklyVol_all)
+                                             }   
+
+                                    }
+   ,
+                       "return": {
+                        
+                                    "0.5y":{
+                                        "min":calculate_min(return_0_5y) ,
+                                        "max":calculate_max(return_0_5y),
+                                        "mean":calculate_mean(return_0_5y),
+                                        "avg":calculate_average(return_0_5y),
+                                        "q10":calculate_q10(return_0_5y),
+                                        "q25":calculate_q25(return_0_5y),
+                                        "q50":calculate_q50(return_0_5y),
+                                        "q75":calculate_q75(return_0_5y),
+                                        "q90":calculate_q90(return_0_5y)
+                                             }, 
+
+                                    "1y":{
+                                                    "min":calculate_min(return_1y) ,
+                                                    "max":calculate_max(return_1y),
+                                                    "mean":calculate_mean(return_1y),
+                                                    "avg":calculate_average(return_1y),
+                                                    "q10":calculate_q10(return_1y),
+                                                    "q25":calculate_q25(return_1y),
+                                                    "q50":calculate_q50(return_1y),
+                                                    "q75":calculate_q75(return_1y),
+                                                    "q90":calculate_q90(return_1y)
+                                                },
+
+                                                
+                                    "2y":{
+                                                    "min":calculate_min(return_2y) ,
+                                                    "max":calculate_max(return_2y),
+                                                    "mean":calculate_mean(return_2y),
+                                                    "avg":calculate_average(return_2y),
+                                                    "q10":calculate_q10(return_2y),
+                                                    "q25":calculate_q25(return_2y),
+                                                    "q50":calculate_q50(return_2y),
+                                                    "q75":calculate_q75(return_2y),
+                                                    "q90":calculate_q90(return_2y)
+                                                        },
+                                        
+                                    
+                                    "3y":{
+                                                    "min":calculate_min(return_3y) ,
+                                                    "max":calculate_max(return_3y),
+                                                    "mean":calculate_mean(return_3y),
+                                                    "avg":calculate_average(return_3y),
+                                                    "q10":calculate_q10(return_3y),
+                                                    "q25":calculate_q25(return_3y),
+                                                    "q50":calculate_q50(return_3y),
+                                                    "q75":calculate_q75(return_3y),
+                                                    "q90":calculate_q90(return_3y)
+                                                        },
+
+                                    "4y":{
+                                                    "min":calculate_min(return_4y) ,
+                                                    "max":calculate_max(return_4y),
+                                                    "mean":calculate_mean(return_4y),
+                                                    "avg":calculate_average(return_4y),
+                                                    "q10":calculate_q10(return_4y),
+                                                    "q25":calculate_q25(return_4y),
+                                                    "q50":calculate_q50(return_4y),
+                                                    "q75":calculate_q75(return_4y),
+                                                    "q90":calculate_q90(return_4y)
+                                                        },
+
+                        
+                                    "5y":{
+                                        "min":calculate_min(return_5y) ,
+                                        "max":calculate_max(return_5y),
+                                        "mean":calculate_mean(return_5y),
+                                        "avg":calculate_average(return_5y),
+                                        "q10":calculate_q10(return_5y),
+                                        "q25":calculate_q25(return_5y),
+                                        "q50":calculate_q50(return_5y),
+                                        "q75":calculate_q75(return_5y),
+                                        "q90":calculate_q90(return_5y)
+                            },
+                        
+                                    "6y":{
+                                        "min":calculate_min(return_6y) ,
+                                        "max":calculate_max(return_6y),
+                                        "mean":calculate_mean(return_6y),
+                                        "avg":calculate_average(return_6y),
+                                        "q10":calculate_q10(return_6y),
+                                        "q25":calculate_q25(return_6y),
+                                        "q50":calculate_q50(return_6y),
+                                        "q75":calculate_q75(return_6y),
+                                        "q90":calculate_q90(return_6y)
+                                             },
+
+                                    "7y":{
+                                        "min":calculate_min(return_7y) ,
+                                        "max":calculate_max(return_7y),
+                                        "mean":calculate_mean(return_7y),
+                                        "avg":calculate_average(return_7y),
+                                        "q10":calculate_q10(return_7y),
+                                        "q25":calculate_q25(return_7y),
+                                        "q50":calculate_q50(return_7y),
+                                        "q75":calculate_q75(return_7y),
+                                        "q90":calculate_q90(return_7y)
+                                             },
+
+                                    "8y":{
+                                        "min":calculate_min(return_8y) ,
+                                        "max":calculate_max(return_8y),
+                                        "mean":calculate_mean(return_8y),
+                                        "avg":calculate_average(return_8y),
+                                        "q10":calculate_q10(return_8y),
+                                        "q25":calculate_q25(return_8y),
+                                        "q50":calculate_q50(return_8y),
+                                        "q75":calculate_q75(return_8y),
+                                        "q90":calculate_q90(return_8y)
+                                             },
+
+
+                                    "9y":{
+                                        "min":calculate_min(return_9y) ,
+                                        "max":calculate_max(return_9y),
+                                        "mean":calculate_mean(return_9y),
+                                        "avg":calculate_average(return_9y),
+                                        "q10":calculate_q10(return_9y),
+                                        "q25":calculate_q25(return_9y),
+                                        "q50":calculate_q50(return_9y),
+                                        "q75":calculate_q75(return_9y),
+                                        "q90":calculate_q90(return_9y)
+                                             },
+
+                                    "all":{
+                                        "min":calculate_min(return_all) ,
+                                        "max":calculate_max(return_all),
+                                        "mean":calculate_mean(return_all),
+                                        "avg":calculate_average(return_all),
+                                        "q10":calculate_q10(return_all),
+                                        "q25":calculate_q25(return_all),
+                                        "q50":calculate_q50(return_all),
+                                        "q75":calculate_q75(return_all),
+                                        "q90":calculate_q90(return_all)
+                                             }   
+
+                                    }
+           
+
+        }
+
+
+
+                            
+
+        
+
+
+
+
+
                    
-                   }
+                   
 
 
 
@@ -1412,8 +2399,22 @@ async def SpecialStatisticsAPIFunction(sector:str,date:str):
     # print("monthlyEmaVol_9y",monthlyEmaVol_9y)
     # print("monthlyEmaVol_all",monthlyEmaVol_all)
     # print("")
+        
+    return document 
 
-    return ("SpecialStatistics_sector_realTime_data_return",document)
+
+
+
+
+
+@Quotes_update.get('/v1/SpecialStatistics_sector_realTime_data_return/{sector}/{date}')
+async def SpecialStatisticsAPIFunction(sector:str,date:str):
+
+    data_to_treat_cursor = QuotesStatisticsCollection.find({"date":date,"sector":sector})
+    data_to_treat=list(data_to_treat_cursor)
+    print("data_to_treat for {sector} {date} has n° ",len(data_to_treat))
+
+    return ("SpecialStatistics_sector_realTime_data_return",calculateur_stat_speciales(data_to_treat))
 
 
 
