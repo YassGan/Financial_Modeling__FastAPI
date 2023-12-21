@@ -981,6 +981,92 @@ async def SpecialStatisticsAPIFunction():
 
 
 
+
+
+def calculate_average(number_list):
+    if not number_list:
+        return None
+
+    cleaned_list = [0 if value != value else value for value in number_list]
+
+    average_value = sum(cleaned_list) / len(cleaned_list)
+    return average_value
+
+
+import numpy as np
+def calculate_mean(number_list):
+    if not number_list:
+        return None
+
+    # Replace NaN values with 0
+    cleaned_list = [0 if value != value else value for value in number_list]
+
+    mean_value = np.mean(cleaned_list)
+    return mean_value
+
+
+def calculate_max(number_list):
+    if not number_list:
+        return None
+
+    # Replace NaN values with 0
+    cleaned_list = [0 if value != value else value for value in number_list]
+
+    max_value = max(cleaned_list)
+    return max_value
+
+
+def calculate_min(number_list):
+    if not number_list:
+        return None
+
+    cleaned_list = [0 if value != value else value for value in number_list]
+
+    min_value = min(cleaned_list)
+    return min_value
+
+
+def replace_nan_with_zero(number_list):
+    return [0 if np.isnan(value) else value for value in number_list]
+
+def calculate_q10(number_list):
+    if not number_list:
+        return None
+    cleaned_list = replace_nan_with_zero(number_list)
+    q10_value = np.percentile(cleaned_list, 10)
+    return q10_value
+
+def calculate_q25(number_list):
+    if not number_list:
+        return None
+    cleaned_list = replace_nan_with_zero(number_list)
+    q25_value = np.percentile(cleaned_list, 25)
+    return q25_value
+
+def calculate_q75(number_list):
+    if not number_list:
+        return None
+    cleaned_list = replace_nan_with_zero(number_list)
+    q75_value = np.percentile(cleaned_list, 75)
+    return q75_value
+
+def calculate_q50(number_list):
+    if not number_list:
+        return None
+    cleaned_list = replace_nan_with_zero(number_list)
+    q50_value = np.median(cleaned_list)
+    return q50_value
+
+def calculate_q90(number_list):
+    if not number_list:
+        return None
+    cleaned_list = replace_nan_with_zero(number_list)
+    q90_value = np.percentile(cleaned_list, 90)
+    return q90_value
+
+
+
+
 @Quotes_update.get('/v1/SpecialStatistics_sector_realTime_data_return/{sector}/{date}')
 async def SpecialStatisticsAPIFunction(sector:str,date:str):
 
@@ -989,18 +1075,345 @@ async def SpecialStatisticsAPIFunction(sector:str,date:str):
     print("data_to_treat for {sector} {date} has n° ",len(data_to_treat))
 
 
+
+    ### return
     return_0_5y=[]
     return_1y=[]
+    return_2y=[]
+    return_3y=[]
+    return_4y=[]
+    return_5y=[]
+    return_6y=[]
+    return_7y=[]
+    return_8y=[]
+    return_9y=[]
+    return_all=[]
 
-    for element in data_to_treat[:2]:
-        print ("------")
+
+
+    ###weeklyVol
+    weeklyVol_0_5y=[]
+    weeklyVol_1y=[]
+    weeklyVol_2y=[]
+    weeklyVol_3y=[]
+    weeklyVol_4y=[]
+    weeklyVol_5y=[]
+    weeklyVol_6y=[]
+    weeklyVol_7y=[]
+    weeklyVol_8y=[]
+    weeklyVol_9y=[]
+    weeklyVol_all=[]
+
+    ###dailyVol
+    dailyVol_0_5y=[]
+    dailyVol_1y=[]
+    dailyVol_2y=[]
+    dailyVol_3y=[]
+    dailyVol_4y=[]
+    dailyVol_5y=[]
+    dailyVol_6y=[]
+    dailyVol_7y=[]
+    dailyVol_8y=[]
+    dailyVol_9y=[]
+    dailyVol_all=[]
+
+    ### monthlyVol
+    monthlyVol_0_5y=[]
+    monthlyVol_1y=[]
+    monthlyVol_2y=[]
+    monthlyVol_3y=[]
+    monthlyVol_4y=[]
+    monthlyVol_5y=[]
+    monthlyVol_6y=[]
+    monthlyVol_7y=[]
+    monthlyVol_8y=[]
+    monthlyVol_9y=[]
+    monthlyVol_all=[]
+
+
+
+    ### dailyEmaVol
+    dailyEmaVol_0_5y=[]
+    dailyEmaVol_1y=[]
+    dailyEmaVol_2y=[]
+    dailyEmaVol_3y=[]
+    dailyEmaVol_4y=[]
+    dailyEmaVol_5y=[]
+    dailyEmaVol_6y=[]
+    dailyEmaVol_7y=[]
+    dailyEmaVol_8y=[]
+    dailyEmaVol_9y=[]
+    dailyEmaVol_all=[]
+
+
+    ### weeklyEmaVol
+    weeklyEmaVol_0_5y=[]
+    weeklyEmaVol_1y=[]
+    weeklyEmaVol_2y=[]
+    weeklyEmaVol_3y=[]
+    weeklyEmaVol_4y=[]
+    weeklyEmaVol_5y=[]
+    weeklyEmaVol_6y=[]
+    weeklyEmaVol_7y=[]
+    weeklyEmaVol_8y=[]
+    weeklyEmaVol_9y=[]
+    weeklyEmaVol_all=[]
+
+
+
+
+    ### monthlyEmaVol
+    monthlyEmaVol_0_5y=[]
+    monthlyEmaVol_1y=[]
+    monthlyEmaVol_2y=[]
+    monthlyEmaVol_3y=[]
+    monthlyEmaVol_4y=[]
+    monthlyEmaVol_5y=[]
+    monthlyEmaVol_6y=[]
+    monthlyEmaVol_7y=[]
+    monthlyEmaVol_8y=[]
+    monthlyEmaVol_9y=[]
+    monthlyEmaVol_all=[]
+
+
+
+
+
+
+
+
+    for element in data_to_treat[:10]:
+        # print ("  ")
         return_0_5y.append(element['return']['0.5y'])
         return_1y.append(element['return']['1y'])
+        return_2y.append(element['return']['2y'])
+        return_3y.append(element['return']['3y'])
+        return_4y.append(element['return']['4y'])
+        return_5y.append(element['return']['5y'])
+        return_6y.append(element['return']['6y'])
+        return_7y.append(element['return']['7y'])
+        return_8y.append(element['return']['8y'])
+        return_9y.append(element['return']['9y'])
+        return_all.append(element['return']['all'])
+
+        # print (" weeklyVol treatment ")
+        weeklyVol_0_5y.append(element['return']['0.5y'])
+        weeklyVol_1y.append(element['weeklyVol']['1y'])
+        weeklyVol_2y.append(element['weeklyVol']['2y'])
+        weeklyVol_3y.append(element['weeklyVol']['3y'])
+        weeklyVol_4y.append(element['weeklyVol']['4y'])
+        weeklyVol_5y.append(element['weeklyVol']['5y'])
+        weeklyVol_6y.append(element['weeklyVol']['6y'])
+        weeklyVol_7y.append(element['weeklyVol']['7y'])
+        weeklyVol_8y.append(element['weeklyVol']['8y'])
+        weeklyVol_9y.append(element['weeklyVol']['9y'])
+        weeklyVol_all.append(element['weeklyVol']['all'])
+
+        # print (" dailyVol treatment ")
+        dailyVol_0_5y.append(element['dailyVol']['0.5y'])
+        dailyVol_1y.append(element['dailyVol']['1y'])
+        dailyVol_2y.append(element['dailyVol']['2y'])
+        dailyVol_3y.append(element['dailyVol']['3y'])
+        dailyVol_4y.append(element['dailyVol']['4y'])
+        dailyVol_5y.append(element['dailyVol']['5y'])
+        dailyVol_6y.append(element['dailyVol']['6y'])
+        dailyVol_7y.append(element['dailyVol']['7y'])
+        dailyVol_8y.append(element['dailyVol']['8y'])
+        dailyVol_9y.append(element['dailyVol']['9y'])
+        dailyVol_all.append(element['dailyVol']['all'])
+
+        # print (" monthlyVol treatment ")
+        monthlyVol_0_5y.append(element['monthlyVol']['0.5y'])
+        monthlyVol_1y.append(element['monthlyVol']['1y'])
+        monthlyVol_2y.append(element['monthlyVol']['2y'])
+        monthlyVol_3y.append(element['monthlyVol']['3y'])
+        monthlyVol_4y.append(element['monthlyVol']['4y'])
+        monthlyVol_5y.append(element['monthlyVol']['5y'])
+        monthlyVol_6y.append(element['monthlyVol']['6y'])
+        monthlyVol_7y.append(element['monthlyVol']['7y'])
+        monthlyVol_8y.append(element['monthlyVol']['8y'])
+        monthlyVol_9y.append(element['monthlyVol']['9y'])
+        monthlyVol_all.append(element['monthlyVol']['all'])
+
+        # print (" dailyEmaVol treatment ")
+        dailyEmaVol_0_5y.append(element['dailyEmaVol']['0.5y'])
+        dailyEmaVol_1y.append(element['dailyEmaVol']['1y'])
+        dailyEmaVol_2y.append(element['dailyEmaVol']['2y'])
+        dailyEmaVol_3y.append(element['dailyEmaVol']['3y'])
+        dailyEmaVol_4y.append(element['dailyEmaVol']['4y'])
+        dailyEmaVol_5y.append(element['dailyEmaVol']['5y'])
+        dailyEmaVol_6y.append(element['dailyEmaVol']['6y'])
+        dailyEmaVol_7y.append(element['dailyEmaVol']['7y'])
+        dailyEmaVol_8y.append(element['dailyEmaVol']['8y'])
+        dailyEmaVol_9y.append(element['dailyEmaVol']['9y'])
+        dailyEmaVol_all.append(element['dailyEmaVol']['all'])
+
+        # print (" weeklyEmaVol treatment ")
+        weeklyEmaVol_0_5y.append(element['dailyEmaVol']['0.5y'])
+        weeklyEmaVol_1y.append(element['weeklyEmaVol']['1y'])
+        weeklyEmaVol_2y.append(element['weeklyEmaVol']['2y'])
+        weeklyEmaVol_3y.append(element['weeklyEmaVol']['3y'])
+        weeklyEmaVol_4y.append(element['weeklyEmaVol']['4y'])
+        weeklyEmaVol_5y.append(element['weeklyEmaVol']['5y'])
+        weeklyEmaVol_6y.append(element['weeklyEmaVol']['6y'])
+        weeklyEmaVol_7y.append(element['weeklyEmaVol']['7y'])
+        weeklyEmaVol_8y.append(element['weeklyEmaVol']['8y'])
+        weeklyEmaVol_9y.append(element['weeklyEmaVol']['9y'])
+        weeklyEmaVol_all.append(element['weeklyEmaVol']['1y'])
+
+        # print (" monthlyEmaVol treatment ")
+        monthlyEmaVol_0_5y.append(element['monthlyEmaVol']['0.5y'])
+        monthlyEmaVol_1y.append(element['monthlyEmaVol']['1y'])
+        monthlyEmaVol_2y.append(element['monthlyEmaVol']['2y'])
+        monthlyEmaVol_3y.append(element['monthlyEmaVol']['3y'])
+        monthlyEmaVol_4y.append(element['monthlyEmaVol']['4y'])
+        monthlyEmaVol_5y.append(element['monthlyEmaVol']['5y'])
+        monthlyEmaVol_6y.append(element['monthlyEmaVol']['6y'])
+        monthlyEmaVol_7y.append(element['monthlyEmaVol']['7y'])
+        monthlyEmaVol_8y.append(element['monthlyEmaVol']['8y'])
+        monthlyEmaVol_9y.append(element['monthlyEmaVol']['9y'])
+        monthlyEmaVol_all.append(element['monthlyEmaVol']['all'])
+
+        document = {
+                    "monthlyEmaVol": {"0.5y":
+                                      {
+                                        "min":calculate_min(monthlyEmaVol_0_5y) ,
+                                        "max":calculate_max(monthlyEmaVol_0_5y),
+                                        "mean":calculate_mean(monthlyEmaVol_0_5y),
+                                        "avg":calculate_average(monthlyEmaVol_0_5y),
+                                        "q10":calculate_q10(monthlyEmaVol_0_5y),
+                                        "q25":calculate_q25(monthlyEmaVol_0_5y),
+                                        "q50":calculate_q50(monthlyEmaVol_0_5y),
+                                        "q75":calculate_q75(monthlyEmaVol_0_5y),
+                                        "q90":calculate_q90(monthlyEmaVol_0_5y)
+                                             }, 
+
+                                    "1y":{
+                                        "min":calculate_min(monthlyEmaVol_1y) ,
+                                        "max":calculate_max(monthlyEmaVol_1y),
+                                        "mean":calculate_mean(monthlyEmaVol_1y),
+                                        "avg":calculate_average(monthlyEmaVol_1y),
+                                        "q10":calculate_q10(monthlyEmaVol_1y),
+                                        "q25":calculate_q25(monthlyEmaVol_1y),
+                                        "q50":calculate_q50(monthlyEmaVol_1y),
+                                        "q75":calculate_q75(monthlyEmaVol_1y),
+                                        "q90":calculate_q90(monthlyEmaVol_1y)
+                                             }
+                                             }
+                   
+                   }
 
 
 
 
-    return ("SpecialStatistics_sector_realTime_data_return")
+
+
+    # print("")
+    # print("return_0_5y",return_0_5y)
+    # print("return_1y",return_1y)
+    # print("return_2y",return_2y)
+    # print("return_3y",return_3y)
+    # print("return_4y",return_4y)
+    # print("return_5y",return_5y)
+    # print("return_6y",return_6y)
+    # print("return_7y",return_7y)
+    # print("return_8y",return_8y)
+    # print("return_9y",return_9y)
+    # print("return_all",return_all)
+    # print("")
+
+    # print("")
+    # print("weeklyVol_0_5y",weeklyVol_0_5y)
+    # print("weeklyVol_1y",weeklyVol_1y)
+    # print("weeklyVol_2y",weeklyVol_2y)
+    # print("weeklyVol_3y",weeklyVol_3y)
+    # print("weeklyVol_4y",weeklyVol_4y)
+    # print("weeklyVol_5y",weeklyVol_5y)
+    # print("weeklyVol_6y",weeklyVol_6y)
+    # print("weeklyVol_7y",weeklyVol_7y)
+    # print("weeklyVol_8y",weeklyVol_8y)
+    # print("weeklyVol_9y",weeklyVol_9y)
+    # print("weeklyVol_all",weeklyVol_all)
+    # print("")
+
+
+    # print("")
+    # print("dailyVol_0_5y",dailyVol_0_5y)
+    # print("dailyVol_1y",dailyVol_1y)
+    # print("dailyVol_2y",dailyVol_2y)
+    # print("dailyVol_3y",dailyVol_3y)
+    # print("dailyVol_4y",dailyVol_4y)
+    # print("dailyVol_5y",dailyVol_5y)
+    # print("dailyVol_6y",dailyVol_6y)
+    # print("dailyVol_7y",dailyVol_7y)
+    # print("dailyVol_8y",dailyVol_8y)
+    # print("dailyVol_9y",dailyVol_9y)
+    # print("dailyVol_all",dailyVol_all)
+    # print("")
+
+
+    # print("")
+    # print("monthlyVol_0_5y",monthlyVol_0_5y)
+    # print("monthlyVol_1y",monthlyVol_1y)
+    # print("monthlyVol_2y",monthlyVol_2y)
+    # print("monthlyVol_3y",monthlyVol_3y)
+    # print("monthlyVol_4y",monthlyVol_4y)
+    # print("monthlyVol_5y",monthlyVol_5y)
+    # print("monthlyVol_6y",monthlyVol_6y)
+    # print("monthlyVol_7y",monthlyVol_7y)
+    # print("monthlyVol_8y",monthlyVol_8y)
+    # print("monthlyVol_9y",monthlyVol_9y)
+    # print("monthlyVol_all",monthlyVol_all)
+    # print("")
+
+
+
+
+
+    # print("")
+    # print("dailyEmaVol_0_5y",dailyEmaVol_0_5y)
+    # print("dailyEmaVol_1y",dailyEmaVol_1y)
+    # print("dailyEmaVol_2y",dailyEmaVol_2y)
+    # print("dailyEmaVol_3y",dailyEmaVol_3y)
+    # print("dailyEmaVol_4y",dailyEmaVol_4y)
+    # print("dailyEmaVol_5y",dailyEmaVol_5y)
+    # print("dailyEmaVol_6y",dailyEmaVol_6y)
+    # print("dailyEmaVol_7y",dailyEmaVol_7y)
+    # print("dailyEmaVol_8y",dailyEmaVol_8y)
+    # print("dailyEmaVol_9y",dailyEmaVol_9y)
+    # print("dailyEmaVol_all",dailyEmaVol_all)
+    # print("")
+
+
+    # print("")
+    # print("weeklyEmaVol_0_5y",weeklyEmaVol_0_5y)
+    # print("weeklyEmaVol_1y",weeklyEmaVol_1y)
+    # print("weeklyEmaVol_2y",weeklyEmaVol_2y)
+    # print("weeklyEmaVol_3y",weeklyEmaVol_3y)
+    # print("weeklyEmaVol_4y",weeklyEmaVol_4y)
+    # print("weeklyEmaVol_5y",weeklyEmaVol_5y)
+    # print("weeklyEmaVol_6y",weeklyEmaVol_6y)
+    # print("weeklyEmaVol_7y",weeklyEmaVol_7y)
+    # print("weeklyEmaVol_8y",weeklyEmaVol_8y)
+    # print("weeklyEmaVol_9y",weeklyEmaVol_9y)
+    # print("weeklyEmaVol_all",weeklyEmaVol_all)
+    # print("")
+
+    # print("")
+    # print("monthlyEmaVol_0_5y",monthlyEmaVol_0_5y)
+    # print("monthlyEmaVol_1y",monthlyEmaVol_1y)
+    # print("monthlyEmaVol_2y",monthlyEmaVol_2y)
+    # print("monthlyEmaVol_3y",monthlyEmaVol_3y)
+    # print("monthlyEmaVol_4y",monthlyEmaVol_4y)
+    # print("monthlyEmaVol_5y",monthlyEmaVol_5y)
+    # print("monthlyEmaVol_6y",monthlyEmaVol_6y)
+    # print("monthlyEmaVol_7y",monthlyEmaVol_7y)
+    # print("monthlyEmaVol_8y",monthlyEmaVol_8y)
+    # print("monthlyEmaVol_9y",monthlyEmaVol_9y)
+    # print("monthlyEmaVol_all",monthlyEmaVol_all)
+    # print("")
+
+    return ("SpecialStatistics_sector_realTime_data_return",document)
 
 
 
