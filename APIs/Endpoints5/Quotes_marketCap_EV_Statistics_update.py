@@ -4,6 +4,8 @@ from fastapi import HTTPException, FastAPI, Response, status, APIRouter
 from fastapi.responses import JSONResponse
 from datetime import date
 
+import math
+
 import pandas as pd
 
 from schemas.Sector import serializeList2
@@ -25,6 +27,8 @@ from APIs.Endpoints4.stock_indexes_Quotes import STOCKIndexes_QuotesCollection
 
 from APIs.Endpoints5.googleSheetAPI import read_data_from_sheets
 from APIs.Endpoints5.googleSheetAPI import update_googleSheet_data_in
+
+
 
 
 
@@ -67,6 +71,35 @@ def get_QuotesTest_collection():
     return QuotesTest
 
 QuotesTestCollection=get_QuotesTest_collection()
+
+
+def get_SpecialStatistics_collection():
+    db = get_database()
+    SpecialStatistics=db["Sectorial_Statistics"]
+    SpecialStatistics.create_index([("_id", 1)])
+    return SpecialStatistics
+
+SpecialStatisticsCollection=get_SpecialStatistics_collection()
+
+
+
+def get_CountryStatistics_collection():
+    db = get_database()
+    CountryStatistics=db["Country_Statistics"]
+    CountryStatistics.create_index([("_id", 1)])
+    return CountryStatistics
+
+CountryStatisticsCollection=get_CountryStatistics_collection()
+
+
+def get_industryStatistics_collection():
+    db = get_database()
+    industryStatistics=db["industry_Statistics"]
+    industryStatistics.create_index([("_id", 1)])
+    return industryStatistics
+
+industryStatisticsCollection=get_industryStatistics_collection()
+
 
 
 
@@ -897,17 +930,43 @@ def get_date_for_symbol_Operation_StatSpeciales(symbol, df):
 from dateutil.relativedelta import relativedelta
 
 def generate_month_end_dates(start_date, end_date):
-    # Parse the start and end dates
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
 
-    # Generate a range of dates with month end frequency
     date_range = pd.date_range(start=start_date, end=end_date, freq='M')
 
-    # Adjust the dates to the last day of the month
     last_day_of_month = date_range + pd.offsets.MonthEnd(0)
 
     return last_day_of_month.strftime('%Y-%m-%d').tolist()
+
+
+
+
+
+def get_dates_from_dataBaseReturned_DB(data: List[dict]) -> List[str]:
+    dates = []
+    for item in data:
+        date = item.get('date')
+        if date:
+            dates.append(date)
+    return sorted(dates)
+
+
+from typing import List
+
+def reduce_list_by_treated_dates(data_list: List[dict], dates_to_remove: List[str]) -> List[dict]:
+    filtered_list = [item for item in data_list if item['date'] not in dates_to_remove]
+    return filtered_list
+
+def remove_duplicates(date_list: List[str]) -> List[str]:
+    return sorted(list(set(date_list)))
+
+
+def delete_elements_by_date(input_list, target_date):
+    filtered_list = [element for element in input_list if element['date'] != target_date]
+    return filtered_list
+
+
 
 
 
@@ -916,7 +975,9 @@ def generate_month_end_dates(start_date, end_date):
 async def SpecialStatisticsAPIFunction():
     print("Inside SpecialStatisticsAPIFunction")
 
-    statisticsDBdataList = fetch_large_data_from_mongodb(QuotesStatisticsCollection)
+    ######## Remarque le earliest et oldest date sont inversés durant le code 
+
+    # statisticsDBdataList = fetch_large_data_from_mongodb(QuotesStatisticsCollection)
     
 
     ### This returns the values of the sectors that are in the collection of the sectors
@@ -940,24 +1001,26 @@ async def SpecialStatisticsAPIFunction():
     SpecialStatistics_csv_file_path_stockIndexesCSV_Id = '1IYqXr5n1vipIvQ6mlI4duM3GDlDEU-1Yk2OB-nUJ5No'
     SpecialStatisticsDF = read_data_from_sheets(SpecialStatistics_csv_file_path_stockIndexesCSV_Id,"Sheet1")
     
-    print(SpecialStatisticsDF)
 
     for sector in AllSectors_List:
 
-        earliest_date_result = QuotesStatisticsCollection.find(
+        oldest_date_result = QuotesStatisticsCollection.find(
             {"date": {"$exists": True}, "sector": sector},
             {"_id": 0, "date": 1}
         ).sort("date", 1).limit(1)
         
-        earliestDate_DB=earliest_date_result[0]["date"]
-
-
-        oldest_date_result = QuotesStatisticsCollection.find(
-            {"date": {"$exists": True}},
-            {"_id": 0, "date": 1}
-        ).sort("date", pymongo.ASCENDING).limit(1)
-
         oldestDate_DB=oldest_date_result[0]["date"]
+
+
+        earliestDate_date_result = QuotesStatisticsCollection.find(
+            {"date": {"$exists": True}, "sector": sector},
+            {"_id": 0, "date": 1}
+        ).sort("date", 1)
+
+        l=list(earliestDate_date_result)
+
+        earliestDate_DB=l[len(l)-1]["date"]
+
 
 
         date_to_begin=get_date_for_symbol_Operation_StatSpeciales("S_"+sector,SpecialStatisticsDF)
@@ -967,32 +1030,102 @@ async def SpecialStatisticsAPIFunction():
 
         date_to_finish=earliestDate_DB
 
-        date_range = generate_month_end_dates(date_to_begin, date_to_finish)
+        date_range = generate_month_end_dates( date_to_begin,date_to_finish)
 
 
 
         print("oldest date in the database for ",sector," is ",oldestDate_DB)  
         print("earliest date in the database for ",sector," is ",earliestDate_DB)  
-
-        print("Date range ")
-        print(date_range)
-
-
-
-
-
-        for date in date_range:
-            result = ListSpecialStatistics_Sectors(statisticsDBdataList, date, sector)
-            print("Nombre d'éléments qu'on va utiliser dans la création des statistiques spéciales ",len(result))
-            # Process the result as needed
-            print(f"sector {sector} date {date}: on a n° {len(result)}")
-
         
+        
+        # print("date_to_begin   for ",sector," is ",date_to_begin)  
+        # print("date_to_finish  for ",sector," is ",date_to_finish)  
 
-        # print("The reuslt of the filtered statistics")
-        # print(result)
 
- 
+        # print(date_range)
+
+
+
+
+        batch_size = 50  
+        
+        documents_to_insert_in_special_statistics=[]
+        for i in range(0, len(date_range), batch_size):
+            dateRange_DB=[]
+            date_range_batched = date_range[i:i + batch_size]
+
+            print("---- Dates batchées ")
+            print("date_to_begin   for ",sector," is ",date_range_batched[0])  
+            print("date_to_finish  for ",sector," is ",date_range_batched[len(date_range_batched)-1])  
+            
+            print("Nomber de dates éléments ",len(date_range_batched))
+
+
+            date_range_query = {
+                "sector": sector,
+                "date": {
+                    "$lte":date_range_batched[len(date_range_batched)-1]      ,           
+
+                    "$gte":date_range_batched[0]
+                }
+            }
+
+            statisticsDBdata=QuotesStatisticsCollection.find(date_range_query)
+            statisticsDBdataList=list(statisticsDBdata)
+
+            # print(statisticsDBdataList[:2])
+
+
+            
+            dateRange_DB=get_dates_from_dataBaseReturned_DB(statisticsDBdataList)
+
+            print("dateRange_DB")
+            print(remove_duplicates(dateRange_DB))
+
+
+            documents_to_insert=[]
+
+
+            compteur_insertion=20
+            ind_insertion=0
+
+            for date in remove_duplicates(dateRange_DB):
+                ind_insertion=ind_insertion+1
+                filtered_list = [obj for obj in statisticsDBdataList if obj.get('date') == date]
+
+                
+                statisticsDBdataList=delete_elements_by_date(statisticsDBdataList,date)
+
+
+                print("--Treating elements of the date ",date)
+                print("All the elements length ",len(statisticsDBdataList))
+                print("The filtered elements length ",len(filtered_list))
+
+                document={
+                    "date":date,
+                    "sector":sector,
+                    "Special_Stats":calculateur_stat_speciales(filtered_list)
+                }
+
+                documents_to_insert.append(document)
+
+                if ind_insertion>=compteur_insertion:
+
+                    SpecialStatisticsCollection.insert_many(documents_to_insert)
+                    documents_to_insert=[]
+                    ind_insertion=0
+
+
+                
+            if ind_insertion>0:
+                    SpecialStatisticsCollection.insert_many(documents_to_insert)
+                    documents_to_insert=[]
+        update_googleSheet_data_in(SpecialStatistics_csv_file_path_stockIndexesCSV_Id, "S_"+sector, date)
+
+                
+
+
+
     return 'SpecialStatisticsAPI'
 
 
@@ -1000,9 +1133,325 @@ async def SpecialStatisticsAPIFunction():
 
 
 
+@Quotes_update.get('/v1/SpecialStatisticsAPI_countrys_Creation')
+async def SpecialStatisticsAPIFunction():
+    print("Inside SpecialStatisticsAPIFunction")
+
+    ######## Remarque le earliest et oldest date sont inversés durant le code 
+
+    # statisticsDBdataList = fetch_large_data_from_mongodb(QuotesStatisticsCollection)
+    
+
+    ### This returns the values of the countrys that are in the collection of the countrys
+    # Allcountrysfrom_DB=countrysCollection.find({})
+    # Allcountrys_List = list(Allcountrysfrom_DB)
+    # names_list = [item['name'] for item in Allcountrys_List]
+    # Allcountrys_List=names_list
+
+    ## This returns only the countrys with them that are created the statistics
+    unique_countrys = QuotesStatisticsCollection.distinct('country')
+
+
+    Allcountrys_List=unique_countrys
+
+    print("The secotrs with them are the statistcs created ")
+    print(Allcountrys_List)
 
 
 
+
+    SpecialStatistics_csv_file_path_stockIndexesCSV_Id = '1IYqXr5n1vipIvQ6mlI4duM3GDlDEU-1Yk2OB-nUJ5No'
+    SpecialStatisticsDF = read_data_from_sheets(SpecialStatistics_csv_file_path_stockIndexesCSV_Id,"Sheet1")
+    
+
+    for country in Allcountrys_List:
+
+        oldest_date_result = QuotesStatisticsCollection.find(
+            {"date": {"$exists": True}, "country": country},
+            {"_id": 0, "date": 1}
+        ).sort("date", 1).limit(1)
+        
+        oldestDate_DB=oldest_date_result[0]["date"]
+
+
+        earliestDate_date_result = QuotesStatisticsCollection.find(
+            {"date": {"$exists": True}, "country": country},
+            {"_id": 0, "date": 1}
+        ).sort("date", 1)
+
+        l=list(earliestDate_date_result)
+
+        earliestDate_DB=l[len(l)-1]["date"]
+
+
+
+        date_to_begin=get_date_for_symbol_Operation_StatSpeciales("S_"+country,SpecialStatisticsDF)
+
+        if date_to_begin==None:
+            date_to_begin=oldestDate_DB
+
+        date_to_finish=earliestDate_DB
+
+        date_range = generate_month_end_dates( date_to_begin,date_to_finish)
+
+
+
+        print("oldest date in the database for ",country," is ",oldestDate_DB)  
+        print("earliest date in the database for ",country," is ",earliestDate_DB)  
+        
+        
+        # print("date_to_begin   for ",country," is ",date_to_begin)  
+        # print("date_to_finish  for ",country," is ",date_to_finish)  
+
+
+        # print(date_range)
+
+
+
+
+        batch_size = 50  
+        
+        documents_to_insert_in_special_statistics=[]
+        for i in range(0, len(date_range), batch_size):
+            dateRange_DB=[]
+            date_range_batched = date_range[i:i + batch_size]
+
+            print("---- Dates batchées ")
+            print("date_to_begin   for ",country," is ",date_range_batched[0])  
+            print("date_to_finish  for ",country," is ",date_range_batched[len(date_range_batched)-1])  
+            
+            print("Nomber de dates éléments ",len(date_range_batched))
+
+
+            date_range_query = {
+                "country": country,
+                "date": {
+                    "$lte":date_range_batched[len(date_range_batched)-1]      ,           
+
+                    "$gte":date_range_batched[0]
+                }
+            }
+
+            statisticsDBdata=QuotesStatisticsCollection.find(date_range_query)
+            statisticsDBdataList=list(statisticsDBdata)
+
+            # print(statisticsDBdataList[:2])
+
+
+            
+            dateRange_DB=get_dates_from_dataBaseReturned_DB(statisticsDBdataList)
+
+            print("dateRange_DB")
+            print(remove_duplicates(dateRange_DB))
+
+
+            documents_to_insert=[]
+
+
+            compteur_insertion=20
+            ind_insertion=0
+
+            for date in remove_duplicates(dateRange_DB):
+                ind_insertion=ind_insertion+1
+                filtered_list = [obj for obj in statisticsDBdataList if obj.get('date') == date]
+
+                
+                statisticsDBdataList=delete_elements_by_date(statisticsDBdataList,date)
+
+
+                print("--Treating elements of the date ",date)
+                print("All the elements length ",len(statisticsDBdataList))
+                print("The filtered elements length ",len(filtered_list))
+
+                document={
+                    "date":date,
+                    "country":country,
+                    "Special_Stats":calculateur_stat_speciales(filtered_list)
+                }
+
+                documents_to_insert.append(document)
+
+                if ind_insertion>=compteur_insertion:
+
+                    CountryStatisticsCollection.insert_many(documents_to_insert)
+                    documents_to_insert=[]
+                    ind_insertion=0
+
+
+                
+            if ind_insertion>0:
+                    CountryStatisticsCollection.insert_many(documents_to_insert)
+                    documents_to_insert=[]
+                
+
+    return 'SpecialStatisticsAPI'
+
+
+
+
+
+
+@Quotes_update.get('/v1/SpecialStatisticsAPI_industrys_Creation')
+async def SpecialStatisticsAPIFunction():
+    print("Inside SpecialStatisticsAPIFunction")
+
+    ######## Remarque le earliest et oldest date sont inversés durant le code 
+
+    # statisticsDBdataList = fetch_large_data_from_mongodb(QuotesStatisticsCollection)
+    
+
+    ### This returns the values of the industrys that are in the collection of the industrys
+    # Allindustrysfrom_DB=industrysCollection.find({})
+    # Allindustrys_List = list(Allindustrysfrom_DB)
+    # names_list = [item['name'] for item in Allindustrys_List]
+    # Allindustrys_List=names_list
+
+    ## This returns only the industrys with them that are created the statistics
+    unique_industrys = QuotesStatisticsCollection.distinct('industry')
+
+
+    Allindustrys_List=unique_industrys
+
+    print("The secotrs with them are the statistcs created ")
+    print(Allindustrys_List)
+
+    Allindustrys_List= remove_nan_values( Allindustrys_List)
+
+
+
+
+    SpecialStatistics_csv_file_path_stockIndexesCSV_Id = '1IYqXr5n1vipIvQ6mlI4duM3GDlDEU-1Yk2OB-nUJ5No'
+    SpecialStatisticsDF = read_data_from_sheets(SpecialStatistics_csv_file_path_stockIndexesCSV_Id,"Sheet1")
+    
+
+    for industry in Allindustrys_List:
+
+        oldest_date_result = QuotesStatisticsCollection.find(
+            {"date": {"$exists": True}, "industry": industry},
+            {"_id": 0, "date": 1}
+        ).sort("date", 1).limit(1)
+        
+        oldestDate_DB=oldest_date_result[0]["date"]
+
+
+        earliestDate_date_result = QuotesStatisticsCollection.find(
+            {"date": {"$exists": True}, "industry": industry},
+            {"_id": 0, "date": 1}
+        ).sort("date", 1)
+
+        l=list(earliestDate_date_result)
+
+        earliestDate_DB=l[len(l)-1]["date"]
+
+
+
+        date_to_begin=get_date_for_symbol_Operation_StatSpeciales("S_"+industry,SpecialStatisticsDF)
+
+        if date_to_begin==None:
+            date_to_begin=oldestDate_DB
+
+        date_to_finish=earliestDate_DB
+
+        date_range = generate_month_end_dates( date_to_begin,date_to_finish)
+
+
+
+        print("oldest date in the database for ",industry," is ",oldestDate_DB)  
+        print("earliest date in the database for ",industry," is ",earliestDate_DB)  
+        
+        
+        # print("date_to_begin   for ",industry," is ",date_to_begin)  
+        # print("date_to_finish  for ",industry," is ",date_to_finish)  
+
+
+        # print(date_range)
+
+
+
+
+        batch_size = 50  
+        
+        documents_to_insert_in_special_statistics=[]
+        for i in range(0, len(date_range), batch_size):
+            dateRange_DB=[]
+            date_range_batched = date_range[i:i + batch_size]
+
+            print("---- Dates batchées ")
+            print("date_to_begin   for ",industry," is ",date_range_batched[0])  
+            print("date_to_finish  for ",industry," is ",date_range_batched[len(date_range_batched)-1])  
+            
+            print("Nomber de dates éléments ",len(date_range_batched))
+
+
+            date_range_query = {
+                "industry": industry,
+                "date": {
+                    "$lte":date_range_batched[len(date_range_batched)-1]      ,           
+
+                    "$gte":date_range_batched[0]
+                }
+            }
+
+            statisticsDBdata=QuotesStatisticsCollection.find(date_range_query)
+            statisticsDBdataList=list(statisticsDBdata)
+
+            # print(statisticsDBdataList[:2])
+
+
+            
+            dateRange_DB=get_dates_from_dataBaseReturned_DB(statisticsDBdataList)
+
+            print("dateRange_DB")
+            print(remove_duplicates(dateRange_DB))
+
+
+            documents_to_insert=[]
+
+
+            compteur_insertion=20
+            ind_insertion=0
+
+            for date in remove_duplicates(dateRange_DB):
+                ind_insertion=ind_insertion+1
+                filtered_list = [obj for obj in statisticsDBdataList if obj.get('date') == date]
+
+                
+                statisticsDBdataList=delete_elements_by_date(statisticsDBdataList,date)
+
+
+                print("--Treating elements of the date ",date)
+                print("All the elements length ",len(statisticsDBdataList))
+                print("The filtered elements length ",len(filtered_list))
+
+                document={
+                    "date":date,
+                    "industry":industry,
+                    "Special_Stats":calculateur_stat_speciales(filtered_list)
+                }
+
+                documents_to_insert.append(document)
+
+                if ind_insertion>=compteur_insertion:
+
+                    industryStatisticsCollection.insert_many(documents_to_insert)
+                    documents_to_insert=[]
+                    ind_insertion=0
+
+
+                
+            if ind_insertion>0:
+                    industryStatisticsCollection.insert_many(documents_to_insert)
+                    documents_to_insert=[]
+                
+
+    return 'SpecialStatisticsAPI'
+
+
+
+
+def remove_nan_values(input_list):
+ 
+    return [value for value in input_list if value is not None and (value == value)]  # Check for NaN using value == value
 
 
 def calculateur_stat_speciales(rawData):
@@ -1088,9 +1537,6 @@ def calculateur_stat_speciales(rawData):
         cleaned_list = replace_nan_with_zero(number_list)
         q90_value = np.percentile(cleaned_list, 90)
         return q90_value
-
-
-
 
     ### return
     return_0_5y=[]
@@ -1190,11 +1636,6 @@ def calculateur_stat_speciales(rawData):
     monthlyEmaVol_8y=[]
     monthlyEmaVol_9y=[]
     monthlyEmaVol_all=[]
-
-
-
-
-
 
 
 
@@ -2272,134 +2713,9 @@ def calculateur_stat_speciales(rawData):
                                         "q90":calculate_q90(return_all)
                                              }   
 
-                                    }
-           
-
+                                    } 
         }
 
-
-
-                            
-
-        
-
-
-
-
-
-                   
-                   
-
-
-
-
-
-
-    # print("")
-    # print("return_0_5y",return_0_5y)
-    # print("return_1y",return_1y)
-    # print("return_2y",return_2y)
-    # print("return_3y",return_3y)
-    # print("return_4y",return_4y)
-    # print("return_5y",return_5y)
-    # print("return_6y",return_6y)
-    # print("return_7y",return_7y)
-    # print("return_8y",return_8y)
-    # print("return_9y",return_9y)
-    # print("return_all",return_all)
-    # print("")
-
-    # print("")
-    # print("weeklyVol_0_5y",weeklyVol_0_5y)
-    # print("weeklyVol_1y",weeklyVol_1y)
-    # print("weeklyVol_2y",weeklyVol_2y)
-    # print("weeklyVol_3y",weeklyVol_3y)
-    # print("weeklyVol_4y",weeklyVol_4y)
-    # print("weeklyVol_5y",weeklyVol_5y)
-    # print("weeklyVol_6y",weeklyVol_6y)
-    # print("weeklyVol_7y",weeklyVol_7y)
-    # print("weeklyVol_8y",weeklyVol_8y)
-    # print("weeklyVol_9y",weeklyVol_9y)
-    # print("weeklyVol_all",weeklyVol_all)
-    # print("")
-
-
-    # print("")
-    # print("dailyVol_0_5y",dailyVol_0_5y)
-    # print("dailyVol_1y",dailyVol_1y)
-    # print("dailyVol_2y",dailyVol_2y)
-    # print("dailyVol_3y",dailyVol_3y)
-    # print("dailyVol_4y",dailyVol_4y)
-    # print("dailyVol_5y",dailyVol_5y)
-    # print("dailyVol_6y",dailyVol_6y)
-    # print("dailyVol_7y",dailyVol_7y)
-    # print("dailyVol_8y",dailyVol_8y)
-    # print("dailyVol_9y",dailyVol_9y)
-    # print("dailyVol_all",dailyVol_all)
-    # print("")
-
-
-    # print("")
-    # print("monthlyVol_0_5y",monthlyVol_0_5y)
-    # print("monthlyVol_1y",monthlyVol_1y)
-    # print("monthlyVol_2y",monthlyVol_2y)
-    # print("monthlyVol_3y",monthlyVol_3y)
-    # print("monthlyVol_4y",monthlyVol_4y)
-    # print("monthlyVol_5y",monthlyVol_5y)
-    # print("monthlyVol_6y",monthlyVol_6y)
-    # print("monthlyVol_7y",monthlyVol_7y)
-    # print("monthlyVol_8y",monthlyVol_8y)
-    # print("monthlyVol_9y",monthlyVol_9y)
-    # print("monthlyVol_all",monthlyVol_all)
-    # print("")
-
-
-
-
-
-    # print("")
-    # print("dailyEmaVol_0_5y",dailyEmaVol_0_5y)
-    # print("dailyEmaVol_1y",dailyEmaVol_1y)
-    # print("dailyEmaVol_2y",dailyEmaVol_2y)
-    # print("dailyEmaVol_3y",dailyEmaVol_3y)
-    # print("dailyEmaVol_4y",dailyEmaVol_4y)
-    # print("dailyEmaVol_5y",dailyEmaVol_5y)
-    # print("dailyEmaVol_6y",dailyEmaVol_6y)
-    # print("dailyEmaVol_7y",dailyEmaVol_7y)
-    # print("dailyEmaVol_8y",dailyEmaVol_8y)
-    # print("dailyEmaVol_9y",dailyEmaVol_9y)
-    # print("dailyEmaVol_all",dailyEmaVol_all)
-    # print("")
-
-
-    # print("")
-    # print("weeklyEmaVol_0_5y",weeklyEmaVol_0_5y)
-    # print("weeklyEmaVol_1y",weeklyEmaVol_1y)
-    # print("weeklyEmaVol_2y",weeklyEmaVol_2y)
-    # print("weeklyEmaVol_3y",weeklyEmaVol_3y)
-    # print("weeklyEmaVol_4y",weeklyEmaVol_4y)
-    # print("weeklyEmaVol_5y",weeklyEmaVol_5y)
-    # print("weeklyEmaVol_6y",weeklyEmaVol_6y)
-    # print("weeklyEmaVol_7y",weeklyEmaVol_7y)
-    # print("weeklyEmaVol_8y",weeklyEmaVol_8y)
-    # print("weeklyEmaVol_9y",weeklyEmaVol_9y)
-    # print("weeklyEmaVol_all",weeklyEmaVol_all)
-    # print("")
-
-    # print("")
-    # print("monthlyEmaVol_0_5y",monthlyEmaVol_0_5y)
-    # print("monthlyEmaVol_1y",monthlyEmaVol_1y)
-    # print("monthlyEmaVol_2y",monthlyEmaVol_2y)
-    # print("monthlyEmaVol_3y",monthlyEmaVol_3y)
-    # print("monthlyEmaVol_4y",monthlyEmaVol_4y)
-    # print("monthlyEmaVol_5y",monthlyEmaVol_5y)
-    # print("monthlyEmaVol_6y",monthlyEmaVol_6y)
-    # print("monthlyEmaVol_7y",monthlyEmaVol_7y)
-    # print("monthlyEmaVol_8y",monthlyEmaVol_8y)
-    # print("monthlyEmaVol_9y",monthlyEmaVol_9y)
-    # print("monthlyEmaVol_all",monthlyEmaVol_all)
-    # print("")
-        
     return document 
 
 
