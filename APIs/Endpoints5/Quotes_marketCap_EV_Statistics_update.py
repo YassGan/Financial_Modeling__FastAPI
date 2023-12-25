@@ -1058,7 +1058,7 @@ async def SpecialStatisticsAPIFunction():
             print("date_to_begin   for ",sector," is ",date_range_batched[0])  
             print("date_to_finish  for ",sector," is ",date_range_batched[len(date_range_batched)-1])  
             
-            print("Nomber de dates éléments ",len(date_range_batched))
+            print("Nombre de dates éléments ",len(date_range_batched))
 
 
             date_range_query = {
